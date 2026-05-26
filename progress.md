@@ -42,10 +42,17 @@ Establish a high-performance, deterministic developer harness for analytics, mod
 3. **Idempotent Bootstrapper:** Modified `init.sh` to perform a directory check before attempting to create the virtual environment, making it 100% idempotent.
 4. **Broken Symlink Resolved:** Successfully created the Google Drive target directory and populated `settings.json` based on custom user backups to resolve the broken `~/.gemini/antigravity-cli/settings.json` symlink.
 5. **Trusted Workspaces Synced:** Added the downstream project `/Users/jubilee/Library/CloudStorage/GoogleDrive-z.jubilee.z@gmail.com/My Drive/Projects/FPL-Jubilee-Ascent` to `settings.json` to enable seamless, password-free operations when context switching.
+6. **Global Skills Audited:** Verified and mapped all 4 global skills (`grill-analytics`, `spec-model`, `validate-output`, and `to-colab`) in the global directory.
+7. **Environment Bootstrapped:** Successfully executed the idempotent `init.sh` script to verify python smoke tests pass.
+8. **Skills Architecture Upgraded:**
+   - Installed the new global skill `write-a-skill` to facilitate future custom skill authoring.
+   - Installed `grill-with-docs` globally to enable rigorous domain glossary and lazy ADR maintenance.
+   - Upgraded our custom `grill-analytics` skill to actively maintain `CONTEXT.md` and ADR records inline as modeling decisions are made.
+   - Fully synchronized all skills across primary, backup, and IDE skills paths.
 
 ---
 
 ## 3. Next Session Priorities
 - Re-run bootstrapper in downstream `FPL-Jubilee-Ascent` using the updated, idempotent `init.sh`.
-- Seed and customize local/global skills to enhance statistical/trading workflows.
+- Leverage `/grill-analytics` and `/grill-with-docs` for downstream feature design.
 
