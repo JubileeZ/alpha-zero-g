@@ -39,7 +39,7 @@ if [ -f "pyproject.toml" ] || [ -f "requirements.txt" ] || [ -n "$(find . -name 
         echo -e "Synchronizing Python virtual environment using uv..."
         if [ -f "pyproject.toml" ]; then
             # Syncs virtual env and installs dependency groups
-            uv venv --python 3.12
+            [ -d ".venv" ] || uv venv --python 3.12
             uv pip install -e . --all-extras 2>/dev/null || uv pip install -e . || uv pip install -r pyproject.toml 2>/dev/null || true
             # Sync dev dependencies if any
             if grep -q "dependency-groups" pyproject.toml; then
@@ -47,7 +47,7 @@ if [ -f "pyproject.toml" ] || [ -f "requirements.txt" ] || [ -n "$(find . -name 
                 uv pip install -e ".[dev]" 2>/dev/null || uv pip install pytest ruff ipykernel
             fi
         elif [ -f "requirements.txt" ]; then
-            uv venv --python 3.12
+            [ -d ".venv" ] || uv venv --python 3.12
             uv pip install -r requirements.txt
         fi
         
