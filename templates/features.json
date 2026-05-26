@@ -1,0 +1,14 @@
+[
+  {
+    "id": "F-01",
+    "feature": "Harness Baseline Compilation",
+    "description": "Verify the project boots correctly from the Alpha-Zero-G templates.",
+    "passes": true
+  },
+  {
+    "id": "F-02",
+    "feature": "Initial Model Specification Completed",
+    "description": "Establish the initial data audit and model specifications.",
+    "passes": false
+  }
+]

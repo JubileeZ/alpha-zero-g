@@ -1,0 +1,50 @@
+[
+  {
+    "id": "F-01",
+    "feature": "Global AGENTS.md Configuration",
+    "description": "Establish ~/.gemini/AGENTS.md with global context, coding rules, and safety parameters.",
+    "passes": true
+  },
+  {
+    "id": "F-02",
+    "feature": "Global GEMINI.md Configuration",
+    "description": "Establish ~/.gemini/GEMINI.md with global subagent preferences and tool overrides.",
+    "passes": true
+  },
+  {
+    "id": "F-03",
+    "feature": "4 Global Analytics Skills",
+    "description": "Produce grill-analytics, spec-model, validate-output, and to-colab skills in Pocock format.",
+    "passes": true
+  },
+  {
+    "id": "F-04",
+    "feature": "Project Standard Configuration Mapping",
+    "description": "Upgrade local AGENTS.md, GEMINI.md, and CONTEXT.md maps.",
+    "passes": true
+  },
+  {
+    "id": "F-05",
+    "feature": "Programmatic Hooks Enforcement Layer",
+    "description": "Implement .agents/hooks.json rules to block force pushes, root deletions, and enforce confirmation boundaries.",
+    "passes": true
+  },
+  {
+    "id": "F-06",
+    "feature": "Unified Systems Docs Architecture",
+    "description": "Create standard documentation including architecture, quality checklists, and beliefs decisions.",
+    "passes": true
+  },
+  {
+    "id": "F-07",
+    "feature": "Session Continuity External Memory State",
+    "description": "Establish features.json tracking and progress.md logging patterns.",
+    "passes": true
+  },
+  {
+    "id": "F-08",
+    "feature": "Unified Dynamic R-Python Bootstrapper",
+    "description": "Deliver a pyproject.toml package list and a dynamic init.sh environment compiler.",
+    "passes": true
+  }
+]
