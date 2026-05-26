@@ -48,11 +48,17 @@ Establish a high-performance, deterministic developer harness for analytics, mod
    - Installed the new global skill `write-a-skill` to facilitate future custom skill authoring.
    - Installed `grill-with-docs` globally to enable rigorous domain glossary and lazy ADR maintenance.
    - Upgraded our custom `grill-analytics` skill to actively maintain `CONTEXT.md` and ADR records inline as modeling decisions are made.
-   - Fully synchronized all skills across primary, backup, and IDE skills paths.
+   - Installed `caveman` globally to enable ultra-terse, token-saving (75% reduction) conversational loops.
+   - Installed `diagnose` globally for highly-disciplined debugging loops (reproduction first).
+   - Installed `tdd` globally to enforce structured red-green-refactor loops.
+   - Installed `to-issues` globally to break plans into vertical tracer-bullet tasks.
+   - Installed `improve-codebase-architecture` globally to evaluate and deepen codebase modularity.
+   - Installed `handoff` globally to compile cross-session context transition summaries.
+   - Fully synchronized all 10 active skills across primary, backup, and IDE skills paths.
 
 ---
 
 ## 3. Next Session Priorities
 - Re-run bootstrapper in downstream `FPL-Jubilee-Ascent` using the updated, idempotent `init.sh`.
-- Leverage `/grill-analytics` and `/grill-with-docs` for downstream feature design.
+- Leverage new engineering loops (`/tdd`, `/diagnose`, `/improve-codebase-architecture`) and productivity flows (`/caveman`, `/to-issues`) for downstream development.
 
