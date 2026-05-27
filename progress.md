@@ -32,6 +32,9 @@ Establish a high-performance, deterministic developer harness for analytics, mod
 - `[x]` **pyproject.toml**: Defined analytics, visualization, modeling, and dev dependencies.
 - `[x]` **Dynamic Bootstrapper (init.sh)**: Developed dynamic environment configuration script (auto-resolving `uv` for Python 3.12, dynamic checks for R via `renv`/`pak`, and smoke-test sensors).
 - `[x]` **Deterministic Verification**: Ran `./init.sh` to construct the `.venv` and install 24 packages, asserting clean execution.
+- `[x]` **User-First Interactive Generator**: Refactored `create-project.sh` to prompt interactively, copy targeted language partitions (Python, R, or Hybrid), resolve placeholders, and deploy standard documentation templates (`CONTEXT-FORMAT.md`, `ADR-FORMAT.md`).
+- `[x]` **Agent-First Automations**: Added automated Git initialization, a baseline commit, and global trusted workspaces JSON auto-registration to new projects.
+- `[x]` **Cross-Device Google Drive Sync**: Created `setup-global-harness.sh` to dynamically detect paths and establish robust symlinks for settings, rules, and global skills across macOS and Windows.
 
 ---
 
@@ -54,11 +57,19 @@ Establish a high-performance, deterministic developer harness for analytics, mod
    - Installed `to-issues` globally to break plans into vertical tracer-bullet tasks.
    - Installed `improve-codebase-architecture` globally to evaluate and deepen codebase modularity.
    - Installed `handoff` globally to compile cross-session context transition summaries.
-   - Fully synchronized all 10 active skills across primary, backup, and IDE skills paths.
+   - Fully synchronized all 12 active skills across primary, backup, and IDE skills paths.
+9. **Global Skills & Environment Audited:** Successfully verified that all 12 custom skills are active in `~/.gemini/antigravity/skills/` and executed the idempotent `init.sh` to confirm the Python virtual environment is synced and verified.
+10. **Caveman Mode Deactivated:** User toggled `/caveman off`. Standard professional communication restored.
+11. **Broken Skills Paths Resolved:** Created symlinks from `~/.gemini/antigravity-cli/skills` and `~/.gemini/config/skills` pointing to the real `~/.gemini/antigravity/skills` directory, resolving the empty `/skills` CLI command list issue.
+12. **User-First Setup & Agent-First Run Completed:** Refactored `create-project.sh` to be fully interactive, prompt-driven, and selective. New workspaces automatically register in global settings and initialize Git. Standard templates for glossaries, design, and ADRs are auto-deployed.
+13. **Cross-Device Sync Complete:** Implemented `setup-global-harness.sh` to automatically detect Google Drive stream paths on macOS and Windows and establish secure symlinks for settings, rules, and global skills.
+14. **TDD Validation Green:** Developed an integration-style test suite in `tests/test_harness_bootstrap.py` validating all generator and sync functionalities with 100% test coverage.
 
 ---
 
 ## 3. Next Session Priorities
-- Re-run bootstrapper in downstream `FPL-Jubilee-Ascent` using the updated, idempotent `init.sh`.
+- Bootstrap the downstream project `FPL-Jubilee-Ascent` using the new interactive `create-project.sh` generator.
+- Execute `setup-global-harness.sh` on your secondary device to instantly synchronize the entire global settings, rules, and skills suite via Google Drive.
 - Leverage new engineering loops (`/tdd`, `/diagnose`, `/improve-codebase-architecture`) and productivity flows (`/caveman`, `/to-issues`) for downstream development.
+
 

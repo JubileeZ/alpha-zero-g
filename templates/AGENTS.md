@@ -24,12 +24,15 @@ This file is the primary entry point and cognitive map for AI agents working in 
 
 ## Preferred Workflows
 
-For any analytical, modeling, or coding task taking longer than 30 minutes, you MUST execute the following strict loop:
-1. **Grill:** Invoke `/grill-analytics` (either globally or locally) to stress-test ideas.
-2. **Spec:** Invoke `/spec-model` to compile a formal specification in `docs/design/` or `docs/MODEL_NOTES.md`.
-3. **Slice:** Break the spec down into tiny, verifiable vertical slices.
-4. **Ship:** Execute slices step-by-step. All python functions require docstrings and type hints.
-5. **Refactor:** Clean up code while verifying tests remain fully passing.
+For any analytical, modeling, or coding task taking longer than 30 minutes, you MUST follow the **Golden Path Developer Workflow** documented in [README.md](file:///{{PROJECT_ROOT}}/README.md):
+1. **Boot:** Run `bash init.sh` immediately at session start.
+2. **Grill:** Invoke `/grill-with-docs` (general logic) or `/grill-analytics` (data/stats audits) to refine domain terms in `CONTEXT.md` and ADRs.
+3. **Spec:** Invoke `/spec-model` to compile a formal design spec in `docs/design/` or `docs/MODEL_NOTES.md`.
+4. **Slice:** Invoke `/to-issues` on your spec to compile independent vertical slices in `features.json`.
+5. **Ship (TDD):** Invoke `/tdd` to execute and build tests first (Red-Green-Refactor). If debugging, use `/diagnose`.
+6. **Verify:** Invoke `/validate-output` for statistical validation.
+7. **Refactor:** Invoke `/improve-codebase-architecture` to deepen modules and decouple layers.
+8. **Handoff:** Invoke `/handoff` to summarize session status in `progress.md`.
 
 ---
 

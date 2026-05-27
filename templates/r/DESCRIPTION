@@ -1,0 +1,14 @@
+Package: {{PROJECT_NAME}}
+Title: Statistical Analytics Project bootstrapped from Alpha-Zero-G
+Version: 0.1.0
+Authors@R: person("Alpha", "Zero-G", role = c("aut", "cre"))
+Description: Statistical analytics, feature modeling, and simulation tools.
+License: MIT
+Encoding: UTF-8
+LazyData: true
+Imports:
+    tidyverse,
+    renv
+Suggests:
+    testthat
+RoxygenNote: 7.3.1
