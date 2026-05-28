@@ -85,11 +85,14 @@ Establish a high-performance, deterministic developer harness for analytics, mod
 20. **Caveman Mode — Global Default (2026-05-28):** Added `Communication Style (Default)` section to `~/.gemini/GEMINI.md`. Caveman auto-activates every session start. User disables with "stop caveman" or "normal mode".
 21. **Handoff Skill Redesigned (2026-05-28):** Upgraded `handoff/SKILL.md` to update living project docs in-place (`progress.md`, `beliefs.md`, `MODEL_NOTES.md`, `features.json`, `AGENTS.md`) instead of writing to temp dir. Session context stays version-controlled.
 22. **Planning vs Execution Model Separation Documented:** Antigravity CLI supports model switching via UI (thinking vs standard). No persistent automated split yet — user toggles manually per session.
+23. **Feature Branch Merged to Master (2026-05-28):** `feature/adr-workflow-standardization` merged into `master` via no-ff merge (`0b95f8e..4048bfc`). All 24 files, 5 commits, 2,260 insertions pushed to `origin/master`. Harness now at golden-standard v1 baseline.
 
 ---
 
 ## 3. Next Session Priorities
 
-- **[DONE]** ~~Begin analytical modelling inside `FPL-Jubilee-Ascent`~~ — full pipeline complete through F-16.
-- Execute `setup-global-harness.sh` on secondary device to sync harness via Google Drive.
+1. Execute `setup-global-harness.sh` on secondary device to sync harness via Google Drive.
+2. Begin analytical modelling inside `FPL-Jubilee-Ascent` (harness is stable — time to ship features).
+3. Delete `feature/adr-workflow-standardization` remote branch (clean housekeeping).
 
+<!-- Suggested skills: /handoff (end of session), /grill-analytics (before FPL modelling), /tdd (feature work in FPL-Jubilee-Ascent) -->
