@@ -86,12 +86,17 @@ Establish a high-performance, deterministic developer harness for analytics, mod
 21. **Handoff Skill Redesigned (2026-05-28):** Upgraded `handoff/SKILL.md` to update living project docs in-place (`progress.md`, `beliefs.md`, `MODEL_NOTES.md`, `features.json`, `AGENTS.md`) instead of writing to temp dir. Session context stays version-controlled.
 22. **Planning vs Execution Model Separation Documented:** Antigravity CLI supports model switching via UI (thinking vs standard). No persistent automated split yet — user toggles manually per session.
 23. **Feature Branch Merged to Master (2026-05-28):** `feature/adr-workflow-standardization` merged into `master` via no-ff merge (`0b95f8e..4048bfc`). All 24 files, 5 commits, 2,260 insertions pushed to `origin/master`. Harness now at golden-standard v1 baseline.
+24. **Cross-Platform Windows Desktop Setup (2026-05-28):**
+  - Upgraded `init.sh` to dynamically detect if `.venv` is broken or OS-mismatched (e.g. from cross-device Google Drive sync) and automatically recreate it.
+  - Added dynamic virtual environment activation (`.venv/Scripts/activate` on Windows, `.venv/bin/activate` on Unix).
+  - Modified `setup-global-harness.sh` to detect Windows MINGW/MSYS and use native directory junctions (`mklink /j`), allowing standard non-admin users to sync settings and skills without privilege errors.
+  - Verified and successfully ran `init.sh` and `setup-global-harness.sh` on the Windows desktop, creating a pristine synced setup.
 
 ---
 
 ## 3. Next Session Priorities
 
-1. Execute `setup-global-harness.sh` on secondary device to sync harness via Google Drive.
-2. Delete `feature/adr-workflow-standardization` remote branch (clean housekeeping).
+1. Delete `feature/adr-workflow-standardization` remote branch (clean housekeeping).
+2. Kick off downstream FPL modeling using the freshly synchronized harness on the Windows desktop!
 
 <!-- Suggested skills: /handoff (end of session), /grill-analytics (before FPL modelling), /tdd (feature work in FPL-Jubilee-Ascent) -->

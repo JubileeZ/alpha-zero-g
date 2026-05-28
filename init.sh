@@ -37,9 +37,25 @@ if [ -f "pyproject.toml" ] || [ -f "requirements.txt" ] || [ -n "$(find . -name 
         
         # Build/sync virtual environment
         echo -e "Synchronizing Python virtual environment using uv..."
+        
+        VENV_VALID=false
+        if [ -d ".venv" ]; then
+            # Determine binary path and check if it runs
+            if [ -f ".venv/Scripts/python.exe" ]; then
+                .venv/Scripts/python.exe --version &>/dev/null && VENV_VALID=true
+            elif [ -f ".venv/bin/python" ]; then
+                .venv/bin/python --version &>/dev/null && VENV_VALID=true
+            fi
+        fi
+        
+        if [ "${VENV_VALID}" = "false" ]; then
+            echo -e "${YELLOW}Virtual environment .venv is missing, invalid, or OS-mismatched. Recreating...${NC}"
+            rm -rf ".venv"
+            uv venv --python 3.12
+        fi
+
         if [ -f "pyproject.toml" ]; then
             # Syncs virtual env and installs dependency groups
-            [ -d ".venv" ] || uv venv --python 3.12
             uv pip install -e . --all-extras 2>/dev/null || uv pip install -e . || uv pip install -r pyproject.toml 2>/dev/null || true
             # Sync dev dependencies if any
             if grep -q "dependency-groups" pyproject.toml; then
@@ -47,13 +63,16 @@ if [ -f "pyproject.toml" ] || [ -f "requirements.txt" ] || [ -n "$(find . -name 
                 uv pip install -e ".[dev]" 2>/dev/null || uv pip install pytest ruff ipykernel
             fi
         elif [ -f "requirements.txt" ]; then
-            [ -d ".venv" ] || uv venv --python 3.12
             uv pip install -r requirements.txt
         fi
         
         # Python Smoke Test
         echo -e "\nRunning Python validation checks (smoke test)..."
-        source .venv/bin/activate
+        if [ -f ".venv/Scripts/activate" ]; then
+            source .venv/Scripts/activate
+        else
+            source .venv/bin/activate
+        fi
         python -c "
 import sys
 import pandas as pd

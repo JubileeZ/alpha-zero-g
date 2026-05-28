@@ -190,7 +190,25 @@ create_symlink() {
         rm -rf "${link_path}"
     fi
     
-    ln -s "${target}" "${link_path}"
+    # Check if we are on Windows (Git Bash/MINGW/MSYS)
+    if [[ "$(uname -s)" == *"MINGW"* ]] || [[ "$(uname -s)" == *"MSYS"* ]]; then
+        local win_target=$(cygpath -w "${target}")
+        local win_link=$(cygpath -w "${link_path}")
+        
+        if [ -d "${target}" ]; then
+            # Directory junction does not require administrative privileges
+            cmd.exe /c "mklink /j \"${win_link}\" \"${win_target}\"" &>/dev/null || \
+            cmd.exe /c "mklink /d \"${win_link}\" \"${win_target}\"" &>/dev/null || \
+            ln -s "${target}" "${link_path}"
+        else
+            cmd.exe /c "mklink \"${win_link}\" \"${win_target}\"" &>/dev/null || \
+            cmd.exe /c "mklink /h \"${win_link}\" \"${win_target}\"" &>/dev/null || \
+            ln -s "${target}" "${link_path}"
+        fi
+    else
+        ln -s "${target}" "${link_path}"
+    fi
+    
     echo -e "  - Symlink established: $(basename "${link_path}") -> ${target}"
 }
 
