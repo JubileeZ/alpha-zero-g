@@ -144,7 +144,7 @@ get_parameter_values() {
 
     # Extract project description from target AGENTS.md or default
     if [ -f "${TARGET_ROOT_ABS}/AGENTS.md" ]; then
-        PARAM_DESC=$(awk '/## What This Project Is/{getline; getline; print}' "${TARGET_ROOT_ABS}/AGENTS.md" | head -n 1)
+        PARAM_DESC=$(awk '/## What This Project Is/{getline; if ($0 == "") getline; print}' "${TARGET_ROOT_ABS}/AGENTS.md" | head -n 1)
     fi
     if [ -z "${PARAM_DESC:-}" ]; then
         PARAM_DESC="Statistical Analytics Project bootstrapped from Alpha-Zero-G"
@@ -166,7 +166,7 @@ show_file_diff() {
     local label2="$4"
 
     if command -v git >/dev/null 2>&1; then
-        git diff --no-index --color --label "${label1}" --label "${label2}" "${file1}" "${file2}" || true
+        git diff --no-index --color "${file1}" "${file2}" || true
     else
         diff -u --label "${label1}" --label "${label2}" "${file1}" "${file2}" || true
     fi
