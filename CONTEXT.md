@@ -36,3 +36,13 @@ A dependency manager for the R programming language. When R components are detec
 
 ### Hooks
 Programmatic interceptors defined in `.agents/hooks.json` that capture tool invocations and block, prompt, or allow them deterministically based on defined pattern matches.
+
+### Harness Upgrader (`upgrade-project.sh`)
+A bidirectional synchronization utility in the template core repository that pushes core template updates to existing downstream projects or pulls local optimizations back to the core template.
+
+### Project Infrastructure File
+Standard, generic developer utility files (such as `init.sh`, `.agents/hooks.json`, `DEVELOPER_WORKFLOW.md`, or base documentation templates) that are identical across workspaces and managed by the Harness Upgrader.
+
+### Project Domain File
+Workspace-specific source code, tests, or session tracking files (like `src/`, `tests/`, `CONTEXT.md`, `progress.md`, `beliefs.md`, `features.json`) that are completely owned by the downstream project and must never be modified by the Harness Upgrader.
+

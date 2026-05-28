@@ -246,4 +246,100 @@ def test_slice6_global_harness_sync():
             shutil.rmtree(path)
 
 
+def test_harness_upgrader():
+    """Verify that upgrade-project.sh can push core changes to downstream, pull downstream updates back to templates, and correctly handle parameter placeholders in AGENTS.md / DEVELOPER_WORKFLOW.md."""
+    import subprocess
+    
+    # 1. Scaffolder creation of dummy downstream
+    dest_dir = "scratch/test-upgrade-target"
+    if os.path.exists(dest_dir):
+        shutil.rmtree(dest_dir)
+        
+    cmd = ["bash", "create-project.sh", dest_dir, "Test-Upgrade-Project", "python", "Upgrade testing project"]
+    res = subprocess.run(cmd, capture_output=True, text=True)
+    assert res.returncode == 0
+    
+    # Backup original core files we are going to modify during testing
+    core_init_sh = "templates/init.sh"
+    core_init_sh_backup = "templates/init.sh.bak"
+    shutil.copy2(core_init_sh, core_init_sh_backup)
+    
+    core_agents_md = "templates/AGENTS.md"
+    core_agents_md_backup = "templates/AGENTS.md.bak"
+    shutil.copy2(core_agents_md, core_agents_md_backup)
+    
+    try:
+        # A. TEST --push (Template -> Downstream)
+        # Modify the core template
+        with open(core_init_sh, "a") as f:
+            f.write("\n# core testing modification\n")
+            
+        # Run upgrade-project.sh in push mode
+        upgrade_cmd = ["bash", "upgrade-project.sh", "--push", "-y", dest_dir]
+        res_push = subprocess.run(upgrade_cmd, capture_output=True, text=True)
+        assert res_push.returncode == 0, f"Push failed: {res_push.stderr}\nStdout: {res_push.stdout}"
+        
+        # Verify target is updated
+        with open(os.path.join(dest_dir, "init.sh"), "r") as f:
+            target_content = f.read()
+        assert "core testing modification" in target_content, "Push mode did not update downstream target file"
+        
+        # B. TEST --pull (Downstream -> Template)
+        # Modify the downstream target
+        with open(os.path.join(dest_dir, "init.sh"), "a") as f:
+            f.write("\n# downstream testing optimization\n")
+            
+        # Run upgrade-project.sh in pull mode
+        pull_cmd = ["bash", "upgrade-project.sh", "--pull", "-y", dest_dir]
+        res_pull = subprocess.run(pull_cmd, capture_output=True, text=True)
+        assert res_pull.returncode == 0, f"Pull failed: {res_pull.stderr}\nStdout: {res_pull.stdout}"
+        
+        # Verify template is updated with the downstream modification
+        with open(core_init_sh, "r") as f:
+            template_content = f.read()
+        assert "downstream testing optimization" in template_content, "Pull mode did not update core template file"
+        
+        # C. TEST PLACEHOLDERS IN --push and --pull
+        # Modify the template file with placeholders
+        with open(core_agents_md, "a") as f:
+            f.write("\n# new guideline for {{PROJECT_NAME}}\n")
+            
+        # Push to downstream
+        res_push_placeholder = subprocess.run(["bash", "upgrade-project.sh", "--push", "-y", dest_dir], capture_output=True, text=True)
+        assert res_push_placeholder.returncode == 0, f"Push placeholder failed: {res_push_placeholder.stderr}"
+        
+        # Assert downstream file resolved the placeholder
+        with open(os.path.join(dest_dir, "AGENTS.md"), "r") as f:
+            target_agents_content = f.read()
+        assert "new guideline for Test-Upgrade-Project" in target_agents_content, "Pushing placeholder file did not resolve parameters"
+        assert "{{PROJECT_NAME}}" not in target_agents_content, "Pushing placeholder file left raw placeholder in target"
+        
+        # Modify downstream to optimize the new guidelines
+        updated_agents = target_agents_content.replace("new guideline for Test-Upgrade-Project", "optimal rule for Test-Upgrade-Project")
+        with open(os.path.join(dest_dir, "AGENTS.md"), "w") as f:
+            f.write(updated_agents)
+            
+        # Pull back to templates
+        res_pull_placeholder = subprocess.run(["bash", "upgrade-project.sh", "--pull", "-y", dest_dir], capture_output=True, text=True)
+        assert res_pull_placeholder.returncode == 0, f"Pull placeholder failed: {res_pull_placeholder.stderr}\nStdout: {res_pull_placeholder.stdout}"
+        
+        # Assert template file pulled the optimization and RESTORED the placeholder
+        with open(core_agents_md, "r") as f:
+            template_agents_content = f.read()
+        assert "optimal rule for {{PROJECT_NAME}}" in template_agents_content, "Pulling optimized file did not restore the placeholder in templates"
+        assert "Test-Upgrade-Project" not in template_agents_content, "Pulling optimized file leaked target project name into templates"
+        
+    finally:
+        # Restore backups
+        if os.path.exists(core_init_sh_backup):
+            shutil.move(core_init_sh_backup, core_init_sh)
+        if os.path.exists(core_agents_md_backup):
+            shutil.move(core_agents_md_backup, core_agents_md)
+            
+        # Clean up target
+        if os.path.exists(dest_dir):
+            shutil.rmtree(dest_dir)
+
+
+
 

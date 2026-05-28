@@ -28,4 +28,6 @@ Non-trivial, hard-to-reverse architectural decisions are captured as separate, i
 |---|---|---|---|---|
 | **ADR-0001** | Dynamic R & Python Environment Bootstrapping | `accepted` | 2026-05-20 | [0001-dynamic-bootstrapping.md](file:///Users/jubilee/Library/CloudStorage/GoogleDrive-z.jubilee.z@gmail.com/My%20Drive/Projects/Alpha-Zero-G/docs/adr/0001-dynamic-bootstrapping.md) |
 | **ADR-0002** | Automated Project Scaffolder and Parameterizer | `accepted` | 2026-05-25 | [0002-automated-project-scaffolder.md](file:///Users/jubilee/Library/CloudStorage/GoogleDrive-z.jubilee.z@gmail.com/My%20Drive/Projects/Alpha-Zero-G/docs/adr/0002-automated-project-scaffolder.md) |
+| **ADR-0003** | Bidirectional Harness Upgrader Utility | `accepted` | 2026-05-28 | [0003-bidirectional-harness-upgrader.md](file:///Users/jubilee/Library/CloudStorage/GoogleDrive-z.jubilee.z@gmail.com/My%20Drive/Projects/Alpha-Zero-G/docs/adr/0003-bidirectional-harness-upgrader.md) |
+
 

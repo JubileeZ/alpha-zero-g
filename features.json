@@ -46,5 +46,12 @@
     "feature": "Unified Dynamic R-Python Bootstrapper",
     "description": "Deliver a pyproject.toml package list and a dynamic init.sh environment compiler.",
     "passes": true
+  },
+  {
+    "id": "F-09",
+    "feature": "Bidirectional Harness Upgrader",
+    "description": "Implement upgrade-project.sh to push templates or pull local optimizations bidirectionally with diffs and safe placeholder mappings.",
+    "passes": true
   }
 ]
+

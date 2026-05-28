@@ -35,12 +35,14 @@ Establish a high-performance, deterministic developer harness for analytics, mod
 - `[x]` **User-First Interactive Generator**: Refactored `create-project.sh` to prompt interactively, copy targeted language partitions (Python, R, or Hybrid), resolve placeholders, and deploy standard documentation templates (`CONTEXT-FORMAT.md`, `ADR-FORMAT.md`).
 - `[x]` **Agent-First Automations**: Added automated Git initialization, a baseline commit, and global trusted workspaces JSON auto-registration to new projects.
 - `[x]` **Cross-Device Google Drive Sync**: Created `setup-global-harness.sh` to dynamically detect paths and establish robust symlinks for settings, rules, and global skills across macOS and Windows.
+- `[x]` **Bidirectional Harness Upgrader (`upgrade-project.sh`)**: Designed and built a robust utility that propagates generic harness configuration files (`init.sh`, `.agents/hooks.json`, `DEVELOPER_WORKFLOW.md`, base templates) bidirectionally. Pushing templates to downstream automatically resolves `{{PROJECT_NAME}}`, `{{PROJECT_ROOT}}`, and `{{PROJECT_DESCRIPTION}}` dynamically, and pulling optimizations back to core automatically restores standard placeholders. Enforces colorized git-native dry-run diffs and interactive confirmation safety prompts. Registered 100% passing pytest integration coverage.
 
 ---
 
 ## 2. Active Focus / Current Steps
 
 1. **Harness Verification Approved:** Initial harness bootstrap is fully functional and checked off.
+
 2. **Ready to Clone:** Alpha-Zero-G is ready to act as a golden standard boilerplate.
 3. **Idempotent Bootstrapper:** Modified `init.sh` to perform a directory check before attempting to create the virtual environment, making it 100% idempotent.
 4. **Broken Symlink Resolved:** Successfully created the Google Drive target directory and populated `settings.json` based on custom user backups to resolve the broken `~/.gemini/antigravity-cli/settings.json` symlink.
