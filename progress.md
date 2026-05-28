@@ -92,7 +92,6 @@ Establish a high-performance, deterministic developer harness for analytics, mod
 ## 3. Next Session Priorities
 
 1. Execute `setup-global-harness.sh` on secondary device to sync harness via Google Drive.
-2. Begin analytical modelling inside `FPL-Jubilee-Ascent` (harness is stable — time to ship features).
-3. Delete `feature/adr-workflow-standardization` remote branch (clean housekeeping).
+2. Delete `feature/adr-workflow-standardization` remote branch (clean housekeeping).
 
 <!-- Suggested skills: /handoff (end of session), /grill-analytics (before FPL modelling), /tdd (feature work in FPL-Jubilee-Ascent) -->
