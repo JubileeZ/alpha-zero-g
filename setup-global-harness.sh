@@ -24,6 +24,7 @@ echo -e "Local Target Home: ${GREEN}${REAL_HOME}${NC}"
 # Ensure basic directories exist
 mkdir -p "${GEMINI_DIR}/antigravity-cli"
 mkdir -p "${GEMINI_DIR}/antigravity"
+mkdir -p "${GEMINI_DIR}/config"
 
 # 2. Resolve Google Drive Mount Path (support TDD mock injection)
 if [ -n "${MOCK_GDRIVE:-}" ]; then
@@ -80,10 +81,12 @@ fi
 # Define source-of-truth directories in Google Drive
 GDRIVE_SETTINGS_DIR="${GDRIVE_BASE}/My Drive/Settings/antigravity-cli"
 GDRIVE_SKILLS_DIR="${GDRIVE_BASE}/My Drive/Settings/antigravity"
+GDRIVE_CONFIG_DIR="${GDRIVE_BASE}/My Drive/Settings/antigravity/config"
 
 # Create the directories in Google Drive
 mkdir -p "${GDRIVE_SETTINGS_DIR}"
 mkdir -p "${GDRIVE_SKILLS_DIR}/skills"
+mkdir -p "${GDRIVE_CONFIG_DIR}"
 
 # 3. Establish Safe Local Backups before symlinking
 BACKUP_DIR="${REAL_HOME}/.gemini_backup_$(date +%Y%m%d_%H%M%S)"
@@ -95,6 +98,7 @@ backup_file() {
         if [ "${BACKUP_MADE}" = "false" ]; then
             mkdir -p "${BACKUP_DIR}/antigravity-cli"
             mkdir -p "${BACKUP_DIR}/antigravity"
+            mkdir -p "${BACKUP_DIR}/config"
             BACKUP_MADE=true
             echo -e "\n3. Creating local backup folder: ${GREEN}${BACKUP_DIR}${NC}"
         fi
@@ -103,6 +107,8 @@ backup_file() {
             cp "${filepath}" "${BACKUP_DIR}/antigravity-cli/"
         elif [[ "${filepath}" == *"antigravity"* ]]; then
             cp "${filepath}" "${BACKUP_DIR}/antigravity/"
+        elif [[ "${filepath}" == *"config"* ]]; then
+            cp "${filepath}" "${BACKUP_DIR}/config/"
         else
             cp "${filepath}" "${BACKUP_DIR}/"
         fi
@@ -126,6 +132,8 @@ backup_dir() {
 backup_file "${GEMINI_DIR}/antigravity-cli/settings.json"
 backup_file "${GEMINI_DIR}/AGENTS.md"
 backup_file "${GEMINI_DIR}/GEMINI.md"
+backup_file "${GEMINI_DIR}/config/config.json"
+backup_file "${GEMINI_DIR}/config/mcp_config.json"
 backup_dir "${GEMINI_DIR}/antigravity/skills"
 
 # 4. Seed Google Drive if cloud directories are empty
@@ -138,6 +146,8 @@ seed_file() {
     
     if [[ "${filename}" == *"antigravity-cli"* ]]; then
         gdrive_path="${GDRIVE_SETTINGS_DIR}/$(basename "${filename}")"
+    elif [[ "${filename}" == *"config"* ]]; then
+        gdrive_path="${GDRIVE_CONFIG_DIR}/$(basename "${filename}")"
     else
         gdrive_path="${GDRIVE_SKILLS_DIR}/$(basename "${filename}")"
     fi
@@ -155,6 +165,10 @@ seed_file() {
                 echo -e "# Global Agent Rules\n\n## Standards\n- All python functions require docstrings and type hints." > "${gdrive_path}"
             elif [[ "${filename}" == *"GEMINI.md"* ]]; then
                 echo -e "# Global Gemini Rules\n\n## Settings\n- run_command is allowed." > "${gdrive_path}"
+            elif [[ "${filename}" == *"config.json"* ]]; then
+                echo -e '{\n  "userSettings": {\n    "useAiCredits": true\n  }\n}' > "${gdrive_path}"
+            elif [[ "${filename}" == *"mcp_config.json"* ]]; then
+                echo -e '{\n  "mcpServers": {}\n}' > "${gdrive_path}"
             fi
         fi
     else
@@ -165,6 +179,8 @@ seed_file() {
 seed_file "antigravity-cli/settings.json"
 seed_file "AGENTS.md"
 seed_file "GEMINI.md"
+seed_file "config/config.json"
+seed_file "config/mcp_config.json"
 
 # Seed skills directory
 if [ -d "${GEMINI_DIR}/antigravity/skills" ] && [ ! -L "${GEMINI_DIR}/antigravity/skills" ]; then
@@ -216,6 +232,8 @@ create_symlink "${GDRIVE_SETTINGS_DIR}/settings.json" "${GEMINI_DIR}/antigravity
 create_symlink "${GDRIVE_SKILLS_DIR}/AGENTS.md" "${GEMINI_DIR}/AGENTS.md"
 create_symlink "${GDRIVE_SKILLS_DIR}/GEMINI.md" "${GEMINI_DIR}/GEMINI.md"
 create_symlink "${GDRIVE_SKILLS_DIR}/skills" "${GEMINI_DIR}/antigravity/skills"
+create_symlink "${GDRIVE_CONFIG_DIR}/config.json" "${GEMINI_DIR}/config/config.json"
+create_symlink "${GDRIVE_CONFIG_DIR}/mcp_config.json" "${GEMINI_DIR}/config/mcp_config.json"
 
 echo -e "\n${GREEN}✔ Global harness successfully synced across devices!${NC}"
 echo -e "  - All global settings, global skills, and custom rules are now synchronized in real-time."
