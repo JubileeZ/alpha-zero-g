@@ -8,6 +8,27 @@ PYTHON_TEMPLATES = os.path.join(TEMPLATES_DIR, "python")
 R_TEMPLATES = os.path.join(TEMPLATES_DIR, "r")
 DOCS_TEMPLATES = os.path.join(TEMPLATES_DIR, "docs")
 
+def get_bash_executable():
+    """Resolve the bash executable path, supporting Windows Git Bash location if not in PATH.
+    
+    Returns:
+        str: Absolute path to bash.exe or 'bash'.
+    """
+    import shutil
+    bash_path = shutil.which("bash")
+    if bash_path:
+        return bash_path
+    # Windows fallback
+    for path in [
+        r"C:\Program Files\Git\bin\bash.exe",
+        r"C:\Program Files\Git\usr\bin\bash.exe",
+        r"C:\Program Files (x86)\Git\bin\bash.exe",
+    ]:
+        if os.path.exists(path):
+            return path
+    return "bash"
+
+
 def test_slice1_template_directories_exist():
     """Verify that templates/ is partitioned into python/, r/, and docs/ subdirectories."""
     assert os.path.isdir(PYTHON_TEMPLATES), "templates/python directory should exist"
@@ -52,12 +73,12 @@ def test_slice2_readme_template_has_golden_path_workflow():
     assert os.path.isfile(readme_path), "templates/README.md template should exist"
     assert os.path.isfile(workflow_path), "templates/DEVELOPER_WORKFLOW.md template should exist"
     
-    with open(readme_path, "r") as f:
+    with open(readme_path, "r", encoding="utf-8") as f:
         readme_content = f.read()
     assert "Golden Path" in readme_content, "README.md should mention 'Golden Path'"
     assert "DEVELOPER_WORKFLOW.md" in readme_content, "README.md should reference DEVELOPER_WORKFLOW.md"
     
-    with open(workflow_path, "r") as f:
+    with open(workflow_path, "r", encoding="utf-8") as f:
         content = f.read()
     
     assert "Golden Path" in content, "DEVELOPER_WORKFLOW.md should mention 'Golden Path'"
@@ -76,7 +97,7 @@ def test_slice2_agents_template_has_workflow_pointers():
     agents_path = os.path.join(TEMPLATES_DIR, "AGENTS.md")
     assert os.path.isfile(agents_path), "templates/AGENTS.md template should exist"
     
-    with open(agents_path, "r") as f:
+    with open(agents_path, "r", encoding="utf-8") as f:
         content = f.read()
         
     assert "Preferred Workflows" in content, "AGENTS.md should have a Preferred Workflows section"
@@ -91,7 +112,7 @@ def test_slice3_python_project_generation():
     import subprocess
     # Run create-project.sh non-interactively using arguments for this test
     # Args: <destination> <project-name> <project-type> <description>
-    cmd = ["bash", "create-project.sh", dest_dir, "Test-Python-Project", "python", "A testing python project description"]
+    cmd = [get_bash_executable(), "create-project.sh", dest_dir, "Test-Python-Project", "python", "A testing python project description"]
     result = subprocess.run(cmd, capture_output=True, text=True)
     
     assert result.returncode == 0, f"create-project.sh failed: {result.stderr}"
@@ -118,14 +139,14 @@ def test_slice3_python_project_generation():
     assert os.path.isfile(os.path.join(dest_dir, "DEVELOPER_WORKFLOW.md")), "DEVELOPER_WORKFLOW.md should exist"
 
     # Assert placeholder resolution
-    with open(os.path.join(dest_dir, "AGENTS.md"), "r") as f:
+    with open(os.path.join(dest_dir, "AGENTS.md"), "r", encoding="utf-8") as f:
         agents_content = f.read()
     assert "A testing python project description" in agents_content, "Project description placeholder was not replaced"
     assert "Test-Python-Project" in agents_content, "Project name placeholder was not replaced"
     assert "{{PROJECT_DESCRIPTION}}" not in agents_content, "AGENTS.md still contains raw description placeholder"
     assert "{{PROJECT_ROOT}}" not in agents_content, "AGENTS.md still contains raw root placeholder"
 
-    with open(os.path.join(dest_dir, "DEVELOPER_WORKFLOW.md"), "r") as f:
+    with open(os.path.join(dest_dir, "DEVELOPER_WORKFLOW.md"), "r", encoding="utf-8") as f:
         workflow_content = f.read()
     assert "Test-Python-Project" in workflow_content, "Project name placeholder was not replaced in DEVELOPER_WORKFLOW.md"
 
@@ -138,9 +159,13 @@ def test_slice3_python_project_generation():
     import json
     settings_path = os.path.expanduser("~/.gemini/antigravity-cli/settings.json")
     if os.path.isfile(settings_path):
-        with open(settings_path, "r") as f:
+        with open(settings_path, "r", encoding="utf-8") as f:
             data = json.load(f)
-        assert os.path.abspath(dest_dir) in data.get("trustedWorkspaces", []), "Workspace should be auto-registered as trusted"
+        trusted = data.get("trustedWorkspaces", [])
+        import re
+        norm_trusted = [os.path.normpath(re.sub(r'^[\\/]([a-zA-Z])[\\/]', r'\1:\\', p)).lower() for p in trusted]
+        norm_target = os.path.normpath(os.path.abspath(dest_dir)).lower()
+        assert norm_target in norm_trusted, "Workspace should be auto-registered as trusted"
 
     # Clean up
     if os.path.exists(dest_dir):
@@ -153,7 +178,7 @@ def test_slice3_r_project_generation():
         shutil.rmtree(dest_dir)
         
     import subprocess
-    cmd = ["bash", "create-project.sh", dest_dir, "Test-R-Project", "r", "A testing R project description"]
+    cmd = [get_bash_executable(), "create-project.sh", dest_dir, "Test-R-Project", "r", "A testing R project description"]
     result = subprocess.run(cmd, capture_output=True, text=True)
     
     assert result.returncode == 0, f"create-project.sh failed: {result.stderr}"
@@ -167,7 +192,7 @@ def test_slice3_r_project_generation():
     assert not os.path.isfile(os.path.join(dest_dir, "tests", "test_smoke.py")), "test_smoke.py should NOT exist in R project"
     
     # Assert placeholder resolution
-    with open(os.path.join(dest_dir, "DESCRIPTION"), "r") as f:
+    with open(os.path.join(dest_dir, "DESCRIPTION"), "r", encoding="utf-8") as f:
         desc_content = f.read()
     assert "Test-R-Project" in desc_content, "Project name placeholder not resolved in DESCRIPTION"
     assert "{{PROJECT_NAME}}" not in desc_content, "DESCRIPTION still contains raw name placeholder"
@@ -178,8 +203,14 @@ def test_slice3_r_project_generation():
 
 def test_slice6_global_harness_sync():
     """Verify that setup-global-harness.sh can backup local configs, seed Google Drive, and establish symlinks."""
-    mock_home = os.path.abspath("scratch/mock_home")
-    mock_gdrive = os.path.abspath("scratch/mock_gdrive")
+    import tempfile
+    if os.name == 'nt':
+        # Use system temp directory (NTFS) to bypass Google Drive VFAT symlink limitations
+        mock_home = os.path.join(tempfile.gettempdir(), f"mock_home_{os.getpid()}")
+        mock_gdrive = os.path.join(tempfile.gettempdir(), f"mock_gdrive_{os.getpid()}")
+    else:
+        mock_home = os.path.abspath("scratch/mock_home")
+        mock_gdrive = os.path.abspath("scratch/mock_gdrive")
     
     # Cleanup previous runs
     for path in [mock_home, mock_gdrive]:
@@ -196,20 +227,20 @@ def test_slice6_global_harness_sync():
     local_agents = os.path.join(local_gemini, "AGENTS.md")
     local_gemini_md = os.path.join(local_gemini, "GEMINI.md")
     
-    with open(local_settings, "w") as f:
+    with open(local_settings, "w", encoding="utf-8") as f:
         f.write('{"colorScheme": "dark"}')
-    with open(local_agents, "w") as f:
+    with open(local_agents, "w", encoding="utf-8") as f:
         f.write("# Local AGENTS")
-    with open(local_gemini_md, "w") as f:
+    with open(local_gemini_md, "w", encoding="utf-8") as f:
         f.write("# Local GEMINI")
         
     os.makedirs(os.path.join(local_gemini, "antigravity", "skills", "test-skill"))
-    with open(os.path.join(local_gemini, "antigravity", "skills", "test-skill", "SKILL.md"), "w") as f:
+    with open(os.path.join(local_gemini, "antigravity", "skills", "test-skill", "SKILL.md"), "w", encoding="utf-8") as f:
         f.write("test skill content")
         
     # Execute setup-global-harness.sh with mock envs
     import subprocess
-    cmd = ["bash", "setup-global-harness.sh"]
+    cmd = [get_bash_executable(), "setup-global-harness.sh"]
     env = os.environ.copy()
     env["MOCK_HOME"] = mock_home
     env["MOCK_GDRIVE"] = mock_gdrive
@@ -256,7 +287,7 @@ def test_harness_upgrader():
     if os.path.exists(dest_dir):
         shutil.rmtree(dest_dir)
         
-    cmd = ["bash", "create-project.sh", dest_dir, "Test-Upgrade-Project", "python", "Upgrade testing project"]
+    cmd = [get_bash_executable(), "create-project.sh", dest_dir, "Test-Upgrade-Project", "python", "Upgrade testing project"]
     res = subprocess.run(cmd, capture_output=True, text=True)
     assert res.returncode == 0
     
@@ -272,60 +303,60 @@ def test_harness_upgrader():
     try:
         # A. TEST --push (Template -> Downstream)
         # Modify the core template
-        with open(core_init_sh, "a") as f:
+        with open(core_init_sh, "a", encoding="utf-8") as f:
             f.write("\n# core testing modification\n")
             
         # Run upgrade-project.sh in push mode
-        upgrade_cmd = ["bash", "upgrade-project.sh", "--push", "-y", dest_dir]
+        upgrade_cmd = [get_bash_executable(), "upgrade-project.sh", "--push", "-y", dest_dir]
         res_push = subprocess.run(upgrade_cmd, capture_output=True, text=True)
         assert res_push.returncode == 0, f"Push failed: {res_push.stderr}\nStdout: {res_push.stdout}"
         
         # Verify target is updated
-        with open(os.path.join(dest_dir, "init.sh"), "r") as f:
+        with open(os.path.join(dest_dir, "init.sh"), "r", encoding="utf-8") as f:
             target_content = f.read()
         assert "core testing modification" in target_content, "Push mode did not update downstream target file"
         
         # B. TEST --pull (Downstream -> Template)
         # Modify the downstream target
-        with open(os.path.join(dest_dir, "init.sh"), "a") as f:
+        with open(os.path.join(dest_dir, "init.sh"), "a", encoding="utf-8") as f:
             f.write("\n# downstream testing optimization\n")
             
         # Run upgrade-project.sh in pull mode
-        pull_cmd = ["bash", "upgrade-project.sh", "--pull", "-y", dest_dir]
+        pull_cmd = [get_bash_executable(), "upgrade-project.sh", "--pull", "-y", dest_dir]
         res_pull = subprocess.run(pull_cmd, capture_output=True, text=True)
         assert res_pull.returncode == 0, f"Pull failed: {res_pull.stderr}\nStdout: {res_pull.stdout}"
         
         # Verify template is updated with the downstream modification
-        with open(core_init_sh, "r") as f:
+        with open(core_init_sh, "r", encoding="utf-8") as f:
             template_content = f.read()
         assert "downstream testing optimization" in template_content, "Pull mode did not update core template file"
         
         # C. TEST PLACEHOLDERS IN --push and --pull
         # Modify the template file with placeholders
-        with open(core_agents_md, "a") as f:
+        with open(core_agents_md, "a", encoding="utf-8") as f:
             f.write("\n# new guideline for {{PROJECT_NAME}}\n")
             
         # Push to downstream
-        res_push_placeholder = subprocess.run(["bash", "upgrade-project.sh", "--push", "-y", dest_dir], capture_output=True, text=True)
+        res_push_placeholder = subprocess.run([get_bash_executable(), "upgrade-project.sh", "--push", "-y", dest_dir], capture_output=True, text=True)
         assert res_push_placeholder.returncode == 0, f"Push placeholder failed: {res_push_placeholder.stderr}"
         
         # Assert downstream file resolved the placeholder
-        with open(os.path.join(dest_dir, "AGENTS.md"), "r") as f:
+        with open(os.path.join(dest_dir, "AGENTS.md"), "r", encoding="utf-8") as f:
             target_agents_content = f.read()
         assert "new guideline for Test-Upgrade-Project" in target_agents_content, "Pushing placeholder file did not resolve parameters"
         assert "{{PROJECT_NAME}}" not in target_agents_content, "Pushing placeholder file left raw placeholder in target"
         
         # Modify downstream to optimize the new guidelines
         updated_agents = target_agents_content.replace("new guideline for Test-Upgrade-Project", "optimal rule for Test-Upgrade-Project")
-        with open(os.path.join(dest_dir, "AGENTS.md"), "w") as f:
+        with open(os.path.join(dest_dir, "AGENTS.md"), "w", encoding="utf-8") as f:
             f.write(updated_agents)
             
         # Pull back to templates
-        res_pull_placeholder = subprocess.run(["bash", "upgrade-project.sh", "--pull", "-y", dest_dir], capture_output=True, text=True)
+        res_pull_placeholder = subprocess.run([get_bash_executable(), "upgrade-project.sh", "--pull", "-y", dest_dir], capture_output=True, text=True)
         assert res_pull_placeholder.returncode == 0, f"Pull placeholder failed: {res_pull_placeholder.stderr}\nStdout: {res_pull_placeholder.stdout}"
         
         # Assert template file pulled the optimization and RESTORED the placeholder
-        with open(core_agents_md, "r") as f:
+        with open(core_agents_md, "r", encoding="utf-8") as f:
             template_agents_content = f.read()
         assert "optimal rule for {{PROJECT_NAME}}" in template_agents_content, "Pulling optimized file did not restore the placeholder in templates"
         assert "Test-Upgrade-Project" not in template_agents_content, "Pulling optimized file leaked target project name into templates"
@@ -340,6 +371,92 @@ def test_harness_upgrader():
         # Clean up target
         if os.path.exists(dest_dir):
             shutil.rmtree(dest_dir)
+
+
+def test_slice6_global_harness_sync_windows_preflight_success():
+    """Verify that setup-global-harness.sh behaves correctly on Windows when the pre-flight check confirms Developer Mode is active (no elevation needed)."""
+    import tempfile
+    import subprocess
+    
+    mock_home = os.path.join(tempfile.gettempdir(), f"mock_home_pref_succ_{os.getpid()}")
+    mock_gdrive = os.path.join(tempfile.gettempdir(), f"mock_gdrive_pref_succ_{os.getpid()}")
+    
+    # Cleanup previous runs
+    for path in [mock_home, mock_gdrive]:
+        if os.path.exists(path):
+            shutil.rmtree(path)
+            
+    # Setup initial local home structure
+    local_gemini = os.path.join(mock_home, ".gemini")
+    os.makedirs(os.path.join(local_gemini, "antigravity-cli"))
+    os.makedirs(os.path.join(local_gemini, "antigravity"))
+    
+    # Write initial settings.json to seed
+    local_settings = os.path.join(local_gemini, "antigravity-cli", "settings.json")
+    with open(local_settings, "w", encoding="utf-8") as f:
+        f.write('{"colorScheme": "dark"}')
+        
+    cmd = [get_bash_executable(), "setup-global-harness.sh"]
+    env = os.environ.copy()
+    env["MOCK_HOME"] = mock_home
+    env["MOCK_GDRIVE"] = mock_gdrive
+    # Mock pre-flight symlink capability to return success directly
+    env["MOCK_SYMLINK_CAPABILITY"] = "true"
+    
+    result = subprocess.run(cmd, capture_output=True, text=True, env=env)
+    assert result.returncode == 0, f"Sync script failed: {result.stderr}\nStdout: {result.stdout}"
+    
+    # Verify symlink is successfully established (meaning the pre-flight success pathway successfully completed)
+    assert os.path.islink(local_settings), "Local settings.json should be a symlink in the pre-flight success path"
+    
+    # Clean up
+    for path in [mock_home, mock_gdrive]:
+        if os.path.exists(path):
+            shutil.rmtree(path)
+
+
+def test_slice6_global_harness_sync_windows_preflight_fail_elevated_success():
+    """Verify that setup-global-harness.sh behaves correctly on Windows when the pre-flight check fails but elevation is mock-accepted and successfully creates symlinks."""
+    import tempfile
+    import subprocess
+    
+    mock_home = os.path.join(tempfile.gettempdir(), f"mock_home_pref_fail_{os.getpid()}")
+    mock_gdrive = os.path.join(tempfile.gettempdir(), f"mock_gdrive_pref_fail_{os.getpid()}")
+    
+    # Cleanup previous runs
+    for path in [mock_home, mock_gdrive]:
+        if os.path.exists(path):
+            shutil.rmtree(path)
+            
+    # Setup initial local home structure
+    local_gemini = os.path.join(mock_home, ".gemini")
+    os.makedirs(os.path.join(local_gemini, "antigravity-cli"))
+    os.makedirs(os.path.join(local_gemini, "antigravity"))
+    
+    # Write initial settings.json to seed
+    local_settings = os.path.join(local_gemini, "antigravity-cli", "settings.json")
+    with open(local_settings, "w", encoding="utf-8") as f:
+        f.write('{"colorScheme": "dark"}')
+        
+    cmd = [get_bash_executable(), "setup-global-harness.sh"]
+    env = os.environ.copy()
+    env["MOCK_HOME"] = mock_home
+    env["MOCK_GDRIVE"] = mock_gdrive
+    # Mock pre-flight symlink capability to fail (simulating no Developer Mode / no admin)
+    env["MOCK_SYMLINK_CAPABILITY"] = "false"
+    # Mock elevation to run direct non-admin batch for testing
+    env["MOCK_ELEVATION_MOCK"] = "true"
+    
+    result = subprocess.run(cmd, capture_output=True, text=True, env=env)
+    
+    # Since mock elevation runs on NTFS temp directory base, the batch script should successfully create the symlinks!
+    assert result.returncode == 0, f"Sync script failed: {result.stderr}\nStdout: {result.stdout}"
+    assert os.path.islink(local_settings), "Local settings.json should be successfully created via the elevated mock path"
+    
+    # Clean up
+    for path in [mock_home, mock_gdrive]:
+        if os.path.exists(path):
+            shutil.rmtree(path)
 
 
 

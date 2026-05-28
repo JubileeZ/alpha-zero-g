@@ -89,9 +89,12 @@ Establish a high-performance, deterministic developer harness for analytics, mod
 24. **Cross-Platform Windows Desktop Setup and Automated Configuration Sync (2026-05-28):**
   - Upgraded `init.sh` to dynamically detect if `.venv` is broken or OS-mismatched (e.g. from cross-device Google Drive sync) and automatically recreate it.
   - Added dynamic virtual environment activation (`.venv/Scripts/activate` on Windows, `.venv/bin/activate` on Unix).
-  - Modified `setup-global-harness.sh` to detect Windows MINGW/MSYS and use native directory junctions (`mklink /j`), allowing standard non-admin users to sync settings and skills without privilege errors.
-  - Enhanced `setup-global-harness.sh` to automatically manage the `~/.gemini/config/` directory. It now creates, seeds (`config.json` with AI Credits enabled, empty `mcp_config.json`), and robustly symlinks configuration files to Google Drive, ensuring new devices automatically sync credits and configurations out of the box.
-  - Verified and successfully ran `init.sh` and `setup-global-harness.sh` on the Windows desktop, creating a pristine synced setup.
+  - Enhanced `setup-global-harness.sh` to automatically manage the `~/.gemini/config/` directory. It now creates, seeds (`config.json` with AI Credits enabled, empty `mcp_config.json`), and robustly symlinks configuration files to Google Drive.
+  - **Discovered Google Drive VFAT Constraint & Solved via Developer Mode**: Discovered that since the Google Drive virtual stream is mounted as a `vfat` (FAT32) filesystem, Windows directory junctions (`mklink /j`) fail with `Local NTFS volumes are required`. Solved by updating the synchronization script to use native symbolic links (`mklink /d` and `mklink`) under Windows Developer Mode.
+  - Stripped trailing carriage returns (`\r`) from `cygpath` results to prevent command truncation in Git Bash.
+  - Verified and successfully ran `init.sh` and `setup-global-harness.sh` on the Windows desktop, creating a pristine, fully synchronized cross-device setup.
+  - **Completed Zero-Touch Windows Setup Automation (2026-05-28)**: Designed and implemented a frictionless symlink strategy. Section 5 now performs an on-the-fly pre-flight test. If the host lacks native symlink capability (Developer Mode disabled / non-admin), it dynamically generates an elevated batch script (`AllowDevelopmentWithoutDevLicense = 1` registry enablement + `mklink` / `mklink /d` commands) and executes it in a single UAC session via PowerShell. Once Developer Mode is active, all subsequent sync commands work with zero elevation.
+  - **Cross-Platform Test Coverage & UTF-8 I/O Resolution**: Fixed standard `open()` CP1252 decoding failures on Windows by explicitly forcing UTF-8 file encodings. Resolved hardcoded `bash` environment execution paths in subprocesses to dynamically locate Git Bash. Extended `test_harness_bootstrap.py` with mock environments validating the pre-flight checks, bypass temp dir pathing, and UAC elevation branch. Achieved a 100% clean, green 12/12 passing test suite on Windows.
 
 ---
 
