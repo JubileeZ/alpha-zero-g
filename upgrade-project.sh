@@ -122,15 +122,14 @@ FILES_TO_SYNC=(
     ".agents/hooks.json:.agents/hooks.json:false"
     "templates/DEVELOPER_WORKFLOW.md:DEVELOPER_WORKFLOW.md:true"
     "templates/AGENTS.md:AGENTS.md:true"
-    "docs/architecture.md:docs/architecture.md:false"
-    "docs/quality.md:docs/quality.md:false"
+    "templates/docs/architecture.md:docs/architecture.md:true"
+    "templates/docs/quality-hybrid.md:docs/quality.md:true"
     "templates/docs/CONTEXT-FORMAT.md:docs/CONTEXT-FORMAT.md:false"
     "templates/docs/ADR-FORMAT.md:docs/ADR-FORMAT.md:false"
     "templates/docs/adr/0000-adr-template.md:docs/adr/0000-adr-template.md:false"
-    "docs/adr/0001-dynamic-bootstrapping.md:docs/adr/0001-dynamic-bootstrapping.md:false"
-    "docs/adr/0002-automated-project-scaffolder.md:docs/adr/0002-automated-project-scaffolder.md:false"
-    "docs/adr/0003-bidirectional-harness-upgrader.md:docs/adr/0003-bidirectional-harness-upgrader.md:false"
+    "templates/docs/adr/OPEN_DECISIONS.md:docs/adr/OPEN_DECISIONS.md:true"
 )
+
 
 # Discovery helper for placeholders
 get_parameter_values() {

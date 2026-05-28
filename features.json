@@ -52,6 +52,24 @@
     "feature": "Bidirectional Harness Upgrader",
     "description": "Implement upgrade-project.sh to push templates or pull local optimizations bidirectionally with diffs and safe placeholder mappings.",
     "passes": true
+  },
+  {
+    "id": "F-10",
+    "feature": "Caveman Mode — Global Session Default",
+    "description": "Added Communication Style section to ~/.gemini/GEMINI.md. Caveman activates at every session start automatically. User deactivates with 'stop caveman' or 'normal mode'.",
+    "passes": true
+  },
+  {
+    "id": "F-11",
+    "feature": "Handoff Skill — In-Place Doc Update",
+    "description": "Redesigned /handoff skill to update living project docs (progress.md, beliefs.md, MODEL_NOTES.md, features.json) in-place rather than writing a temp file. Session context stays version-controlled.",
+    "passes": true
+  },
+  {
+    "id": "F-12",
+    "feature": "Clean Editable Install (pyproject.toml)",
+    "description": "Added [tool.setuptools.packages.find] exclude list for scratch*, templates*, tests*, docs*. init.sh now passes with zero build errors.",
+    "passes": true
   }
 ]
 

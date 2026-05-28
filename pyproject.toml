@@ -36,6 +36,9 @@ target-version = "py312"
 select = ["E", "F", "W", "I", "N"]
 ignore = []
 
+[tool.setuptools.packages.find]
+exclude = ["scratch*", "templates*", "tests*", "docs*"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 python_files = ["test_*.py"]

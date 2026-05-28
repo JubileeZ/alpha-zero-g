@@ -26,8 +26,19 @@ Non-trivial, hard-to-reverse architectural decisions are captured as separate, i
 
 | ADR ID | Decision Title | Status | Date | File Link |
 |---|---|---|---|---|
-| **ADR-0001** | Dynamic R & Python Environment Bootstrapping | `accepted` | 2026-05-20 | [0001-dynamic-bootstrapping.md](file:///Users/jubilee/Library/CloudStorage/GoogleDrive-z.jubilee.z@gmail.com/My%20Drive/Projects/Alpha-Zero-G/docs/adr/0001-dynamic-bootstrapping.md) |
-| **ADR-0002** | Automated Project Scaffolder and Parameterizer | `accepted` | 2026-05-25 | [0002-automated-project-scaffolder.md](file:///Users/jubilee/Library/CloudStorage/GoogleDrive-z.jubilee.z@gmail.com/My%20Drive/Projects/Alpha-Zero-G/docs/adr/0002-automated-project-scaffolder.md) |
-| **ADR-0003** | Bidirectional Harness Upgrader Utility | `accepted` | 2026-05-28 | [0003-bidirectional-harness-upgrader.md](file:///Users/jubilee/Library/CloudStorage/GoogleDrive-z.jubilee.z@gmail.com/My%20Drive/Projects/Alpha-Zero-G/docs/adr/0003-bidirectional-harness-upgrader.md) |
+| **ADR-0001** | Dynamic R & Python Environment Bootstrapping | `accepted` | 2026-05-20 | [0001-dynamic-bootstrapping.md](file:///Users/jubilee/Library/CloudStorage/GoogleDrive-z.jubilee.z@gmail.com/My%20Drive/Projects/Alpha-Zero-G/docs/adr/harness/0001-dynamic-bootstrapping.md) |
+| **ADR-0002** | Automated Project Scaffolder and Parameterizer | `accepted` | 2026-05-25 | [0002-automated-project-scaffolder.md](file:///Users/jubilee/Library/CloudStorage/GoogleDrive-z.jubilee.z@gmail.com/My%20Drive/Projects/Alpha-Zero-G/docs/adr/harness/0002-automated-project-scaffolder.md) |
+| **ADR-0003** | Bidirectional Harness Upgrader Utility | `accepted` | 2026-05-28 | [0003-bidirectional-harness-upgrader.md](file:///Users/jubilee/Library/CloudStorage/GoogleDrive-z.jubilee.z@gmail.com/My%20Drive/Projects/Alpha-Zero-G/docs/adr/harness/0003-bidirectional-harness-upgrader.md) |
+
+---
+
+## 3. Session Conventions & UX Beliefs
+
+### Caveman-as-Default → Token Budget
+Long sessions fill context fast. Default caveman mode (~75% token reduction) is now baked into `~/.gemini/GEMINI.md`. Belief: terse-by-default beats verbose-by-default for developer-agent workflows. User opt-out via "stop caveman".
+
+### Handoff = In-Place Doc Update, Not Temp File
+Writing a handoff to `/tmp` loses it on reboot and breaks version control continuity. Belief: `/handoff` should mutate the project's living docs (`progress.md`, `beliefs.md`, `features.json`) directly — same repo, same git history, same diff trail.
+
 
 

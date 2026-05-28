@@ -78,16 +78,25 @@ cp templates/init.sh "${PROJECT_ROOT_ABS}/init.sh"
 cp .agents/hooks.json "${PROJECT_ROOT_ABS}/.agents/hooks.json"
 
 # 3. Copy standard system docs & templates
-cp docs/architecture.md "${PROJECT_ROOT_ABS}/docs/architecture.md"
-cp docs/beliefs.md "${PROJECT_ROOT_ABS}/docs/beliefs.md"
-cp docs/quality.md "${PROJECT_ROOT_ABS}/docs/quality.md"
+cp templates/docs/architecture.md "${PROJECT_ROOT_ABS}/docs/architecture.md"
+cp templates/docs/beliefs.md "${PROJECT_ROOT_ABS}/docs/beliefs.md"
 cp docs/DATA_DICT.md "${PROJECT_ROOT_ABS}/docs/DATA_DICT.md"
 cp docs/MODEL_NOTES.md "${PROJECT_ROOT_ABS}/docs/MODEL_NOTES.md"
-cp docs/adr/0001-dynamic-bootstrapping.md "${PROJECT_ROOT_ABS}/docs/adr/0001-dynamic-bootstrapping.md"
-cp docs/adr/0002-automated-project-scaffolder.md "${PROJECT_ROOT_ABS}/docs/adr/0002-automated-project-scaffolder.md"
 cp templates/docs/CONTEXT-FORMAT.md "${PROJECT_ROOT_ABS}/docs/CONTEXT-FORMAT.md"
 cp templates/docs/ADR-FORMAT.md "${PROJECT_ROOT_ABS}/docs/ADR-FORMAT.md"
 cp templates/docs/adr/0000-adr-template.md "${PROJECT_ROOT_ABS}/docs/adr/0000-adr-template.md"
+cp templates/docs/adr/OPEN_DECISIONS.md "${PROJECT_ROOT_ABS}/docs/adr/OPEN_DECISIONS.md"
+
+# 3b. Select language-specific quality template
+echo -e "3b. Selecting quality template for project type: ${PROJECT_TYPE}..."
+if [ "${PROJECT_TYPE}" = "python" ]; then
+    cp templates/docs/quality-python.md "${PROJECT_ROOT_ABS}/docs/quality.md"
+elif [ "${PROJECT_TYPE}" = "r" ]; then
+    cp templates/docs/quality-r.md "${PROJECT_ROOT_ABS}/docs/quality.md"
+else
+    cp templates/docs/quality-hybrid.md "${PROJECT_ROOT_ABS}/docs/quality.md"
+fi
+
 cp .gitignore "${PROJECT_ROOT_ABS}/.gitignore"
 cp LICENSE "${PROJECT_ROOT_ABS}/LICENSE"
 
@@ -128,6 +137,10 @@ replace_placeholders "${PROJECT_ROOT_ABS}/CONTEXT.md"
 replace_placeholders "${PROJECT_ROOT_ABS}/progress.md"
 replace_placeholders "${PROJECT_ROOT_ABS}/README.md"
 replace_placeholders "${PROJECT_ROOT_ABS}/DEVELOPER_WORKFLOW.md"
+replace_placeholders "${PROJECT_ROOT_ABS}/docs/architecture.md"
+replace_placeholders "${PROJECT_ROOT_ABS}/docs/beliefs.md"
+replace_placeholders "${PROJECT_ROOT_ABS}/docs/quality.md"
+replace_placeholders "${PROJECT_ROOT_ABS}/docs/adr/OPEN_DECISIONS.md"
 if [ -f "${PROJECT_ROOT_ABS}/pyproject.toml" ]; then
     replace_placeholders "${PROJECT_ROOT_ABS}/pyproject.toml"
 fi
