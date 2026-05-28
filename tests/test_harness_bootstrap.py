@@ -112,6 +112,8 @@ def test_slice3_python_project_generation():
     assert os.path.isfile(os.path.join(dest_dir, "docs", "CONTEXT-FORMAT.md")), "CONTEXT-FORMAT.md should exist"
     assert os.path.isfile(os.path.join(dest_dir, "docs", "ADR-FORMAT.md")), "ADR-FORMAT.md should exist"
     assert os.path.isfile(os.path.join(dest_dir, "docs", "adr", "0000-adr-template.md")), "0000-adr-template.md should exist"
+    assert os.path.isfile(os.path.join(dest_dir, "docs", "adr", "0001-dynamic-bootstrapping.md")), "0001-dynamic-bootstrapping.md should exist"
+    assert os.path.isfile(os.path.join(dest_dir, "docs", "adr", "0002-automated-project-scaffolder.md")), "0002-automated-project-scaffolder.md should exist"
     assert os.path.isfile(os.path.join(dest_dir, "DEVELOPER_WORKFLOW.md")), "DEVELOPER_WORKFLOW.md should exist"
 
     # Assert placeholder resolution
