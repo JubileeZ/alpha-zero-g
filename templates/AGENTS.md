@@ -24,7 +24,7 @@ This file is the primary entry point and cognitive map for AI agents working in 
 
 ## Preferred Workflows
 
-For any analytical, modeling, or coding task taking longer than 30 minutes, you MUST follow the **Golden Path Developer Workflow** documented in [README.md](file:///{{PROJECT_ROOT}}/README.md):
+For any analytical, modeling, or coding task taking longer than 30 minutes, you MUST follow the **Golden Path Developer Workflow** documented in [DEVELOPER_WORKFLOW.md](file:///{{PROJECT_ROOT}}/DEVELOPER_WORKFLOW.md):
 1. **Boot:** Run `bash init.sh` immediately at session start.
 2. **Grill:** Invoke `/grill-with-docs` (general logic) or `/grill-analytics` (data/stats audits) to refine domain terms in `CONTEXT.md` and ADRs.
 3. **Spec:** Invoke `/spec-model` to compile a formal design spec in `docs/design/` or `docs/MODEL_NOTES.md`.

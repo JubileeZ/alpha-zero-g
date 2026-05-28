@@ -45,23 +45,31 @@ def test_slice1_doc_templates_present():
     assert os.path.isfile(adr_template), "docs adr/0000-adr-template.md template should exist"
 
 def test_slice2_readme_template_has_golden_path_workflow():
-    """Verify that templates/README.md contains the Golden Path workflow descriptions."""
+    """Verify that templates/README.md and templates/DEVELOPER_WORKFLOW.md exist and contain the Golden Path descriptions."""
     readme_path = os.path.join(TEMPLATES_DIR, "README.md")
+    workflow_path = os.path.join(TEMPLATES_DIR, "DEVELOPER_WORKFLOW.md")
+    
     assert os.path.isfile(readme_path), "templates/README.md template should exist"
+    assert os.path.isfile(workflow_path), "templates/DEVELOPER_WORKFLOW.md template should exist"
     
     with open(readme_path, "r") as f:
+        readme_content = f.read()
+    assert "Golden Path" in readme_content, "README.md should mention 'Golden Path'"
+    assert "DEVELOPER_WORKFLOW.md" in readme_content, "README.md should reference DEVELOPER_WORKFLOW.md"
+    
+    with open(workflow_path, "r") as f:
         content = f.read()
     
-    assert "Golden Path" in content, "README.md should mention 'Golden Path'"
+    assert "Golden Path" in content, "DEVELOPER_WORKFLOW.md should mention 'Golden Path'"
     
     content_upper = content.upper()
-    assert "GRILL" in content_upper, "README.md should mention 'Grill'"
-    assert "SPEC" in content_upper, "README.md should mention 'Spec'"
-    assert "SLICE" in content_upper, "README.md should mention 'Slice'"
-    assert "SHIP" in content_upper, "README.md should mention 'Ship'"
-    assert "VERIFY" in content_upper, "README.md should mention 'Verify'"
-    assert "REFACTOR" in content_upper, "README.md should mention 'Refactor'"
-    assert "HANDOFF" in content_upper, "README.md should mention 'Handoff'"
+    assert "GRILL" in content_upper, "DEVELOPER_WORKFLOW.md should mention 'Grill'"
+    assert "SPEC" in content_upper, "DEVELOPER_WORKFLOW.md should mention 'Spec'"
+    assert "SLICE" in content_upper, "DEVELOPER_WORKFLOW.md should mention 'Slice'"
+    assert "SHIP" in content_upper, "DEVELOPER_WORKFLOW.md should mention 'Ship'"
+    assert "VERIFY" in content_upper, "DEVELOPER_WORKFLOW.md should mention 'Verify'"
+    assert "REFACTOR" in content_upper, "DEVELOPER_WORKFLOW.md should mention 'Refactor'"
+    assert "HANDOFF" in content_upper, "DEVELOPER_WORKFLOW.md should mention 'Handoff'"
 
 def test_slice2_agents_template_has_workflow_pointers():
     """Verify that templates/AGENTS.md contains pointers to the workflow."""
@@ -100,10 +108,11 @@ def test_slice3_python_project_generation():
     assert not os.path.isfile(os.path.join(dest_dir, "DESCRIPTION")), "DESCRIPTION should NOT exist in a Python project"
     assert not os.path.isfile(os.path.join(dest_dir, "src", "smoke.R")), "smoke.R should NOT exist in a Python project"
     
-    # Assert glossary and ADR format copied
+    # Assert glossary, workflow, and ADR format copied
     assert os.path.isfile(os.path.join(dest_dir, "docs", "CONTEXT-FORMAT.md")), "CONTEXT-FORMAT.md should exist"
     assert os.path.isfile(os.path.join(dest_dir, "docs", "ADR-FORMAT.md")), "ADR-FORMAT.md should exist"
     assert os.path.isfile(os.path.join(dest_dir, "docs", "adr", "0000-adr-template.md")), "0000-adr-template.md should exist"
+    assert os.path.isfile(os.path.join(dest_dir, "DEVELOPER_WORKFLOW.md")), "DEVELOPER_WORKFLOW.md should exist"
 
     # Assert placeholder resolution
     with open(os.path.join(dest_dir, "AGENTS.md"), "r") as f:
@@ -112,6 +121,10 @@ def test_slice3_python_project_generation():
     assert "Test-Python-Project" in agents_content, "Project name placeholder was not replaced"
     assert "{{PROJECT_DESCRIPTION}}" not in agents_content, "AGENTS.md still contains raw description placeholder"
     assert "{{PROJECT_ROOT}}" not in agents_content, "AGENTS.md still contains raw root placeholder"
+
+    with open(os.path.join(dest_dir, "DEVELOPER_WORKFLOW.md"), "r") as f:
+        workflow_content = f.read()
+    assert "Test-Python-Project" in workflow_content, "Project name placeholder was not replaced in DEVELOPER_WORKFLOW.md"
 
     # Assert Git initialization and baseline commit (Slice 4)
     assert os.path.isdir(os.path.join(dest_dir, ".git")), "Git repository should be initialized"

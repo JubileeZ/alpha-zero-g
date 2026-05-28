@@ -64,6 +64,7 @@ Establish a high-performance, deterministic developer harness for analytics, mod
 12. **User-First Setup & Agent-First Run Completed:** Refactored `create-project.sh` to be fully interactive, prompt-driven, and selective. New workspaces automatically register in global settings and initialize Git. Standard templates for glossaries, design, and ADRs are auto-deployed.
 13. **Cross-Device Sync Complete:** Implemented `setup-global-harness.sh` to automatically detect Google Drive stream paths on macOS and Windows and establish secure symlinks for settings, rules, and global skills.
 14. **TDD Validation Green:** Developed an integration-style test suite in `tests/test_harness_bootstrap.py` validating all generator and sync functionalities with 100% test coverage.
+15. **ADR & Golden Path Layout Standardized:** Successfully conducted an interactive `/grill-me` session to establish two distinct memory layers: `docs/beliefs.md` for fast, volatile working memory and `docs/adr/` for immutable, long-term architectural decision records. Created `docs/adr/0001-dynamic-bootstrapping.md` and `docs/adr/0002-automated-project-scaffolder.md` and updated `beliefs.md` with links. Embedded the full Golden Path workflow into this project's main `README.md`, while cleaning the downstream templates to utilize a dedicated `DEVELOPER_WORKFLOW.md` copied at creation time, verified by 100% passing tests.
 
 ---
 

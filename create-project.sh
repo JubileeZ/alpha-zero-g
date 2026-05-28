@@ -73,6 +73,7 @@ cp templates/CONTEXT.md "${PROJECT_ROOT_ABS}/CONTEXT.md"
 cp templates/progress.md "${PROJECT_ROOT_ABS}/progress.md"
 cp templates/features.json "${PROJECT_ROOT_ABS}/features.json"
 cp templates/README.md "${PROJECT_ROOT_ABS}/README.md"
+cp templates/DEVELOPER_WORKFLOW.md "${PROJECT_ROOT_ABS}/DEVELOPER_WORKFLOW.md"
 cp templates/init.sh "${PROJECT_ROOT_ABS}/init.sh"
 cp .agents/hooks.json "${PROJECT_ROOT_ABS}/.agents/hooks.json"
 
@@ -124,6 +125,7 @@ replace_placeholders "${PROJECT_ROOT_ABS}/AGENTS.md"
 replace_placeholders "${PROJECT_ROOT_ABS}/CONTEXT.md"
 replace_placeholders "${PROJECT_ROOT_ABS}/progress.md"
 replace_placeholders "${PROJECT_ROOT_ABS}/README.md"
+replace_placeholders "${PROJECT_ROOT_ABS}/DEVELOPER_WORKFLOW.md"
 if [ -f "${PROJECT_ROOT_ABS}/pyproject.toml" ]; then
     replace_placeholders "${PROJECT_ROOT_ABS}/pyproject.toml"
 fi
