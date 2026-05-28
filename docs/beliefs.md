@@ -26,9 +26,10 @@ Non-trivial, hard-to-reverse architectural decisions are captured as separate, i
 
 | ADR ID | Decision Title | Status | Date | File Link |
 |---|---|---|---|---|
-| **ADR-0001** | Dynamic R & Python Environment Bootstrapping | `accepted` | 2026-05-20 | [0001-dynamic-bootstrapping.md](file:///Users/jubilee/Library/CloudStorage/GoogleDrive-z.jubilee.z@gmail.com/My%20Drive/Projects/Alpha-Zero-G/docs/adr/harness/0001-dynamic-bootstrapping.md) |
-| **ADR-0002** | Automated Project Scaffolder and Parameterizer | `accepted` | 2026-05-25 | [0002-automated-project-scaffolder.md](file:///Users/jubilee/Library/CloudStorage/GoogleDrive-z.jubilee.z@gmail.com/My%20Drive/Projects/Alpha-Zero-G/docs/adr/harness/0002-automated-project-scaffolder.md) |
-| **ADR-0003** | Bidirectional Harness Upgrader Utility | `accepted` | 2026-05-28 | [0003-bidirectional-harness-upgrader.md](file:///Users/jubilee/Library/CloudStorage/GoogleDrive-z.jubilee.z@gmail.com/My%20Drive/Projects/Alpha-Zero-G/docs/adr/harness/0003-bidirectional-harness-upgrader.md) |
+| **ADR-0001** | Dynamic R & Python Environment Bootstrapping | `accepted` | 2026-05-20 | [0001-dynamic-bootstrapping.md](adr/harness/0001-dynamic-bootstrapping.md) |
+| **ADR-0002** | Automated Project Scaffolder and Parameterizer | `accepted` | 2026-05-25 | [0002-automated-project-scaffolder.md](adr/harness/0002-automated-project-scaffolder.md) |
+| **ADR-0003** | Bidirectional Harness Upgrader Utility | `accepted` | 2026-05-28 | [0003-bidirectional-harness-upgrader.md](adr/harness/0003-bidirectional-harness-upgrader.md) |
+| **ADR-0004** | Cross-Platform Environment Seeding & Non-Privileged Symlinks | `accepted` | 2026-05-28 | [0004-cross-platform-config-junctions.md](adr/harness/0004-cross-platform-config-junctions.md) |
 
 ---
 
