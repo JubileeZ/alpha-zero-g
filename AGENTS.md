@@ -50,6 +50,7 @@ For any analytical, modeling, or coding task taking longer than 30 minutes, you 
   - Log model assumptions or backtest performance metrics in `docs/MODEL_NOTES.md`.
   - Keep `README.md` updated if directory layouts, bootstrapping steps, or main features change.
 - **R Requirements:** Any new R function must include Roxygen2 comments and adhere to tidyverse conventions.
+- **Write ADRs:** When making a hard-to-reverse architectural decision, write an ADR in `docs/adr/` using the next sequential ID (format: `docs/adr/000N-short-title.md`). Register it in `docs/beliefs.md`. Use `docs/adr/0000-adr-template.md` as your template. Harness-level ADRs go in `docs/adr/harness/`.
 
 ---
 

@@ -22,22 +22,23 @@ Jupyter Notebooks (`.ipynb`) are notoriously difficult for AI systems to read, d
 
 ## 2. Design Decision Register (ADR Log)
 
-### Decision ID: ADR-001 — Dynamic R & Python Environment Bootstrapping
-- **Date:** May 2026
-- **Status:** APPROVED
-- **Context:** The user works across statistical projects that heavily combine Python and R. Setting up distinct virtual environments for each language manually creates friction.
-- **Decision:** The bootstrapper (`init.sh`) must dynamically detect project requirements. Instead of pinning to a single environment type, the script will:
-  1. Scan for Python configurations (`pyproject.toml` or `requirements.txt`) and bootstrap `uv` virtual environments if found.
-  2. Scan for R scripts (`.R` files, `DESCRIPTION` files, or project directory structures containing `.Rprofile`) and bootstrap R library management via `renv` or `pak` if R is utilized.
-  3. Ensure the environment is verified cleanly via test sensors before completing initialization.
-- **Consequences:** Provides a single, unified entry point (`init.sh`) that scales from Python-only, R-only, to hybrid analytics configurations cleanly.
+Non-trivial, hard-to-reverse architectural decisions are captured as separate, immutable Architectural Decision Records (ADRs) inside `docs/adr/`. 
 
-### Decision ID: ADR-002 — Automated Project Scaffolder and Parameterizer (`create-project.sh`)
-- **Date:** May 2026
-- **Status:** APPROVED
-- **Context:** Standardizing the starting point of new projects (FPL, Crypto, etc.) requires copying, establishing directory structures, and manually editing config file parameters, which causes friction.
-- **Decision:** Build a lightweight, native bash project generator (`create-project.sh`) at the root. The script will:
-  1. Programmatically set up the folders (`src/`, `notebooks/`, `tests/`, `.agents/`).
-  2. Deploy all configuration and system of record templates.
-  3. Use portable stream-editing (`sed`) to find and replace customized properties like project name and absolute directory roots automatically.
-- **Consequences:** Reduces the user setup time for fresh, compliant agentic workspaces down to a single terminal command.
+| ADR ID | Decision Title | Status | Date | File Link |
+|---|---|---|---|---|
+| **ADR-0001** | Dynamic R & Python Environment Bootstrapping | `accepted` | 2026-05-20 | [0001-dynamic-bootstrapping.md](file:///Users/jubilee/Library/CloudStorage/GoogleDrive-z.jubilee.z@gmail.com/My%20Drive/Projects/Alpha-Zero-G/docs/adr/harness/0001-dynamic-bootstrapping.md) |
+| **ADR-0002** | Automated Project Scaffolder and Parameterizer | `accepted` | 2026-05-25 | [0002-automated-project-scaffolder.md](file:///Users/jubilee/Library/CloudStorage/GoogleDrive-z.jubilee.z@gmail.com/My%20Drive/Projects/Alpha-Zero-G/docs/adr/harness/0002-automated-project-scaffolder.md) |
+| **ADR-0003** | Bidirectional Harness Upgrader Utility | `accepted` | 2026-05-28 | [0003-bidirectional-harness-upgrader.md](file:///Users/jubilee/Library/CloudStorage/GoogleDrive-z.jubilee.z@gmail.com/My%20Drive/Projects/Alpha-Zero-G/docs/adr/harness/0003-bidirectional-harness-upgrader.md) |
+
+---
+
+## 3. Session Conventions & UX Beliefs
+
+### Caveman-as-Default → Token Budget
+Long sessions fill context fast. Default caveman mode (~75% token reduction) is now baked into `~/.gemini/GEMINI.md`. Belief: terse-by-default beats verbose-by-default for developer-agent workflows. User opt-out via "stop caveman".
+
+### Handoff = In-Place Doc Update, Not Temp File
+Writing a handoff to `/tmp` loses it on reboot and breaks version control continuity. Belief: `/handoff` should mutate the project's living docs (`progress.md`, `beliefs.md`, `features.json`) directly — same repo, same git history, same diff trail.
+
+
+

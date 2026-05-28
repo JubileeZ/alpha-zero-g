@@ -45,23 +45,31 @@ def test_slice1_doc_templates_present():
     assert os.path.isfile(adr_template), "docs adr/0000-adr-template.md template should exist"
 
 def test_slice2_readme_template_has_golden_path_workflow():
-    """Verify that templates/README.md contains the Golden Path workflow descriptions."""
+    """Verify that templates/README.md and templates/DEVELOPER_WORKFLOW.md exist and contain the Golden Path descriptions."""
     readme_path = os.path.join(TEMPLATES_DIR, "README.md")
+    workflow_path = os.path.join(TEMPLATES_DIR, "DEVELOPER_WORKFLOW.md")
+    
     assert os.path.isfile(readme_path), "templates/README.md template should exist"
+    assert os.path.isfile(workflow_path), "templates/DEVELOPER_WORKFLOW.md template should exist"
     
     with open(readme_path, "r") as f:
+        readme_content = f.read()
+    assert "Golden Path" in readme_content, "README.md should mention 'Golden Path'"
+    assert "DEVELOPER_WORKFLOW.md" in readme_content, "README.md should reference DEVELOPER_WORKFLOW.md"
+    
+    with open(workflow_path, "r") as f:
         content = f.read()
     
-    assert "Golden Path" in content, "README.md should mention 'Golden Path'"
+    assert "Golden Path" in content, "DEVELOPER_WORKFLOW.md should mention 'Golden Path'"
     
     content_upper = content.upper()
-    assert "GRILL" in content_upper, "README.md should mention 'Grill'"
-    assert "SPEC" in content_upper, "README.md should mention 'Spec'"
-    assert "SLICE" in content_upper, "README.md should mention 'Slice'"
-    assert "SHIP" in content_upper, "README.md should mention 'Ship'"
-    assert "VERIFY" in content_upper, "README.md should mention 'Verify'"
-    assert "REFACTOR" in content_upper, "README.md should mention 'Refactor'"
-    assert "HANDOFF" in content_upper, "README.md should mention 'Handoff'"
+    assert "GRILL" in content_upper, "DEVELOPER_WORKFLOW.md should mention 'Grill'"
+    assert "SPEC" in content_upper, "DEVELOPER_WORKFLOW.md should mention 'Spec'"
+    assert "SLICE" in content_upper, "DEVELOPER_WORKFLOW.md should mention 'Slice'"
+    assert "SHIP" in content_upper, "DEVELOPER_WORKFLOW.md should mention 'Ship'"
+    assert "VERIFY" in content_upper, "DEVELOPER_WORKFLOW.md should mention 'Verify'"
+    assert "REFACTOR" in content_upper, "DEVELOPER_WORKFLOW.md should mention 'Refactor'"
+    assert "HANDOFF" in content_upper, "DEVELOPER_WORKFLOW.md should mention 'Handoff'"
 
 def test_slice2_agents_template_has_workflow_pointers():
     """Verify that templates/AGENTS.md contains pointers to the workflow."""
@@ -100,10 +108,14 @@ def test_slice3_python_project_generation():
     assert not os.path.isfile(os.path.join(dest_dir, "DESCRIPTION")), "DESCRIPTION should NOT exist in a Python project"
     assert not os.path.isfile(os.path.join(dest_dir, "src", "smoke.R")), "smoke.R should NOT exist in a Python project"
     
-    # Assert glossary and ADR format copied
+    # Assert glossary, workflow, and ADR format copied
     assert os.path.isfile(os.path.join(dest_dir, "docs", "CONTEXT-FORMAT.md")), "CONTEXT-FORMAT.md should exist"
     assert os.path.isfile(os.path.join(dest_dir, "docs", "ADR-FORMAT.md")), "ADR-FORMAT.md should exist"
     assert os.path.isfile(os.path.join(dest_dir, "docs", "adr", "0000-adr-template.md")), "0000-adr-template.md should exist"
+    assert os.path.isfile(os.path.join(dest_dir, "docs", "adr", "OPEN_DECISIONS.md")), "OPEN_DECISIONS.md should exist"
+    assert not os.path.isfile(os.path.join(dest_dir, "docs", "adr", "0001-dynamic-bootstrapping.md")), "Harness ADR 0001 should NOT be in downstream docs/adr/"
+    assert not os.path.isfile(os.path.join(dest_dir, "docs", "adr", "0002-automated-project-scaffolder.md")), "Harness ADR 0002 should NOT be in downstream docs/adr/"
+    assert os.path.isfile(os.path.join(dest_dir, "DEVELOPER_WORKFLOW.md")), "DEVELOPER_WORKFLOW.md should exist"
 
     # Assert placeholder resolution
     with open(os.path.join(dest_dir, "AGENTS.md"), "r") as f:
@@ -112,6 +124,10 @@ def test_slice3_python_project_generation():
     assert "Test-Python-Project" in agents_content, "Project name placeholder was not replaced"
     assert "{{PROJECT_DESCRIPTION}}" not in agents_content, "AGENTS.md still contains raw description placeholder"
     assert "{{PROJECT_ROOT}}" not in agents_content, "AGENTS.md still contains raw root placeholder"
+
+    with open(os.path.join(dest_dir, "DEVELOPER_WORKFLOW.md"), "r") as f:
+        workflow_content = f.read()
+    assert "Test-Python-Project" in workflow_content, "Project name placeholder was not replaced in DEVELOPER_WORKFLOW.md"
 
     # Assert Git initialization and baseline commit (Slice 4)
     assert os.path.isdir(os.path.join(dest_dir, ".git")), "Git repository should be initialized"
@@ -229,6 +245,102 @@ def test_slice6_global_harness_sync():
     for path in [mock_home, mock_gdrive]:
         if os.path.exists(path):
             shutil.rmtree(path)
+
+
+def test_harness_upgrader():
+    """Verify that upgrade-project.sh can push core changes to downstream, pull downstream updates back to templates, and correctly handle parameter placeholders in AGENTS.md / DEVELOPER_WORKFLOW.md."""
+    import subprocess
+    
+    # 1. Scaffolder creation of dummy downstream
+    dest_dir = "scratch/test-upgrade-target"
+    if os.path.exists(dest_dir):
+        shutil.rmtree(dest_dir)
+        
+    cmd = ["bash", "create-project.sh", dest_dir, "Test-Upgrade-Project", "python", "Upgrade testing project"]
+    res = subprocess.run(cmd, capture_output=True, text=True)
+    assert res.returncode == 0
+    
+    # Backup original core files we are going to modify during testing
+    core_init_sh = "templates/init.sh"
+    core_init_sh_backup = "templates/init.sh.bak"
+    shutil.copy2(core_init_sh, core_init_sh_backup)
+    
+    core_agents_md = "templates/AGENTS.md"
+    core_agents_md_backup = "templates/AGENTS.md.bak"
+    shutil.copy2(core_agents_md, core_agents_md_backup)
+    
+    try:
+        # A. TEST --push (Template -> Downstream)
+        # Modify the core template
+        with open(core_init_sh, "a") as f:
+            f.write("\n# core testing modification\n")
+            
+        # Run upgrade-project.sh in push mode
+        upgrade_cmd = ["bash", "upgrade-project.sh", "--push", "-y", dest_dir]
+        res_push = subprocess.run(upgrade_cmd, capture_output=True, text=True)
+        assert res_push.returncode == 0, f"Push failed: {res_push.stderr}\nStdout: {res_push.stdout}"
+        
+        # Verify target is updated
+        with open(os.path.join(dest_dir, "init.sh"), "r") as f:
+            target_content = f.read()
+        assert "core testing modification" in target_content, "Push mode did not update downstream target file"
+        
+        # B. TEST --pull (Downstream -> Template)
+        # Modify the downstream target
+        with open(os.path.join(dest_dir, "init.sh"), "a") as f:
+            f.write("\n# downstream testing optimization\n")
+            
+        # Run upgrade-project.sh in pull mode
+        pull_cmd = ["bash", "upgrade-project.sh", "--pull", "-y", dest_dir]
+        res_pull = subprocess.run(pull_cmd, capture_output=True, text=True)
+        assert res_pull.returncode == 0, f"Pull failed: {res_pull.stderr}\nStdout: {res_pull.stdout}"
+        
+        # Verify template is updated with the downstream modification
+        with open(core_init_sh, "r") as f:
+            template_content = f.read()
+        assert "downstream testing optimization" in template_content, "Pull mode did not update core template file"
+        
+        # C. TEST PLACEHOLDERS IN --push and --pull
+        # Modify the template file with placeholders
+        with open(core_agents_md, "a") as f:
+            f.write("\n# new guideline for {{PROJECT_NAME}}\n")
+            
+        # Push to downstream
+        res_push_placeholder = subprocess.run(["bash", "upgrade-project.sh", "--push", "-y", dest_dir], capture_output=True, text=True)
+        assert res_push_placeholder.returncode == 0, f"Push placeholder failed: {res_push_placeholder.stderr}"
+        
+        # Assert downstream file resolved the placeholder
+        with open(os.path.join(dest_dir, "AGENTS.md"), "r") as f:
+            target_agents_content = f.read()
+        assert "new guideline for Test-Upgrade-Project" in target_agents_content, "Pushing placeholder file did not resolve parameters"
+        assert "{{PROJECT_NAME}}" not in target_agents_content, "Pushing placeholder file left raw placeholder in target"
+        
+        # Modify downstream to optimize the new guidelines
+        updated_agents = target_agents_content.replace("new guideline for Test-Upgrade-Project", "optimal rule for Test-Upgrade-Project")
+        with open(os.path.join(dest_dir, "AGENTS.md"), "w") as f:
+            f.write(updated_agents)
+            
+        # Pull back to templates
+        res_pull_placeholder = subprocess.run(["bash", "upgrade-project.sh", "--pull", "-y", dest_dir], capture_output=True, text=True)
+        assert res_pull_placeholder.returncode == 0, f"Pull placeholder failed: {res_pull_placeholder.stderr}\nStdout: {res_pull_placeholder.stdout}"
+        
+        # Assert template file pulled the optimization and RESTORED the placeholder
+        with open(core_agents_md, "r") as f:
+            template_agents_content = f.read()
+        assert "optimal rule for {{PROJECT_NAME}}" in template_agents_content, "Pulling optimized file did not restore the placeholder in templates"
+        assert "Test-Upgrade-Project" not in template_agents_content, "Pulling optimized file leaked target project name into templates"
+        
+    finally:
+        # Restore backups
+        if os.path.exists(core_init_sh_backup):
+            shutil.move(core_init_sh_backup, core_init_sh)
+        if os.path.exists(core_agents_md_backup):
+            shutil.move(core_agents_md_backup, core_agents_md)
+            
+        # Clean up target
+        if os.path.exists(dest_dir):
+            shutil.rmtree(dest_dir)
+
 
 
 

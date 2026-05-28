@@ -24,7 +24,7 @@ This file is the primary entry point and cognitive map for AI agents working in 
 
 ## Preferred Workflows
 
-For any analytical, modeling, or coding task taking longer than 30 minutes, you MUST follow the **Golden Path Developer Workflow** documented in [README.md](file:///{{PROJECT_ROOT}}/README.md):
+For any analytical, modeling, or coding task taking longer than 30 minutes, you MUST follow the **Golden Path Developer Workflow** documented in [DEVELOPER_WORKFLOW.md](file:///{{PROJECT_ROOT}}/DEVELOPER_WORKFLOW.md):
 1. **Boot:** Run `bash init.sh` immediately at session start.
 2. **Grill:** Invoke `/grill-with-docs` (general logic) or `/grill-analytics` (data/stats audits) to refine domain terms in `CONTEXT.md` and ADRs.
 3. **Spec:** Invoke `/spec-model` to compile a formal design spec in `docs/design/` or `docs/MODEL_NOTES.md`.
@@ -49,6 +49,8 @@ For any analytical, modeling, or coding task taking longer than 30 minutes, you 
   - Log model assumptions or backtest performance metrics in `docs/MODEL_NOTES.md`.
   - Keep `README.md` updated if directory layouts, bootstrapping steps, or main features change.
 - **R Requirements:** Any new R function must include Roxygen2 comments and adhere to tidyverse conventions.
+- **Write ADRs:** When making a hard-to-reverse architectural decision, write an ADR in `docs/adr/` using the next sequential ID (format: `docs/adr/000N-short-title.md`). Register it in `docs/beliefs.md`. Use `docs/adr/0000-adr-template.md` as your template.
+- **First Session:** On your first session in this project, read `docs/adr/OPEN_DECISIONS.md` and begin backfilling domain ADRs for any decisions already made.
 
 ---
 
