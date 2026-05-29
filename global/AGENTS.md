@@ -52,6 +52,7 @@ For any analytical, modeling, or coding task taking longer than 30 minutes, you 
   - Keep `README.md` updated if directory layouts, bootstrapping steps, or main features change.
 - **R Requirements:** Any new R function must include Roxygen2 comments and adhere to tidyverse conventions.
 - **Write ADRs:** When making a hard-to-reverse architectural decision, write an ADR in `docs/adr/` using the next sequential ID (format: `docs/adr/000N-short-title.md`). Register it in `docs/beliefs.md`. Use `docs/adr/0000-adr-template.md` as your template. Harness-level ADRs go in `docs/adr/harness/`.
+- **Harness Isolation (Meta-Project Boundary):** Never reference specific downstream project instances, user-specific filesystem paths, or domain-specific development progress (such as particular FPL or crypto model runs, specific downstream folders, or machine-specific Google Drive directory roots) in this repository's own session progress logs or core documentation. All examples and documentation within the core harness must remain generic, modular, and focused strictly on the harness itself. Downstream project details belong entirely inside those respective downstream repositories.
 
 ---
 

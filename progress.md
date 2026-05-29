@@ -52,7 +52,7 @@ Establish a high-performance, deterministic developer harness for analytics, mod
 2. **Ready to Clone:** Alpha-Zero-G is ready to act as a golden standard boilerplate.
 3. **Idempotent Bootstrapper:** Modified `init.sh` to perform a directory check before attempting to create the virtual environment, making it 100% idempotent.
 4. **Broken Symlink Resolved:** Successfully created the Google Drive target directory and populated `settings.json` based on custom user backups to resolve the broken `~/.gemini/antigravity-cli/settings.json` symlink.
-5. **Trusted Workspaces Synced:** Added the downstream project `/Users/jubilee/Library/CloudStorage/GoogleDrive-z.jubilee.z@gmail.com/My Drive/Projects/FPL-Jubilee-Ascent` to `settings.json` to enable seamless, password-free operations when context switching.
+5. **Trusted Workspaces Synced:** Added the downstream project paths to `settings.json` to enable seamless, password-free operations when context switching.
 6. **Global Skills Audited:** Verified and mapped all 4 global skills (`grill-analytics`, `spec-model`, `validate-output`, and `to-colab`) in the global directory.
 7. **Environment Bootstrapped:** Successfully executed the idempotent `init.sh` script to verify python smoke tests pass.
 8. **Global Settings and Path Synchronization:** Audited and standardized global rules and settings across macOS and Windows configurations.
@@ -63,9 +63,9 @@ Establish a high-performance, deterministic developer harness for analytics, mod
 13. **Cross-Device Sync Complete:** Implemented `setup-global-harness.sh` to automatically detect Google Drive stream paths on macOS and Windows and establish secure symlinks for settings, rules, and global skills.
 14. **TDD Validation Green:** Developed an integration-style test suite in `tests/test_harness_bootstrap.py` validating all generator and sync functionalities with 100% test coverage.
 15. **ADR & Golden Path Layout Standardized:** Successfully conducted an interactive `/grill-me` session to establish two distinct memory layers: `docs/beliefs.md` for fast, volatile working memory and `docs/adr/` for immutable, long-term architectural decision records. Created `docs/adr/0001-dynamic-bootstrapping.md` and `docs/adr/0002-automated-project-scaffolder.md` and updated `beliefs.md` with links. Embedded the full Golden Path workflow into this project's main `README.md`, while cleaning the downstream templates to utilize a dedicated `DEVELOPER_WORKFLOW.md` copied at creation time, verified by 100% passing tests.
-16. **Existing Downstream Workspace Upgraded:** Successfully applied all the latest documentation structure, dedicated `DEVELOPER_WORKFLOW.md` root file, modular `docs/adr/` logs, and streamlined tabular `docs/beliefs.md` upgrades directly to the existing `FPL-Jubilee-Ascent` project workspace, committing the upgrades to a clean feature branch.
-17. **First End-to-End Upgrader Sync Completed:** Executed our bidirectional `upgrade-project.sh` to compare `Alpha-Zero-G` with `FPL-Jubilee-Ascent`. Identified that the downstream project is 100% in sync with templates, with only the brand new `ADR-0003` file missing downstream. Successfully pushed the new ADR and committed it to the downstream project, bringing both repositories into perfect harmony.
-18. **Scaffold Feedback Implemented (5 Issues from FPL-Jubilee-Ascent):**
+16. **Existing Downstream Workspace Upgraded:** Successfully applied all the latest documentation structure, dedicated `DEVELOPER_WORKFLOW.md` root file, modular `docs/adr/` logs, and streamlined tabular `docs/beliefs.md` upgrades directly to the downstream project workspace, committing the upgrades to a clean feature branch.
+17. **First End-to-End Upgrader Sync Completed:** Executed our bidirectional `upgrade-project.sh` to compare `Alpha-Zero-G` with downstream templates. Identified that the downstream project is 100% in sync with templates, with only the brand new `ADR-0003` file missing downstream. Successfully pushed the new ADR and committed it to the downstream project, bringing both repositories into perfect harmony.
+18. **Scaffold Feedback Implemented (5 Issues from Downstream Projects):**
   - **(A) Harness ADR segregation:** Moved ADR-0001, ADR-0002, ADR-0003 to `docs/adr/harness/`. Updated `beliefs.md` links. `create-project.sh` no longer copies harness ADRs downstream — domain `docs/adr/` is clean from Day 1.
     - **(B) Tokenized template docs:** Created `templates/docs/architecture.md`, `templates/docs/beliefs.md` with `{{PROJECT_NAME}}` tokens. `create-project.sh` now copies from `templates/docs/` and applies `replace_placeholders` — zero hardcoded names downstream.
     - **(C) Language-specific quality docs:** Created `templates/docs/quality-python.md`, `quality-r.md`, `quality-hybrid.md`. `create-project.sh` selects based on `PROJECT_TYPE` — no spurious R sections in Python projects.
@@ -93,7 +93,7 @@ Establish a high-performance, deterministic developer harness for analytics, mod
     - Documented the transition in `docs/adr/harness/0005-local-monorepo-harness-synchronization.md` (ADR-0005) and registered it in `docs/beliefs.md`.
     - Refactored `tests/test_harness_bootstrap.py` to utilize isolated mock directories (`MOCK_GLOBAL_SRC`) and tested the sync mechanism, achieving a clean 100% green 12/12 test execution.
     - Updated all pointers, root rules, and `features.json` to eliminate Google Drive references.
-    - Audited and resolved remaining legacy Google Drive references across documentation: deleted a duplicate ADR collision file (`0004-cross-platform-config-junctions 2.md`), updated hardcoded old Google Drive absolute paths in `docs/design/INDEX.md` to point to the new absolute local path `/Users/jubilee/Projects/Alpha-Zero-G/...`, and replaced the "Google Drive synced stream storage" references in both active and template architecture documents with "local/git-backed monorepo structures" (2026-05-29).
+    - Audited and resolved remaining legacy Google Drive references across documentation: deleted a duplicate ADR collision file (`0004-cross-platform-config-junctions 2.md`), updated hardcoded old Google Drive absolute paths in `docs/design/INDEX.md` to point to the new absolute local project path, and replaced the "Google Drive synced stream storage" references in both active and template architecture documents with "local/git-backed monorepo structures" (2026-05-29).
 25. **Deterministic Python Execution via `uv run` Standard Established (2026-05-29):**
     - Established strict behavioral operating protocols in `AGENTS.md` and `DEVELOPER_WORKFLOW.md` (root, template, global) mandating the use of `uv run` for executing Python scripts (`uv run python`) and test runners (`uv run pytest`) to ensure deterministic package loading from the managed virtual environment and prevent system Python contamination.
     - Refactored `init.sh` and `templates/init.sh` to execute the Python validation smoke tests via `uv run python`, bypassing manual shell activation.
@@ -101,7 +101,7 @@ Establish a high-performance, deterministic developer harness for analytics, mod
     - Passed all 12/12 integration tests on mac successfully.
     - Logged decision in `docs/adr/harness/0006-deterministic-python-execution-via-uv.md` (ADR-0006) and registered it in `docs/beliefs.md`.
 26. **Standard Relative Markdown Paths Migration (2026-05-29):**
-    - Replaced host-specific `file:///Users/jubilee/Projects/Alpha-Zero-G/...` and `file:///{{PROJECT_ROOT}}/...` absolute paths across all root rules, monorepo settings, downstream scaffold templates, and design specification registries with standard relative Markdown links.
+    - Replaced host-specific absolute paths and `file:///{{PROJECT_ROOT}}/...` absolute paths across all root rules, monorepo settings, downstream scaffold templates, and design specification registries with standard relative Markdown links.
     - Ensured complete platform and device-agnostic portability, eliminating broken links and git-dirty states when switching devices.
     - Verified all changes against the entire 12/12 integration test suite.
     - Logged decision in `docs/adr/harness/0007-standard-relative-markdown-paths.md` (ADR-0007) and registered it in `docs/beliefs.md`.
@@ -111,8 +111,8 @@ Establish a high-performance, deterministic developer harness for analytics, mod
     - Created cross-platform templates for `Makefile` (standardized on `uv run`), `.pre-commit-config.yaml`, `.env.example`, `config.py` (Pydantic Settings), and `conftest.py` (shared pytest fixtures).
     - Upgraded `create-project.sh` and `upgrade-project.sh` to support dynamic lowercase snake-case Python packages (e.g. `src/test_generated_proj`) and replace dynamic `{{PACKAGE_NAME}}` placeholders across templates.
     - Verified all generator templates and updates successfully against the 100% green 12/12 pytest integration tests.
-28. **Start-over Project Scaffolding of FPL-Jubilee-Ascent (2026-05-29):**
-    - Scaffolded a brand-new clean Python statistical modeling project at `../FPL-Jubilee-Ascent` utilizing `create-project.sh`.
+28. **Start-over Project Scaffolding of Downstream Projects (2026-05-29):**
+    - Scaffolded a brand-new clean Python statistical modeling project downstream utilizing `create-project.sh`.
     - Automatically synced path registration to global trustedWorkspaces.
     - Deterministically executed `init.sh` inside the new workspace, configuring the `uv` environment and installing 55 specialized packages.
     - Verified environment setup by executing initial test suite, ensuring `1 passed` green baseline test execution.
@@ -121,7 +121,7 @@ Establish a high-performance, deterministic developer harness for analytics, mod
 
 ## 3. Next Session Priorities
 
-1. Kick off your FPL predictive model development by defining standard domain terms in your new project's `CONTEXT.md` glossary!
-2. Implement your data pipeline modeling with clean Pydantic configuration schemas and Pandera validation contracts in `src/fpl_jubilee_ascent/`!
+1. Kick off downstream predictive model development by defining standard domain terms in the new project's `CONTEXT.md` glossary!
+2. Implement downstream data pipeline modeling with clean Pydantic configuration schemas and Pandera validation contracts!
 
-<!-- Suggested skills: /handoff (end of session), /grill-analytics (before FPL modelling), /tdd (feature work in FPL-Jubilee-Ascent) -->
+<!-- Suggested skills: /handoff (end of session), /grill-analytics (before downstream modelling), /tdd (feature work in downstream projects) -->

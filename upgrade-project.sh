@@ -26,7 +26,7 @@ show_usage() {
     echo -e "  -y, --yes             Skip confirmation prompts and automatically apply all changes"
     echo -e "  -h, --help            Show this help message"
     echo -e "\nExample:"
-    echo -e "  bash upgrade-project.sh --push ../FPL-Jubilee-Ascent"
+    echo -e "  bash upgrade-project.sh --push ../FPL-Model"
 }
 
 # Parse options
