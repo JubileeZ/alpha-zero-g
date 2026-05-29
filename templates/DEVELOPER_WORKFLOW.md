@@ -50,3 +50,26 @@ To ensure high-performance, deterministic development and perfect session contin
 ### 8. HANDOFF (Session Transition)
 * **Command:** `/handoff`
 * **Actions:** Compact the current session's milestones, modified files, and next actions into the checklist in `progress.md` so the next session can orient and resume immediately.
+
+---
+
+## Debug Protocol (Troubleshooting Failures)
+
+When a test, build, or command fails, follow these steps:
+1. **Read the FULL error message:** Do not guess or run commands blindly.
+2. **Categorize the error:** Determine if it is a Logic, Type, Schema, Data Quality, or Environment issue.
+3. **Check logs & ADRs:** Has this problem or pattern been solved before in `docs/beliefs.md` or `docs/adr/`?
+4. **Solve the ROOT CAUSE:** Fix the structural problem rather than patching the symptom.
+5. **Write a regression test:** Create a test that reproduces the bug and prevents future regressions.
+
+---
+
+## Validation Loop (Continuous Integration)
+
+Before finalizing and concluding any code changes, perform the following validation loop:
+1. **Write the code + type hints:** Ensure all types are strictly defined.
+2. **Write tests:** Cover edge cases and typical inputs in your unit/integration tests.
+3. **Run tests via `uv run`:** Run `uv run pytest` to assert that all tests pass perfectly.
+4. **Run linters & type checkers:** Execute standard checkers (e.g. `make check`, `uv run ruff check`, `uv run mypy`).
+5. **Verify data contracts:** Ensure all schemas and data constraints validate.
+

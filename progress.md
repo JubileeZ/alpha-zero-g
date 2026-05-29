@@ -111,6 +111,16 @@ Establish a high-performance, deterministic developer harness for analytics, mod
     - Created cross-platform templates for `Makefile` (standardized on `uv run`), `.pre-commit-config.yaml`, `.env.example`, `config.py` (Pydantic Settings), and `conftest.py` (shared pytest fixtures).
     - Upgraded `create-project.sh` and `upgrade-project.sh` to support dynamic lowercase snake-case Python packages (e.g. `src/test_generated_proj`) and replace dynamic `{{PACKAGE_NAME}}` placeholders across templates.
     - Verified all generator templates and updates successfully against the 100% green 12/12 pytest integration tests.
+29. **Modular Rules Refactoring — AGENTS.md & Scaffolding Templates (2026-05-29):**
+    - Refactored `templates/AGENTS.md` from 261 lines to 68 lines by extracting non-essential prose into 9 dedicated sub-documents under `templates/docs/`.
+    - Extracted sub-documents: `conventions.md`, `data-rules.md`, `modeling-rules.md`, `context-management.md`, `session-protocols.md`, `testing-requirements.md`, `security-rules.md`, `domain-rules.md`, `safety-policies.md`.
+    - Added pointer rows for each extracted document into the System Pointers table; all `[HARD]` rules kept strictly inline in the main entry point.
+    - Merged **Debug Protocol** and **Validation Loop** as dedicated sections inside `templates/DEVELOPER_WORKFLOW.md`.
+    - Updated `create-project.sh` to copy and apply placeholder replacement for all 9 sub-documents.
+    - Updated `upgrade-project.sh` `FILES_TO_SYNC` to include all 9 sub-documents for bidirectional push/pull/diff workflows.
+    - Ran `setup-harness.sh` to re-sync global symlinks.
+    - All 12/12 integration tests green.
+    - Logged decision in `docs/adr/harness/0008-modular-rules-refactoring.md` (ADR-0008) and registered it in `docs/beliefs.md`.
 28. **Start-over Project Scaffolding of Downstream Projects (2026-05-29):**
     - Scaffolded a brand-new clean Python statistical modeling project downstream utilizing `create-project.sh`.
     - Automatically synced path registration to global trustedWorkspaces.
@@ -121,7 +131,8 @@ Establish a high-performance, deterministic developer harness for analytics, mod
 
 ## 3. Next Session Priorities
 
-1. Kick off downstream predictive model development by defining standard domain terms in the new project's `CONTEXT.md` glossary!
-2. Implement downstream data pipeline modeling with clean Pydantic configuration schemas and Pandera validation contracts!
+1. Push the newly added modular docs to any existing downstream projects via `bash upgrade-project.sh --push <downstream-path>`.
+2. Kick off downstream predictive model development by defining standard domain terms in the new project's `CONTEXT.md` glossary!
+3. Implement downstream data pipeline modeling with clean Pydantic configuration schemas and Pandera validation contracts!
 
 <!-- Suggested skills: /handoff (end of session), /grill-analytics (before downstream modelling), /tdd (feature work in downstream projects) -->

@@ -33,6 +33,7 @@ Non-trivial, hard-to-reverse architectural decisions are captured as separate, i
 | **ADR-0005** | Git-backed Local Monorepo Harness Synchronization | `accepted` | 2026-05-29 | [0005-local-monorepo-harness-synchronization.md](adr/harness/0005-local-monorepo-harness-synchronization.md) |
 | **ADR-0006** | Deterministic Python Execution via `uv run` | `accepted` | 2026-05-29 | [0006-deterministic-python-execution-via-uv.md](adr/harness/0006-deterministic-python-execution-via-uv.md) |
 | **ADR-0007** | Standard Relative Markdown Paths | `accepted` | 2026-05-29 | [0007-standard-relative-markdown-paths.md](adr/harness/0007-standard-relative-markdown-paths.md) |
+| **ADR-0008** | Modular Rules Refactoring and Scaffolding Templates | `accepted` | 2026-05-29 | [0008-modular-rules-refactoring.md](adr/harness/0008-modular-rules-refactoring.md) |
 
 ---
 
