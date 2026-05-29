@@ -52,6 +52,7 @@ For any analytical, modeling, or coding task taking longer than 30 minutes, you 
 - **R Requirements:** Any new R function must include Roxygen2 comments and adhere to tidyverse conventions.
 - **Write ADRs:** When making a hard-to-reverse architectural decision, write an ADR in `docs/adr/` using the next sequential ID (format: `docs/adr/000N-short-title.md`). Register it in `docs/beliefs.md`. Use `docs/adr/0000-adr-template.md` as your template.
 - **First Session:** On your first session in this project, read `docs/adr/OPEN_DECISIONS.md` and begin backfilling domain ADRs for any decisions already made.
+- **Portable Markdown Linking (ADR-0007):** [HARD] Never write absolute `file:///` URLs or local filesystem paths in rule files (`AGENTS.md`, `GEMINI.md`) or documentation. All links must use standard, relative Markdown links (e.g., `[CONTEXT.md](CONTEXT.md)`) to maintain platform portability across different operating systems and devices.
 
 ---
 

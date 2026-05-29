@@ -85,7 +85,7 @@ Antigravity consolidates and merges multiple configuration sources at session st
         ↓
    AGENTS.md (Cross-tool shared rules — read by Antigravity, Claude Code, Cursor)
         ↓
-   .agent/rules/*.md (Workspace supplements — organized by concern)
+   .agents/rules/*.md (Workspace supplements — organized by concern)
         ↓
    Nested AGENTS.md (Scoped strictly to specific folders)
 ```

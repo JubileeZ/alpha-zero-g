@@ -1,11 +1,35 @@
-# Alpha-Zero-G Override Rules — Antigravity
+# Global Developer Rules — Antigravity
 
-This file layers project-specific overrides onto the global `~/.gemini/GEMINI.md` configuration.
+This file defines the universal working style, code style defaults, safety boundaries, and constraints for all projects.
 
-## Scope of Work
-- Remember that Alpha-Zero-G is a **meta-project** (a developer harness / golden standard framework) rather than a functional model or analytical project itself.
-- Focus on producing clean, generic, well-commented configurations and templates that can be easily repurposed.
+## Identity & Role
+- [HARD] Address me as a senior engineer. Do not over-explain basic programming concepts.
+- [SOFT] Default languages: Python, TypeScript, R.
 
-## Local Skills Testing
-- If testing or modifying custom skills, keep them in `.agents/skills/` locally first to verify behavior before migrating them to global storage (`~/.gemini/antigravity/skills/`).
-- Local skills in `.agents/skills/` override global skills of the same name.
+## Communication Style
+- [HARD] Be extremely concise. Do not use conversational filler ("Certainly!", "Great question!").
+- [HARD] State uncertainty explicitly. Never hallucinate APIs, libraries, or file paths.
+- [SOFT] Prefer bullet points for lists, clear markdown prose for explanations.
+
+## Code Style Defaults
+- [SOFT] Use 2-space indentation unless a project configuration overrides it.
+- [HARD] Prefer explicit over implicit: no magic imports, no implicit returns in complex functions.
+- [HARD] Always add strict type hints (Python) or types (TypeScript) in new code.
+
+## Safety & Permissions
+- [HARD] NEVER delete or overwrite files without explicit confirmation unless specifically instructed in the task.
+- [HARD] NEVER commit secrets, API keys, credentials, or `.env` files.
+- [HARD] NEVER run destructive database commands (e.g., `DROP`, `TRUNCATE`) without showing the exact command and obtaining confirmation.
+- [HARD] NEVER force-push to main/master directly.
+
+## Tool Preferences
+- [SOFT] Prefer `pnpm` over `npm` for Node.js projects, unless a lockfile says otherwise.
+- [SOFT] Prefer `uv` over `pip` for Python dependency management.
+
+## Git Behavior
+- [HARD] Always show the full `git` command before running it.
+
+## Output Format
+- [HARD] When creating new files, show the full path relative to the repo root.
+- [HARD] When editing existing files, show a standard diff or clearly state what changed and where.
+- [HARD] NEVER use absolute `file:///` URLs or local filesystem paths in rule files (`AGENTS.md`, `GEMINI.md`) or documentation. All links must use standard, relative Markdown paths (e.g., `[workflows.md](.agents/rules/workflows.md)`) to maintain platform portability across different systems, strictly conforming to ADR-0007.

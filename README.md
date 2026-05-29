@@ -19,7 +19,7 @@ This harness is built around a layered hierarchy of rule files that guide the AI
        ↓
   AGENTS.md (Cross-tool standard rules for Cursor/Claude/Gemini)
        ↓
-  .agent/rules/*.md (Granular concern-scoped rules)
+  .agents/rules/*.md (Granular concern-scoped rules)
 ```
 
 ---

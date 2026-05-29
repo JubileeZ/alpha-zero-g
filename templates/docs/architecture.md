@@ -12,7 +12,7 @@ Antigravity merges rules from multiple levels at session initialization. The hie
 graph TD
     SystemRules[SYSTEM RULES<br/>Deepmind Immutable Rules] --> GeminiMD[GEMINI.md<br/>Antigravity local/global overrides]
     GeminiMD --> AgentsMD[AGENTS.md<br/>Cross-tool standards Cursor/Claude]
-    AgentsMD --> SupplementalRules[.agent/rules/*.md<br/>Workspace concern modules]
+    AgentsMD --> SupplementalRules[.agents/rules/*.md<br/>Workspace concern modules]
     
     style SystemRules fill:#ff6b6b,stroke:#333,stroke-width:2px,color:#fff
     style GeminiMD fill:#4dadf7,stroke:#333,stroke-width:2px,color:#fff
