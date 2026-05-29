@@ -111,12 +111,17 @@ Establish a high-performance, deterministic developer harness for analytics, mod
     - Created cross-platform templates for `Makefile` (standardized on `uv run`), `.pre-commit-config.yaml`, `.env.example`, `config.py` (Pydantic Settings), and `conftest.py` (shared pytest fixtures).
     - Upgraded `create-project.sh` and `upgrade-project.sh` to support dynamic lowercase snake-case Python packages (e.g. `src/test_generated_proj`) and replace dynamic `{{PACKAGE_NAME}}` placeholders across templates.
     - Verified all generator templates and updates successfully against the 100% green 12/12 pytest integration tests.
+28. **Start-over Project Scaffolding of FPL-Jubilee-Ascent (2026-05-29):**
+    - Scaffolded a brand-new clean Python statistical modeling project at `../FPL-Jubilee-Ascent` utilizing `create-project.sh`.
+    - Automatically synced path registration to global trustedWorkspaces.
+    - Deterministically executed `init.sh` inside the new workspace, configuring the `uv` environment and installing 55 specialized packages.
+    - Verified environment setup by executing initial test suite, ensuring `1 passed` green baseline test execution.
 
 ---
 
 ## 3. Next Session Priorities
 
-1. Run the harness upgrader `bash upgrade-project.sh --push ../FPL-Jubilee-Ascent` to push all these new, robust research-backed template improvements and configuration validators directly into your downstream FPL project!
-2. Kick off downstream FPL data pipeline modeling with clean Pydantic configuration schemas and Pandera validation contracts!
+1. Kick off your FPL predictive model development by defining standard domain terms in your new project's `CONTEXT.md` glossary!
+2. Implement your data pipeline modeling with clean Pydantic configuration schemas and Pandera validation contracts in `src/fpl_jubilee_ascent/`!
 
 <!-- Suggested skills: /handoff (end of session), /grill-analytics (before FPL modelling), /tdd (feature work in FPL-Jubilee-Ascent) -->

@@ -1,6 +1,19 @@
 import os
 import shutil
 import pytest
+import stat
+
+# Robust shutil.rmtree wrapper for Windows read-only git files
+_orig_rmtree = shutil.rmtree
+def rmtree_robust(path, *args, **kwargs):
+    def remove_readonly(func, p, exc):
+        try:
+            os.chmod(p, stat.S_IWRITE)
+            func(p)
+        except Exception:
+            pass
+    return _orig_rmtree(path, onerror=remove_readonly)
+shutil.rmtree = rmtree_robust
 
 # Paths
 TEMPLATES_DIR = "templates"
