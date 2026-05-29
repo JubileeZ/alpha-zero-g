@@ -105,13 +105,18 @@ Establish a high-performance, deterministic developer harness for analytics, mod
     - Ensured complete platform and device-agnostic portability, eliminating broken links and git-dirty states when switching devices.
     - Verified all changes against the entire 12/12 integration test suite.
     - Logged decision in `docs/adr/harness/0007-standard-relative-markdown-paths.md` (ADR-0007) and registered it in `docs/beliefs.md`.
+27. **Complete Research Gap Closures and Template Enrichment (2026-05-29):**
+    - Enriched the `AGENTS.md` template with comprehensive Coding Conventions, Data Handling Rules, Statistical Modeling Rules, Token & Context Management, Session Protocols, and Testing Requirements.
+    - Updated pyproject.toml package dependencies in both core harness and python templates to bundle a complete validation, modeling, and analytics library stack.
+    - Created cross-platform templates for `Makefile` (standardized on `uv run`), `.pre-commit-config.yaml`, `.env.example`, `config.py` (Pydantic Settings), and `conftest.py` (shared pytest fixtures).
+    - Upgraded `create-project.sh` and `upgrade-project.sh` to support dynamic lowercase snake-case Python packages (e.g. `src/test_generated_proj`) and replace dynamic `{{PACKAGE_NAME}}` placeholders across templates.
+    - Verified all generator templates and updates successfully against the 100% green 12/12 pytest integration tests.
 
 ---
 
 ## 3. Next Session Priorities
 
-1. Run the harness upgrader `bash upgrade-project.sh` to propagate these deterministic Python rules and `uv run` setups to your downstream FPL project (`FPL-Jubilee-Ascent`)!
-2. Initialize the developer harness on your second device using `bash setup-harness.sh` to see the seamless git-backed local symlinking in action!
-3. Kick off downstream FPL modeling using the freshly synchronized, robust, deterministic harness!
+1. Run the harness upgrader `bash upgrade-project.sh --push ../FPL-Jubilee-Ascent` to push all these new, robust research-backed template improvements and configuration validators directly into your downstream FPL project!
+2. Kick off downstream FPL data pipeline modeling with clean Pydantic configuration schemas and Pandera validation contracts!
 
 <!-- Suggested skills: /handoff (end of session), /grill-analytics (before FPL modelling), /tdd (feature work in FPL-Jubilee-Ascent) -->

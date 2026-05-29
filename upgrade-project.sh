@@ -128,6 +128,11 @@ FILES_TO_SYNC=(
     "templates/docs/ADR-FORMAT.md:docs/ADR-FORMAT.md:false"
     "templates/docs/adr/0000-adr-template.md:docs/adr/0000-adr-template.md:false"
     "templates/docs/adr/OPEN_DECISIONS.md:docs/adr/OPEN_DECISIONS.md:true"
+    "templates/Makefile:Makefile:false"
+    "templates/.pre-commit-config.yaml:.pre-commit-config.yaml:false"
+    "templates/.env.example:.env.example:false"
+    "templates/python/src/{{project_name}}/config.py:src/{{project_name}}/config.py:true"
+    "templates/python/tests/conftest.py:tests/conftest.py:true"
 )
 
 
@@ -184,6 +189,12 @@ CHANGES_COUNT=0
 for file_entry in "${FILES_TO_SYNC[@]}"; do
     IFS=':' read -r core_rel target_rel has_placeholders <<< "${file_entry}"
     
+    # Resolve package name clean representation
+    CLEAN_PKG=$(echo "${PARAM_NAME}" | tr '[:upper:]' '[:lower:]' | tr '-' '_')
+    if [[ "${target_rel}" == *"{{project_name}}"* ]]; then
+        target_rel="${target_rel//\{\{project_name\}\}/$CLEAN_PKG}"
+    fi
+    
     CORE_FILE="${CORE_ROOT}/${core_rel}"
     TARGET_FILE="${TARGET_ROOT_ABS}/${target_rel}"
     
@@ -206,10 +217,12 @@ for file_entry in "${FILES_TO_SYNC[@]}"; do
             ESCAPED_ROOT=$(escape_sed "${PARAM_ROOT}")
             ESCAPED_NAME=$(escape_sed "${PARAM_NAME}")
             ESCAPED_DESC=$(escape_sed "${PARAM_DESC}")
+            ESCAPED_PKG=$(escape_sed "${CLEAN_PKG}")
             
             sed -e "s/{{PROJECT_NAME}}/${ESCAPED_NAME}/g" \
                 -e "s/{{PROJECT_DESCRIPTION}}/${ESCAPED_DESC}/g" \
                 -e "s/{{PROJECT_ROOT}}/${ESCAPED_ROOT}/g" \
+                -e "s/{{PACKAGE_NAME}}/${ESCAPED_PKG}/g" \
                 "${CORE_FILE}" > "${TMP_DIR}/compare_push"
             SRC_TO_COMPARE="${TMP_DIR}/compare_push"
         fi
@@ -273,10 +286,12 @@ for file_entry in "${FILES_TO_SYNC[@]}"; do
             ESCAPED_ROOT=$(escape_sed "${PARAM_ROOT}")
             ESCAPED_NAME=$(escape_sed "${PARAM_NAME}")
             ESCAPED_DESC=$(escape_sed "${PARAM_DESC}")
+            ESCAPED_PKG=$(escape_sed "${CLEAN_PKG}")
             
             sed -e "s/${ESCAPED_ROOT}/{{PROJECT_ROOT}}/g" \
                 -e "s/${ESCAPED_NAME}/{{PROJECT_NAME}}/g" \
                 -e "s/${ESCAPED_DESC}/{{PROJECT_DESCRIPTION}}/g" \
+                -e "s/${ESCAPED_PKG}/{{PACKAGE_NAME}}/g" \
                 "${TARGET_FILE}" > "${TMP_DIR}/compare_pull"
             SRC_TO_COMPARE="${TMP_DIR}/compare_pull"
         fi

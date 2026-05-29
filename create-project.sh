@@ -75,6 +75,9 @@ cp templates/features.json "${PROJECT_ROOT_ABS}/features.json"
 cp templates/README.md "${PROJECT_ROOT_ABS}/README.md"
 cp templates/DEVELOPER_WORKFLOW.md "${PROJECT_ROOT_ABS}/DEVELOPER_WORKFLOW.md"
 cp templates/init.sh "${PROJECT_ROOT_ABS}/init.sh"
+cp templates/Makefile "${PROJECT_ROOT_ABS}/Makefile"
+cp templates/.pre-commit-config.yaml "${PROJECT_ROOT_ABS}/.pre-commit-config.yaml"
+cp templates/.env.example "${PROJECT_ROOT_ABS}/.env.example"
 cp .agents/hooks.json "${PROJECT_ROOT_ABS}/.agents/hooks.json"
 
 # 3. Copy standard system docs & templates
@@ -104,8 +107,16 @@ cp LICENSE "${PROJECT_ROOT_ABS}/LICENSE"
 if [ "${PROJECT_TYPE}" = "python" ] || [ "${PROJECT_TYPE}" = "hybrid" ]; then
     echo -e "3a. Deploying Python-specific templates..."
     cp templates/python/pyproject.toml "${PROJECT_ROOT_ABS}/pyproject.toml"
+    
+    # Normalize package name (lowercase, replace hyphens with underscores)
+    CLEAN_PKG_NAME=$(echo "${PROJECT_NAME}" | tr '[:upper:]' '[:lower:]' | tr '-' '_')
+    mkdir -p "${PROJECT_ROOT_ABS}/src/${CLEAN_PKG_NAME}"
+    
     cp templates/python/src/__init__.py "${PROJECT_ROOT_ABS}/src/__init__.py"
+    cp templates/python/src/__init__.py "${PROJECT_ROOT_ABS}/src/${CLEAN_PKG_NAME}/__init__.py"
+    cp templates/python/src/{{project_name}}/config.py "${PROJECT_ROOT_ABS}/src/${CLEAN_PKG_NAME}/config.py"
     cp templates/python/tests/test_smoke.py "${PROJECT_ROOT_ABS}/tests/test_smoke.py"
+    cp templates/python/tests/conftest.py "${PROJECT_ROOT_ABS}/tests/conftest.py"
 fi
 
 if [ "${PROJECT_TYPE}" = "r" ] || [ "${PROJECT_TYPE}" = "hybrid" ]; then
@@ -123,10 +134,12 @@ ESCAPED_ROOT=$(echo "${PROJECT_ROOT_ABS}" | sed 's/\//\\\//g')
 replace_placeholders() {
     local target_file="$1"
     if [ -f "${target_file}" ]; then
+        local clean_pkg=$(echo "${PROJECT_NAME}" | tr '[:upper:]' '[:lower:]' | tr '-' '_')
         sed -i.bak "s/{{PROJECT_NAME}}/${PROJECT_NAME}/g" "${target_file}"
         sed -i.bak "s/{{PROJECT_DESCRIPTION}}/${PROJECT_DESCRIPTION}/g" "${target_file}"
         sed -i.bak "s/{{PROJECT_ROOT}}/${ESCAPED_ROOT}/g" "${target_file}"
         sed -i.bak "s/{{PROJECT_GOAL_SUMMARY}}/Establish analytical modeling environment for ${PROJECT_NAME}./g" "${target_file}"
+        sed -i.bak "s/{{PACKAGE_NAME}}/${clean_pkg}/g" "${target_file}"
         rm -f "${target_file}.bak"
     fi
 }
@@ -141,11 +154,21 @@ replace_placeholders "${PROJECT_ROOT_ABS}/docs/architecture.md"
 replace_placeholders "${PROJECT_ROOT_ABS}/docs/beliefs.md"
 replace_placeholders "${PROJECT_ROOT_ABS}/docs/quality.md"
 replace_placeholders "${PROJECT_ROOT_ABS}/docs/adr/OPEN_DECISIONS.md"
+replace_placeholders "${PROJECT_ROOT_ABS}/Makefile"
+replace_placeholders "${PROJECT_ROOT_ABS}/.pre-commit-config.yaml"
+replace_placeholders "${PROJECT_ROOT_ABS}/.env.example"
+
 if [ -f "${PROJECT_ROOT_ABS}/pyproject.toml" ]; then
     replace_placeholders "${PROJECT_ROOT_ABS}/pyproject.toml"
 fi
 if [ -f "${PROJECT_ROOT_ABS}/DESCRIPTION" ]; then
     replace_placeholders "${PROJECT_ROOT_ABS}/DESCRIPTION"
+fi
+
+if [ "${PROJECT_TYPE}" = "python" ] || [ "${PROJECT_TYPE}" = "hybrid" ]; then
+    CLEAN_PKG_NAME=$(echo "${PROJECT_NAME}" | tr '[:upper:]' '[:lower:]' | tr '-' '_')
+    replace_placeholders "${PROJECT_ROOT_ABS}/src/${CLEAN_PKG_NAME}/config.py"
+    replace_placeholders "${PROJECT_ROOT_ABS}/tests/conftest.py"
 fi
 
 # 6. Auto-register in global trusted workspaces (Slice 5)

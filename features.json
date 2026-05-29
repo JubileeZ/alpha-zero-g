@@ -100,6 +100,12 @@
     "feature": "Standard Relative Markdown Path Migration",
     "description": "Migrated all rules and templates from hardcoded absolute file:/// URLs to standard relative paths, enabling complete device-agnostic portability and preventing git-dirty state.",
     "passes": true
+  },
+  {
+    "id": "F-20",
+    "feature": "Research Gaps Closure and Infrastructure Template Enrichment",
+    "description": "Enriched AGENTS.md rules with coding/data/modeling best practices. Deployed Makefile, pre-commit config, env.example, config.py, and conftest.py templates dynamically linked by package name.",
+    "passes": true
   }
 ]
 
