@@ -120,6 +120,9 @@ fi
 FILES_TO_SYNC=(
     "templates/init.sh:init.sh:false"
     ".agents/hooks.json:.agents/hooks.json:false"
+    ".agents/rules/workflows.md:.agents/rules/workflows.md:false"
+    ".agents/rules/python-r-rules.md:.agents/rules/python-r-rules.md:false"
+    ".agents/rules/gotchas.md:.agents/rules/gotchas.md:false"
     "templates/DEVELOPER_WORKFLOW.md:DEVELOPER_WORKFLOW.md:true"
     "templates/AGENTS.md:AGENTS.md:true"
     "templates/docs/architecture.md:docs/architecture.md:true"

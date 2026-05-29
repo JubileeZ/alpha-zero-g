@@ -79,6 +79,8 @@ cp templates/Makefile "${PROJECT_ROOT_ABS}/Makefile"
 cp templates/.pre-commit-config.yaml "${PROJECT_ROOT_ABS}/.pre-commit-config.yaml"
 cp templates/.env.example "${PROJECT_ROOT_ABS}/.env.example"
 cp .agents/hooks.json "${PROJECT_ROOT_ABS}/.agents/hooks.json"
+mkdir -p "${PROJECT_ROOT_ABS}/.agents/rules"
+cp .agents/rules/* "${PROJECT_ROOT_ABS}/.agents/rules/"
 
 # 3. Copy standard system docs & templates
 cp templates/docs/architecture.md "${PROJECT_ROOT_ABS}/docs/architecture.md"
