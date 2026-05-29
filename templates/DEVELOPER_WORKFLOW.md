@@ -18,6 +18,7 @@ To ensure high-performance, deterministic development and perfect session contin
   bash init.sh
   ```
 * **Why:** This synchronizes your virtual environment and runs smoke sensors to ensure a clean, green baseline before touching any files.
+* **Important:** During the session, NEVER execute unmanaged system `python`, `python3`, or `pip`. Always prepend Python executions with `uv run` to guarantee that dependencies are correctly resolved from the virtual environment.
 
 ### 2. GRILL (Domain & Plan Alignment)
 * **Command:** `/grill-with-docs` (general logic) or `/grill-analytics` (for statistical audits).
@@ -35,6 +36,7 @@ To ensure high-performance, deterministic development and perfect session contin
 ### 5. SHIP (TDD Execution)
 * **Command:** `/tdd`
 * **Actions:** Run the test-driven development loop (Red-Green-Refactor) for one slice at a time. Write a behavior-based test in `tests/`, watch it fail (Red), write minimal code to pass (Green), then refactor.
+  * **Rule:** Run the test runner using `uv run pytest` (e.g. `uv run pytest tests/test_smoke.py`). Do not execute `pytest` or `python` unmanaged.
 * **Troubleshooting:** If a hard bug or regression occurs, divert immediately to `/diagnose` to systematically reproduce, instrument, and fix.
 
 ### 6. VERIFY (Statistical & Sanity Checks)

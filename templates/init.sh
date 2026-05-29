@@ -53,8 +53,7 @@ if [ -f "pyproject.toml" ] || [ -f "requirements.txt" ] || [ -n "$(find . -name 
         
         # Python Smoke Test
         echo -e "\nRunning Python validation checks (smoke test)..."
-        source .venv/bin/activate
-        python -c "
+        uv run python -c "
 import sys
 import pandas as pd
 import numpy as np

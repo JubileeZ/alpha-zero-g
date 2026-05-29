@@ -8,5 +8,5 @@ Welcome to the {{PROJECT_NAME}} workspace! This project is bootstrapped and guid
 
 This project enforces **The Golden Path Developer Workflow** to ensure high-performance, deterministic development and perfect session continuity when pair-programming with AI agents. 
 
-For full details on the 8-phase cycle (BOOT, GRILL, SPEC, SLICE, SHIP, VERIFY, REFACTOR, HANDOFF) and commands, see [DEVELOPER_WORKFLOW.md](file:///{{PROJECT_ROOT}}/DEVELOPER_WORKFLOW.md).
+For full details on the 8-phase cycle (BOOT, GRILL, SPEC, SLICE, SHIP, VERIFY, REFACTOR, HANDOFF) and commands, see [DEVELOPER_WORKFLOW.md](DEVELOPER_WORKFLOW.md).
 

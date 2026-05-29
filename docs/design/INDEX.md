@@ -8,8 +8,8 @@ This directory hosts detailed technical specifications, architectural designs, a
 
 | Doc ID | Title | Date | Status | Verification Status |
 |---|---|---|---|---|
-| **DS-001** | [Alpha-Zero-G Harness Specification](file:///Users/jubilee/Library/CloudStorage/GoogleDrive-z.jubilee.z@gmail.com/My%20Drive/Projects/Alpha-Zero-G/docs/beliefs.md) | 2026-05-26 | Approved | Verified by environment build |
-| **DS-002** | [Unified Python-R Dynamic Bootstrapper](file:///Users/jubilee/Library/CloudStorage/GoogleDrive-z.jubilee.z@gmail.com/My%20Drive/Projects/Alpha-Zero-G/init.sh) | 2026-05-26 | Approved | Verified via dynamic bootstrap checks |
+| **DS-001** | [Alpha-Zero-G Harness Specification](../beliefs.md) | 2026-05-26 | Approved | Verified by environment build |
+| **DS-002** | [Unified Python-R Dynamic Bootstrapper](../../init.sh) | 2026-05-26 | Approved | Verified via dynamic bootstrap checks |
 
 ---
 

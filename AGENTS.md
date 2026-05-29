@@ -11,16 +11,16 @@ Alpha-Zero-G is a foundational meta-project. Its goal is to design, test, and es
 ## System Pointers (Where to Find Information)
 
 
-| Query / Need                             | File Path                                                                                                                                                  | Scope & Contents                                      |
-| ---------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------- |
-| **Domain Jargon & Jargon Meanings**      | [CONTEXT.md](file:///Users/jubilee/Projects/Alpha-Zero-G/CONTEXT.md)                     | Domain glossary and foundational concepts             |
-| **System Layers & Architecture**         | [docs/architecture.md](file:///Users/jubilee/Projects/Alpha-Zero-G/docs/architecture.md) | Technical stack, rule file mappings, layout           |
-| **Philosophical Guidelines & Decisions** | [docs/beliefs.md](file:///Users/jubilee/Projects/Alpha-Zero-G/docs/beliefs.md)           | High-level agent principles and design justifications |
-| **Component Sanity & Quality**           | [docs/quality.md](file:///Users/jubilee/Projects/Alpha-Zero-G/docs/quality.md)           | Quality checklists and coverage gap tracking          |
-| **Configuration Columns & Variables**    | [docs/DATA_DICT.md](file:///Users/jubilee/Projects/Alpha-Zero-G/docs/DATA_DICT.md)       | Variable listings, data formats, units                |
-| **Modeling Log & Assumptions**           | [docs/MODEL_NOTES.md](file:///Users/jubilee/Projects/Alpha-Zero-G/docs/MODEL_NOTES.md)   | Model experiments, assumptions, metric logs           |
-| **Feature Requirements Status**          | [features.json](file:///Users/jubilee/Projects/Alpha-Zero-G/features.json)               | List of core deliverables and their test states       |
-| **Session Session State Log**            | [progress.md](file:///Users/jubilee/Projects/Alpha-Zero-G/progress.md)                   | Running log of what was built and current priorities  |
+| Query / Need                             | File Path                                                 | Scope & Contents                                      |
+| ---------------------------------------- | --------------------------------------------------------- | ----------------------------------------------------- |
+| **Domain Jargon & Jargon Meanings**      | [CONTEXT.md](CONTEXT.md)                                 | Domain glossary and foundational concepts             |
+| **System Layers & Architecture**         | [docs/architecture.md](docs/architecture.md)             | Technical stack, rule file mappings, layout           |
+| **Philosophical Guidelines & Decisions** | [docs/beliefs.md](docs/beliefs.md)                       | High-level agent principles and design justifications |
+| **Component Sanity & Quality**           | [docs/quality.md](docs/quality.md)                       | Quality checklists and coverage gap tracking          |
+| **Configuration Columns & Variables**    | [docs/DATA_DICT.md](docs/DATA_DICT.md)                   | Variable listings, data formats, units                |
+| **Modeling Log & Assumptions**           | [docs/MODEL_NOTES.md](docs/MODEL_NOTES.md)               | Model experiments, assumptions, metric logs           |
+| **Feature Requirements Status**          | [features.json](features.json)                           | List of core deliverables and their test states       |
+| **Session Session State Log**            | [progress.md](progress.md)                               | Running log of what was built and current priorities  |
 
 
 ---
@@ -41,6 +41,7 @@ For any analytical, modeling, or coding task taking longer than 30 minutes, you 
 
 - **Orient Immediately:** Read `progress.md` at session start to understand the immediate state.
 - **Run Bootstrapper:** Run `bash init.sh` immediately at session start. Do not change files if `init.sh` fails on the baseline.
+- **No System Python:** Never execute direct unmanaged system `python`, `python3`, `pip`, or `pytest`. You must consistently run Python commands and test runners via `uv run` (e.g. `uv run python script.py`, `uv run pytest`) to ensure deterministic package loading from the managed virtual environment.
 - **Log Transformations:** Every numerical or data frame transformation must print/log input and output shapes to the console.
 - **Maintain Continuity:** Update `progress.md` at the end of every session detailing changes, files modified, and next actions.
 - **Documentation Synchronisation Protocol:** Upon completing any implementation phase, model run, or feature slice:

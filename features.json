@@ -13,8 +13,8 @@
   },
   {
     "id": "F-03",
-    "feature": "4 Global Analytics Skills",
-    "description": "Produce grill-analytics, spec-model, validate-output, and to-colab skills in Pocock format.",
+    "feature": "Unified Workspace Configuration Syncing",
+    "description": "Configure settings.json, mcp_config.json, and baseline rule templates for downstream projects.",
     "passes": true
   },
   {
@@ -54,18 +54,6 @@
     "passes": true
   },
   {
-    "id": "F-10",
-    "feature": "Caveman Mode — Global Session Default",
-    "description": "Added Communication Style section to ~/.gemini/GEMINI.md. Caveman activates at every session start automatically. User deactivates with 'stop caveman' or 'normal mode'.",
-    "passes": true
-  },
-  {
-    "id": "F-11",
-    "feature": "Handoff Skill — In-Place Doc Update",
-    "description": "Redesigned /handoff skill to update living project docs (progress.md, beliefs.md, MODEL_NOTES.md, features.json) in-place rather than writing a temp file. Session context stays version-controlled.",
-    "passes": true
-  },
-  {
     "id": "F-12",
     "feature": "Clean Editable Install (pyproject.toml)",
     "description": "Added [tool.setuptools.packages.find] exclude list for scratch*, templates*, tests*, docs*. init.sh now passes with zero build errors.",
@@ -99,6 +87,18 @@
     "id": "F-17",
     "feature": "Zero-Touch Documentation and ADR Alignment",
     "description": "Update ADR-0004/0005 to document the auto-elevation strategy and registry enablement, and update progress.md to record the zero-touch automated setup milestone.",
+    "passes": true
+  },
+  {
+    "id": "F-18",
+    "feature": "Deterministic Python Execution via `uv run`",
+    "description": "Established strict agent rules preventing unmanaged global Python commands and refactored setup/bootstrapping scripts to consistently use uv run.",
+    "passes": true
+  },
+  {
+    "id": "F-19",
+    "feature": "Standard Relative Markdown Path Migration",
+    "description": "Migrated all rules and templates from hardcoded absolute file:/// URLs to standard relative paths, enabling complete device-agnostic portability and preventing git-dirty state.",
     "passes": true
   }
 ]

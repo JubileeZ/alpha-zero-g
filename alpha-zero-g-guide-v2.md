@@ -292,18 +292,8 @@ alpha-zero-g/
 ├── init.sh                      # Deterministic bootstrap — reproducible env setup
 │
 ├── .agents/
-│   ├── skills/                  # Workspace skills (override globals)
-│   │   ├── grill-analytics/
-│   │   │   └── SKILL.md         # Domain-specific grill before any model work
-│   │   ├── spec-model/
-│   │   │   └── SKILL.md         # How to spec a statistical/ML model
-│   │   ├── validate-output/
-│   │   │   └── SKILL.md         # Post-model output sanity checks
-│   │   └── to-colab/
-│   │       └── SKILL.md         # Convert .py → Colab-compatible notebook
-│   ├── workflows/               # Multi-step orchestrated pipelines
-│   │   └── new-model.md         # Full workflow: grill→spec→build→validate
-│   └── hooks.json               # ENFORCEMENT layer — Hooks for hard guardrails
+│   ├── hooks.json               # ENFORCEMENT layer — Hooks for hard guardrails
+│   └── skills/                  # (Optional) Workspace-specific custom skill directories
 │
 ├── docs/                        # System of record — comprehensive knowledge base
 │   ├── architecture.md          # Domain maps, package layering rules
@@ -346,8 +336,8 @@ This file is the entry point. Read it first. Follow the pointers.
 
 ## Workflow to Follow
 Run the grill→spec→slice→ship→refactor loop for any task > 30 min.
-Use /grill-analytics before any model work.
-Use /spec-model to produce a written spec before coding.
+- Perform a domain "Grill" session (via interactive prompt or custom workspace skill) before any model work.
+- Perform a model "Spec" compiler step (writing a spec under docs/) before coding.
 
 ## Hard Rules
 - Run init.sh at the start of every session
@@ -396,18 +386,18 @@ This loop solves the biggest analytics project problem: agents that start fresh 
 .agents/skills/                     ← This project only (overrides global if same name)
 ```
 
-**No duplication needed.** Global skills are inherited automatically. Workspace skills layer on top.
+**By default, the global harness keeps `global/skills/` clean and empty.** This prevents environment bloat and avoids locking developers into pre-defined placeholders. Standard interactive tools (like `/grill-me`) are natively provided by the IDE, while custom analytics behaviors can be authored on-demand in workspace-specific folders.
 
-**Decision guide:**
+**Decision guide for custom skill authoring:**
 
 | Skill type | Where to put it |
 |---|---|
-| Universal process (grill, TDD, diagnose) | Global |
-| Analytics-domain skills (grill-analytics, spec-model) | Global — you'll use these in every analytics project |
-| Project-specific (FPL-specific validation, crypto-specific signal checks) | Workspace |
+| Universal process (grill, TDD, diagnose) | Global (install under ~/.gemini/antigravity/skills/) |
+| Analytics-domain skills (grill-analytics, spec-model) | Global (shareable across all your analytics projects) |
+| Project-specific (FPL-specific validation, crypto-specific signal checks) | Workspace (isolate under .agents/skills/ inside the target project) |
 | Experimental skills you're testing | Workspace (isolate until proven) |
 
-**Workflow:** Install Pocock's `/grill-me` and `/tdd` globally. Your `/grill-analytics` and `/spec-model` go global too. Project-specific overrides go in workspace.
+**Workflow:** Focus first on using the IDE's native tools (like `/grill-me`). If a specific modeling or validation process becomes highly repetitive, compile a dedicated `SKILL.md` under `.agents/skills/<skill-folder>/` or promote it globally once verified.
 
 ---
 

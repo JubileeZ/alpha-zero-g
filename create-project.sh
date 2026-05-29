@@ -150,7 +150,12 @@ fi
 
 # 6. Auto-register in global trusted workspaces (Slice 5)
 echo -e "5. Syncing workspace to trusted environment list..."
-python3 -c "
+PYTHON_CMD="python3"
+if command -v uv &>/dev/null; then
+    PYTHON_CMD="uv run python"
+fi
+
+$PYTHON_CMD -c "
 import json, os
 path = os.path.expanduser('~/.gemini/antigravity-cli/settings.json')
 if os.path.exists(path):

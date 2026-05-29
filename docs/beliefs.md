@@ -31,16 +31,18 @@ Non-trivial, hard-to-reverse architectural decisions are captured as separate, i
 | **ADR-0003** | Bidirectional Harness Upgrader Utility | `accepted` | 2026-05-28 | [0003-bidirectional-harness-upgrader.md](adr/harness/0003-bidirectional-harness-upgrader.md) |
 | **ADR-0004** | Cross-Platform Environment Seeding & Non-Privileged Symlinks | `accepted` | 2026-05-28 | [0004-cross-platform-config-junctions.md](adr/harness/0004-cross-platform-config-junctions.md) |
 | **ADR-0005** | Git-backed Local Monorepo Harness Synchronization | `accepted` | 2026-05-29 | [0005-local-monorepo-harness-synchronization.md](adr/harness/0005-local-monorepo-harness-synchronization.md) |
+| **ADR-0006** | Deterministic Python Execution via `uv run` | `accepted` | 2026-05-29 | [0006-deterministic-python-execution-via-uv.md](adr/harness/0006-deterministic-python-execution-via-uv.md) |
+| **ADR-0007** | Standard Relative Markdown Paths | `accepted` | 2026-05-29 | [0007-standard-relative-markdown-paths.md](adr/harness/0007-standard-relative-markdown-paths.md) |
 
 ---
 
 ## 3. Session Conventions & UX Beliefs
 
-### Caveman-as-Default → Token Budget
-Long sessions fill context fast. Default caveman mode (~75% token reduction) is now baked into `~/.gemini/GEMINI.md`. Belief: terse-by-default beats verbose-by-default for developer-agent workflows. User opt-out via "stop caveman".
+### Structured Brevity → Token Budget
+Long sessions fill context fast. Terse, token-saving conversational loops are highly encouraged for developer-agent workflows. Standard professional communication should remain structured, focused, and high-density, minimizing unnecessary greetings.
 
 ### Handoff = In-Place Doc Update, Not Temp File
-Writing a handoff to `/tmp` loses it on reboot and breaks version control continuity. Belief: `/handoff` should mutate the project's living docs (`progress.md`, `beliefs.md`, `features.json`) directly — same repo, same git history, same diff trail.
+Writing a handoff to `/tmp` loses it on reboot and breaks version control continuity. Instead, context transitions should mutate the project's living docs (`progress.md`, `beliefs.md`, `features.json`) directly—same repo, same git history, same diff trail—providing flawless continuity for subsequent sessions.
 
 
 

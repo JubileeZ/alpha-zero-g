@@ -11,20 +11,20 @@ This file is the primary entry point and cognitive map for AI agents working in 
 
 | Query / Need | File Path | Scope & Contents |
 |---|---|---|
-| **Domain Jargon & Jargon Meanings** | [CONTEXT.md](file:///{{PROJECT_ROOT}}/CONTEXT.md) | Domain glossary and foundational concepts |
-| **System Layers & Architecture** | [docs/architecture.md](file:///{{PROJECT_ROOT}}/docs/architecture.md) | Technical stack, rule file mappings, layout |
-| **Philosophical Guidelines & Decisions** | [docs/beliefs.md](file:///{{PROJECT_ROOT}}/docs/beliefs.md) | High-level agent principles and design justifications |
-| **Component Sanity & Quality** | [docs/quality.md](file:///{{PROJECT_ROOT}}/docs/quality.md) | Quality checklists and coverage gap tracking |
-| **Configuration Columns & Variables** | [docs/DATA_DICT.md](file:///{{PROJECT_ROOT}}/docs/DATA_DICT.md) | Variable listings, data formats, units |
-| **Modeling Log & Assumptions** | [docs/MODEL_NOTES.md](file:///{{PROJECT_ROOT}}/docs/MODEL_NOTES.md) | Model experiments, assumptions, metric logs |
-| **Feature Requirements Status** | [features.json](file:///{{PROJECT_ROOT}}/features.json) | List of core deliverables and their test states |
-| **Session Session State Log** | [progress.md](file:///{{PROJECT_ROOT}}/progress.md) | Running log of what was built and current priorities |
+| **Domain Jargon & Jargon Meanings** | [CONTEXT.md](CONTEXT.md) | Domain glossary and foundational concepts |
+| **System Layers & Architecture** | [docs/architecture.md](docs/architecture.md) | Technical stack, rule file mappings, layout |
+| **Philosophical Guidelines & Decisions** | [docs/beliefs.md](docs/beliefs.md) | High-level agent principles and design justifications |
+| **Component Sanity & Quality** | [docs/quality.md](docs/quality.md) | Quality checklists and coverage gap tracking |
+| **Configuration Columns & Variables** | [docs/DATA_DICT.md](docs/DATA_DICT.md) | Variable listings, data formats, units |
+| **Modeling Log & Assumptions** | [docs/MODEL_NOTES.md](docs/MODEL_NOTES.md) | Model experiments, assumptions, metric logs |
+| **Feature Requirements Status** | [features.json](features.json) | List of core deliverables and their test states |
+| **Session Session State Log** | [progress.md](progress.md) | Running log of what was built and current priorities |
 
 ---
 
 ## Preferred Workflows
 
-For any analytical, modeling, or coding task taking longer than 30 minutes, you MUST follow the **Golden Path Developer Workflow** documented in [DEVELOPER_WORKFLOW.md](file:///{{PROJECT_ROOT}}/DEVELOPER_WORKFLOW.md):
+For any analytical, modeling, or coding task taking longer than 30 minutes, you MUST follow the **Golden Path Developer Workflow** documented in [DEVELOPER_WORKFLOW.md](DEVELOPER_WORKFLOW.md):
 1. **Boot:** Run `bash init.sh` immediately at session start.
 2. **Grill:** Invoke `/grill-with-docs` (general logic) or `/grill-analytics` (data/stats audits) to refine domain terms in `CONTEXT.md` and ADRs.
 3. **Spec:** Invoke `/spec-model` to compile a formal design spec in `docs/design/` or `docs/MODEL_NOTES.md`.
@@ -40,6 +40,7 @@ For any analytical, modeling, or coding task taking longer than 30 minutes, you 
 
 - **Orient Immediately:** Read `progress.md` at session start to understand the immediate state.
 - **Run Bootstrapper:** Run `bash init.sh` immediately at session start. Do not change files if `init.sh` fails on the baseline.
+- **No System Python:** Never execute direct unmanaged system `python`, `python3`, `pip`, or `pytest`. You must consistently run Python commands and test runners via `uv run` (e.g. `uv run python script.py`, `uv run pytest`) to ensure deterministic package loading from the managed virtual environment.
 - **Log Transformations:** Every numerical or data frame transformation must print/log input and output shapes to the console.
 - **Maintain Continuity:** Update `progress.md` at the end of every session detailing changes, files modified, and next actions.
 - **Documentation Synchronisation Protocol:** Upon completing any implementation phase, model run, or feature slice:

@@ -16,7 +16,7 @@ Establish a high-performance, deterministic developer harness for analytics, mod
 
 - `[x]` **Global AGENTS.md**: Compiled coding preferences, Python + R styling guidelines, safety limits, and stuck recovery steps.
 - `[x]` **Global GEMINI.md**: Standardized Antigravity overrides, tool startup preferences, and session-log rules.
-- `[x]` **Global Skills (4 Skills)**: Formulated `grill-analytics`, `spec-model`, `validate-output`, and `to-colab` following the Pocock golden template standards.
+- `[x]` **Global Rules Baseline**: Formulated global `AGENTS.md` and `GEMINI.md` configurations to define portable developer-agent protocols.
 
 ### Project Scaffolding
 
@@ -55,18 +55,8 @@ Establish a high-performance, deterministic developer harness for analytics, mod
 5. **Trusted Workspaces Synced:** Added the downstream project `/Users/jubilee/Library/CloudStorage/GoogleDrive-z.jubilee.z@gmail.com/My Drive/Projects/FPL-Jubilee-Ascent` to `settings.json` to enable seamless, password-free operations when context switching.
 6. **Global Skills Audited:** Verified and mapped all 4 global skills (`grill-analytics`, `spec-model`, `validate-output`, and `to-colab`) in the global directory.
 7. **Environment Bootstrapped:** Successfully executed the idempotent `init.sh` script to verify python smoke tests pass.
-8. **Skills Architecture Upgraded:**
-  - Installed the new global skill `write-a-skill` to facilitate future custom skill authoring.
-  - Installed `grill-with-docs` globally to enable rigorous domain glossary and lazy ADR maintenance.
-  - Upgraded our custom `grill-analytics` skill to actively maintain `CONTEXT.md` and ADR records inline as modeling decisions are made.
-  - Installed `caveman` globally to enable ultra-terse, token-saving (75% reduction) conversational loops.
-  - Installed `diagnose` globally for highly-disciplined debugging loops (reproduction first).
-  - Installed `tdd` globally to enforce structured red-green-refactor loops.
-  - Installed `to-issues` globally to break plans into vertical tracer-bullet tasks.
-  - Installed `improve-codebase-architecture` globally to evaluate and deepen codebase modularity.
-  - Installed `handoff` globally to compile cross-session context transition summaries.
-  - Fully synchronized all 12 active skills across primary, backup, and IDE skills paths.
-9. **Global Skills & Environment Audited:** Successfully verified that all 12 custom skills are active in `~/.gemini/antigravity/skills/` and executed the idempotent `init.sh` to confirm the Python virtual environment is synced and verified.
+8. **Global Settings and Path Synchronization:** Audited and standardized global rules and settings across macOS and Windows configurations.
+9. **Lightweight Global Environment Verified:** Confirmed `global/skills/` is kept completely clean and lightweight to prevent environment bloat, keeping the developer harness focused strictly on core scaffolding, path symlinks, and environment bootstrapping.
 10. **Caveman Mode Deactivated:** User toggled `/caveman off`. Standard professional communication restored.
 11. **Broken Skills Paths Resolved:** Created symlinks from `~/.gemini/antigravity-cli/skills` and `~/.gemini/config/skills` pointing to the real `~/.gemini/antigravity/skills` directory, resolving the empty `/skills` CLI command list issue.
 12. **User-First Setup & Agent-First Run Completed:** Refactored `create-project.sh` to be fully interactive, prompt-driven, and selective. New workspaces automatically register in global settings and initialize Git. Standard templates for glossaries, design, and ADRs are auto-deployed.
@@ -82,8 +72,8 @@ Establish a high-performance, deterministic developer harness for analytics, mod
     - **(D) Domain ADR prompt file:** Created `templates/docs/adr/OPEN_DECISIONS.md` with 6 categories of generic decision prompts. Copied to all new projects. Agents backfill domain ADRs from Day 1.
     - **(E) ADR protocol in AGENTS.md template:** Added "Write ADRs" and "First Session" rules to `templates/AGENTS.md`. ADR maintenance is now a first-class protocol, not post-hoc cleanup.
 19. **pyproject.toml Build Warn Resolved:** Added `[tool.setuptools.packages.find]` exclude list (`scratch`*, `templates*`, `tests*`, `docs*`) — editable install now clean, `init.sh` passes with zero errors.
-20. **Caveman Mode — Global Default (2026-05-28):** Added `Communication Style (Default)` section to `~/.gemini/GEMINI.md`. Caveman auto-activates every session start. User disables with "stop caveman" or "normal mode".
-21. **Handoff Skill Redesigned (2026-05-28):** Upgraded `handoff/SKILL.md` to update living project docs in-place (`progress.md`, `beliefs.md`, `MODEL_NOTES.md`, `features.json`, `AGENTS.md`) instead of writing to temp dir. Session context stays version-controlled.
+20. **Developer Communication Style Defined:** Established structured professional communication expectations in the global configurations.
+21. **Documentation Integrity Framework:** Standardized in-place updates for living project docs (`progress.md`, `beliefs.md`, `MODEL_NOTES.md`, `features.json`, `AGENTS.md`) directly in the git history for absolute session continuity.
 22. **Planning vs Execution Model Separation Documented:** Antigravity CLI supports model switching via UI (thinking vs standard). No persistent automated split yet — user toggles manually per session.
 23. **Feature Branch Merged to Master (2026-05-28):** `feature/adr-workflow-standardization` merged into `master` via no-ff merge (`0b95f8e..4048bfc`). All 24 files, 5 commits, 2,260 insertions pushed to `origin/master`. Harness now at golden-standard v1 baseline.
 24. **Cross-Platform Windows Desktop Setup and Automated Configuration Sync (2026-05-28):**
@@ -103,13 +93,25 @@ Establish a high-performance, deterministic developer harness for analytics, mod
     - Documented the transition in `docs/adr/harness/0005-local-monorepo-harness-synchronization.md` (ADR-0005) and registered it in `docs/beliefs.md`.
     - Refactored `tests/test_harness_bootstrap.py` to utilize isolated mock directories (`MOCK_GLOBAL_SRC`) and tested the sync mechanism, achieving a clean 100% green 12/12 test execution.
     - Updated all pointers, root rules, and `features.json` to eliminate Google Drive references.
+    - Audited and resolved remaining legacy Google Drive references across documentation: deleted a duplicate ADR collision file (`0004-cross-platform-config-junctions 2.md`), updated hardcoded old Google Drive absolute paths in `docs/design/INDEX.md` to point to the new absolute local path `/Users/jubilee/Projects/Alpha-Zero-G/...`, and replaced the "Google Drive synced stream storage" references in both active and template architecture documents with "local/git-backed monorepo structures" (2026-05-29).
+25. **Deterministic Python Execution via `uv run` Standard Established (2026-05-29):**
+    - Established strict behavioral operating protocols in `AGENTS.md` and `DEVELOPER_WORKFLOW.md` (root, template, global) mandating the use of `uv run` for executing Python scripts (`uv run python`) and test runners (`uv run pytest`) to ensure deterministic package loading from the managed virtual environment and prevent system Python contamination.
+    - Refactored `init.sh` and `templates/init.sh` to execute the Python validation smoke tests via `uv run python`, bypassing manual shell activation.
+    - Refactored `create-project.sh` to check for `uv` and use `uv run python` for settings auto-registration with a resilient fallback.
+    - Passed all 12/12 integration tests on mac successfully.
+    - Logged decision in `docs/adr/harness/0006-deterministic-python-execution-via-uv.md` (ADR-0006) and registered it in `docs/beliefs.md`.
+26. **Standard Relative Markdown Paths Migration (2026-05-29):**
+    - Replaced host-specific `file:///Users/jubilee/Projects/Alpha-Zero-G/...` and `file:///{{PROJECT_ROOT}}/...` absolute paths across all root rules, monorepo settings, downstream scaffold templates, and design specification registries with standard relative Markdown links.
+    - Ensured complete platform and device-agnostic portability, eliminating broken links and git-dirty states when switching devices.
+    - Verified all changes against the entire 12/12 integration test suite.
+    - Logged decision in `docs/adr/harness/0007-standard-relative-markdown-paths.md` (ADR-0007) and registered it in `docs/beliefs.md`.
 
 ---
 
 ## 3. Next Session Priorities
 
-1. Push and merge the local monorepo sync changes to the main repository.
+1. Run the harness upgrader `bash upgrade-project.sh` to propagate these deterministic Python rules and `uv run` setups to your downstream FPL project (`FPL-Jubilee-Ascent`)!
 2. Initialize the developer harness on your second device using `bash setup-harness.sh` to see the seamless git-backed local symlinking in action!
-3. Kick off downstream FPL modeling using the freshly synchronized, robust harness!
+3. Kick off downstream FPL modeling using the freshly synchronized, robust, deterministic harness!
 
 <!-- Suggested skills: /handoff (end of session), /grill-analytics (before FPL modelling), /tdd (feature work in FPL-Jubilee-Ascent) -->

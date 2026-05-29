@@ -30,7 +30,7 @@ The project directory structure is designed to separate **feedforward** logic, *
 
 - **Root Configurations (`AGENTS.md`, `GEMINI.md`, `CONTEXT.md`)**: Act as high-level entry points that shape the agent's spatial awareness immediately upon session startup.
 - **Session Continuity Logs (`features.json`, `progress.md`)**: State-memory tracking files that persist work history, active blockers, and completed checkpoints between isolated LLM sessions.
-- **Bootstrapper (`init.sh`, `pyproject.toml`)**: Standardizes virtual environments deterministic setups across machines (local, cloud, or Google Drive synced stream storage).
+- **Bootstrapper (`init.sh`, `pyproject.toml`)**: Standardizes virtual environments deterministic setups across machines (local, cloud, or local/git-backed monorepo structures).
 - **The Core Docs (`docs/`)**: Forms the system of record. These files represent the formal contracts, dictionaries, and architectural guidelines that outlive transient codebases.
 - **Enforcement Layer (`.agents/hooks.json`)**: Deterministic safety hooks that restrict high-risk operations at the harness layer.
 
