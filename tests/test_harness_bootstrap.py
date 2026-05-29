@@ -202,18 +202,18 @@ def test_slice3_r_project_generation():
         shutil.rmtree(dest_dir)
 
 def test_slice6_global_harness_sync():
-    """Verify that setup-global-harness.sh can backup local configs, seed Google Drive, and establish symlinks."""
+    """Verify that setup-harness.sh can backup local configs, seed monorepo settings, and establish symlinks."""
     import tempfile
     if os.name == 'nt':
-        # Use system temp directory (NTFS) to bypass Google Drive VFAT symlink limitations
+        # Use system temp directory (NTFS) to bypass Windows symlink limitations
         mock_home = os.path.join(tempfile.gettempdir(), f"mock_home_{os.getpid()}")
-        mock_gdrive = os.path.join(tempfile.gettempdir(), f"mock_gdrive_{os.getpid()}")
+        mock_global_src = os.path.join(tempfile.gettempdir(), f"mock_global_src_{os.getpid()}")
     else:
         mock_home = os.path.abspath("scratch/mock_home")
-        mock_gdrive = os.path.abspath("scratch/mock_gdrive")
+        mock_global_src = os.path.abspath("scratch/mock_global_src")
     
     # Cleanup previous runs
-    for path in [mock_home, mock_gdrive]:
+    for path in [mock_home, mock_global_src]:
         if os.path.exists(path):
             shutil.rmtree(path)
             
@@ -238,15 +238,24 @@ def test_slice6_global_harness_sync():
     with open(os.path.join(local_gemini, "antigravity", "skills", "test-skill", "SKILL.md"), "w", encoding="utf-8") as f:
         f.write("test skill content")
         
-    # Execute setup-global-harness.sh with mock envs
+    # Seed templates in the mock monorepo global folder
+    os.makedirs(os.path.join(mock_global_src, "config"))
+    os.makedirs(os.path.join(mock_global_src, "skills"))
+    shutil.copy2("global/settings.json.example", os.path.join(mock_global_src, "settings.json.example"))
+    shutil.copy2("global/config/config.json.example", os.path.join(mock_global_src, "config", "config.json.example"))
+    shutil.copy2("global/config/mcp_config.json.example", os.path.join(mock_global_src, "config", "mcp_config.json.example"))
+    shutil.copy2("global/AGENTS.md", os.path.join(mock_global_src, "AGENTS.md"))
+    shutil.copy2("global/GEMINI.md", os.path.join(mock_global_src, "GEMINI.md"))
+    
+    # Execute setup-harness.sh with mock envs
     import subprocess
-    cmd = [get_bash_executable(), "setup-global-harness.sh"]
+    cmd = [get_bash_executable(), "setup-harness.sh"]
     env = os.environ.copy()
     env["MOCK_HOME"] = mock_home
-    env["MOCK_GDRIVE"] = mock_gdrive
+    env["MOCK_GLOBAL_SRC"] = mock_global_src
     result = subprocess.run(cmd, capture_output=True, text=True, env=env)
     
-    assert result.returncode == 0, f"setup-global-harness.sh failed: {result.stderr}\nStdout: {result.stdout}"
+    assert result.returncode == 0, f"setup-harness.sh failed: {result.stderr}\nStdout: {result.stdout}"
     
     # Assert backup folder was created locally
     backups = [d for d in os.listdir(mock_home) if d.startswith(".gemini_backup_")]
@@ -254,26 +263,26 @@ def test_slice6_global_harness_sync():
     backup_path = os.path.join(mock_home, backups[0])
     assert os.path.isfile(os.path.join(backup_path, "AGENTS.md")), "AGENTS.md should be backed up"
     
-    # Assert Google Drive folders were seeded
-    gdrive_settings = os.path.join(mock_gdrive, "My Drive", "Settings", "antigravity-cli", "settings.json")
-    gdrive_agents = os.path.join(mock_gdrive, "My Drive", "Settings", "antigravity", "AGENTS.md")
-    gdrive_gemini = os.path.join(mock_gdrive, "My Drive", "Settings", "antigravity", "GEMINI.md")
-    gdrive_skills = os.path.join(mock_gdrive, "My Drive", "Settings", "antigravity", "skills")
+    # Assert monorepo configs were seeded from templates
+    repo_settings = os.path.join(mock_global_src, "settings.json")
+    repo_config = os.path.join(mock_global_src, "config", "config.json")
+    repo_mcp = os.path.join(mock_global_src, "config", "mcp_config.json")
+    repo_skills = os.path.join(mock_global_src, "skills")
     
-    assert os.path.isfile(gdrive_settings), "Settings should be seeded on Google Drive"
-    assert os.path.isfile(gdrive_agents), "AGENTS.md should be seeded on Google Drive"
-    assert os.path.isfile(gdrive_gemini), "GEMINI.md should be seeded on Google Drive"
-    assert os.path.isdir(gdrive_skills), "skills/ should be seeded on Google Drive"
-    assert os.path.isfile(os.path.join(gdrive_skills, "test-skill", "SKILL.md")), "Individual skills should be seeded on Google Drive"
+    assert os.path.isfile(repo_settings), "settings.json should be seeded from templates"
+    assert os.path.isfile(repo_config), "config.json should be seeded from templates"
+    assert os.path.isfile(repo_mcp), "mcp_config.json should be seeded from templates"
+    assert os.path.isdir(repo_skills), "skills/ should exist"
+    assert os.path.isfile(os.path.join(repo_skills, "test-skill", "SKILL.md")), "Individual skills should be imported to monorepo"
     
-    # Assert local ~/.gemini/ paths are now symlinks pointing to Google Drive
+    # Assert local ~/.gemini/ paths are now symlinks pointing to the monorepo global directory
     assert os.path.islink(local_settings), "Local settings.json should be a symlink"
     assert os.path.islink(local_agents), "Local AGENTS.md should be a symlink"
     assert os.path.islink(local_gemini_md), "Local GEMINI.md should be a symlink"
     assert os.path.islink(os.path.join(local_gemini, "antigravity", "skills")), "Local skills/ should be a symlink"
     
     # Clean up
-    for path in [mock_home, mock_gdrive]:
+    for path in [mock_home, mock_global_src]:
         if os.path.exists(path):
             shutil.rmtree(path)
 
@@ -374,15 +383,15 @@ def test_harness_upgrader():
 
 
 def test_slice6_global_harness_sync_windows_preflight_success():
-    """Verify that setup-global-harness.sh behaves correctly on Windows when the pre-flight check confirms Developer Mode is active (no elevation needed)."""
+    """Verify that setup-harness.sh behaves correctly on Windows when the pre-flight check confirms Developer Mode is active (no elevation needed)."""
     import tempfile
     import subprocess
     
     mock_home = os.path.join(tempfile.gettempdir(), f"mock_home_pref_succ_{os.getpid()}")
-    mock_gdrive = os.path.join(tempfile.gettempdir(), f"mock_gdrive_pref_succ_{os.getpid()}")
+    mock_global_src = os.path.join(tempfile.gettempdir(), f"mock_global_src_pref_succ_{os.getpid()}")
     
     # Cleanup previous runs
-    for path in [mock_home, mock_gdrive]:
+    for path in [mock_home, mock_global_src]:
         if os.path.exists(path):
             shutil.rmtree(path)
             
@@ -396,10 +405,19 @@ def test_slice6_global_harness_sync_windows_preflight_success():
     with open(local_settings, "w", encoding="utf-8") as f:
         f.write('{"colorScheme": "dark"}')
         
-    cmd = [get_bash_executable(), "setup-global-harness.sh"]
+    # Seed templates in mock monorepo global
+    os.makedirs(os.path.join(mock_global_src, "config"))
+    os.makedirs(os.path.join(mock_global_src, "skills"))
+    shutil.copy2("global/settings.json.example", os.path.join(mock_global_src, "settings.json.example"))
+    shutil.copy2("global/config/config.json.example", os.path.join(mock_global_src, "config", "config.json.example"))
+    shutil.copy2("global/config/mcp_config.json.example", os.path.join(mock_global_src, "config", "mcp_config.json.example"))
+    shutil.copy2("global/AGENTS.md", os.path.join(mock_global_src, "AGENTS.md"))
+    shutil.copy2("global/GEMINI.md", os.path.join(mock_global_src, "GEMINI.md"))
+    
+    cmd = [get_bash_executable(), "setup-harness.sh"]
     env = os.environ.copy()
     env["MOCK_HOME"] = mock_home
-    env["MOCK_GDRIVE"] = mock_gdrive
+    env["MOCK_GLOBAL_SRC"] = mock_global_src
     # Mock pre-flight symlink capability to return success directly
     env["MOCK_SYMLINK_CAPABILITY"] = "true"
     
@@ -410,21 +428,21 @@ def test_slice6_global_harness_sync_windows_preflight_success():
     assert os.path.islink(local_settings), "Local settings.json should be a symlink in the pre-flight success path"
     
     # Clean up
-    for path in [mock_home, mock_gdrive]:
+    for path in [mock_home, mock_global_src]:
         if os.path.exists(path):
             shutil.rmtree(path)
 
 
 def test_slice6_global_harness_sync_windows_preflight_fail_elevated_success():
-    """Verify that setup-global-harness.sh behaves correctly on Windows when the pre-flight check fails but elevation is mock-accepted and successfully creates symlinks."""
+    """Verify that setup-harness.sh behaves correctly on Windows when the pre-flight check fails but elevation is mock-accepted and successfully creates symlinks."""
     import tempfile
     import subprocess
     
     mock_home = os.path.join(tempfile.gettempdir(), f"mock_home_pref_fail_{os.getpid()}")
-    mock_gdrive = os.path.join(tempfile.gettempdir(), f"mock_gdrive_pref_fail_{os.getpid()}")
+    mock_global_src = os.path.join(tempfile.gettempdir(), f"mock_global_src_pref_fail_{os.getpid()}")
     
     # Cleanup previous runs
-    for path in [mock_home, mock_gdrive]:
+    for path in [mock_home, mock_global_src]:
         if os.path.exists(path):
             shutil.rmtree(path)
             
@@ -438,10 +456,19 @@ def test_slice6_global_harness_sync_windows_preflight_fail_elevated_success():
     with open(local_settings, "w", encoding="utf-8") as f:
         f.write('{"colorScheme": "dark"}')
         
-    cmd = [get_bash_executable(), "setup-global-harness.sh"]
+    # Seed templates in mock monorepo global
+    os.makedirs(os.path.join(mock_global_src, "config"))
+    os.makedirs(os.path.join(mock_global_src, "skills"))
+    shutil.copy2("global/settings.json.example", os.path.join(mock_global_src, "settings.json.example"))
+    shutil.copy2("global/config/config.json.example", os.path.join(mock_global_src, "config", "config.json.example"))
+    shutil.copy2("global/config/mcp_config.json.example", os.path.join(mock_global_src, "config", "mcp_config.json.example"))
+    shutil.copy2("global/AGENTS.md", os.path.join(mock_global_src, "AGENTS.md"))
+    shutil.copy2("global/GEMINI.md", os.path.join(mock_global_src, "GEMINI.md"))
+    
+    cmd = [get_bash_executable(), "setup-harness.sh"]
     env = os.environ.copy()
     env["MOCK_HOME"] = mock_home
-    env["MOCK_GDRIVE"] = mock_gdrive
+    env["MOCK_GLOBAL_SRC"] = mock_global_src
     # Mock pre-flight symlink capability to fail (simulating no Developer Mode / no admin)
     env["MOCK_SYMLINK_CAPABILITY"] = "false"
     # Mock elevation to run direct non-admin batch for testing
@@ -454,7 +481,7 @@ def test_slice6_global_harness_sync_windows_preflight_fail_elevated_success():
     assert os.path.islink(local_settings), "Local settings.json should be successfully created via the elevated mock path"
     
     # Clean up
-    for path in [mock_home, mock_gdrive]:
+    for path in [mock_home, mock_global_src]:
         if os.path.exists(path):
             shutil.rmtree(path)
 

@@ -1,0 +1,9 @@
+# Exclude real local configuration files
+settings.json
+config/config.json
+config/mcp_config.json
+
+# Allow baseline templates
+!settings.json.example
+!config/config.json.example
+!config/mcp_config.json.example

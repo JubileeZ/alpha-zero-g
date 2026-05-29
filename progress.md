@@ -41,7 +41,7 @@ Establish a high-performance, deterministic developer harness for analytics, mod
 - `[x]` **Deterministic Verification**: Ran `./init.sh` to construct the `.venv` and install 24 packages, asserting clean execution.
 - `[x]` **User-First Interactive Generator**: Refactored `create-project.sh` to prompt interactively, copy targeted language partitions (Python, R, or Hybrid), resolve placeholders, and deploy standard documentation templates (`CONTEXT-FORMAT.md`, `ADR-FORMAT.md`).
 - `[x]` **Agent-First Automations**: Added automated Git initialization, a baseline commit, and global trusted workspaces JSON auto-registration to new projects.
-- `[x]` **Cross-Device Google Drive Sync**: Created `setup-global-harness.sh` to dynamically detect paths and establish robust symlinks for settings, rules, and global skills across macOS and Windows.
+- `[x]` **Local Monorepo Harness Sync (setup-harness.sh)**: Migrated synchronization architecture from Google Drive to a local GitHub-versioned monorepo style (in `global/`), establishing robust local symlinks for settings, rules, and global custom skills across macOS and Windows with gitignored local config isolation and baseline template seeding.
 - `[x]` **Bidirectional Harness Upgrader (`upgrade-project.sh`)**: Designed and built a robust utility that propagates generic harness configuration files (`init.sh`, `.agents/hooks.json`, `DEVELOPER_WORKFLOW.md`, base templates) bidirectionally. Pushing templates to downstream automatically resolves `{{PROJECT_NAME}}`, `{{PROJECT_ROOT}}`, and `{{PROJECT_DESCRIPTION}}` dynamically, and pulling optimizations back to core automatically restores standard placeholders. Enforces colorized git-native dry-run diffs and interactive confirmation safety prompts. Registered 100% passing pytest integration coverage.
 
 ---
@@ -95,12 +95,21 @@ Establish a high-performance, deterministic developer harness for analytics, mod
   - Verified and successfully ran `init.sh` and `setup-global-harness.sh` on the Windows desktop, creating a pristine, fully synchronized cross-device setup.
   - **Completed Zero-Touch Windows Setup Automation (2026-05-28)**: Designed and implemented a frictionless symlink strategy. Section 5 now performs an on-the-fly pre-flight test. If the host lacks native symlink capability (Developer Mode disabled / non-admin), it dynamically generates an elevated batch script (`AllowDevelopmentWithoutDevLicense = 1` registry enablement + `mklink` / `mklink /d` commands) and executes it in a single UAC session via PowerShell. Once Developer Mode is active, all subsequent sync commands work with zero elevation.
   - **Cross-Platform Test Coverage & UTF-8 I/O Resolution**: Fixed standard `open()` CP1252 decoding failures on Windows by explicitly forcing UTF-8 file encodings. Resolved hardcoded `bash` environment execution paths in subprocesses to dynamically locate Git Bash. Extended `test_harness_bootstrap.py` with mock environments validating the pre-flight checks, bypass temp dir pathing, and UAC elevation branch. Achieved a 100% clean, green 12/12 passing test suite on Windows.
+  - **GitHub + Local Monorepo Harness Sync Migration**:
+    - Deprecated legacy Google Drive synchronization and hardcoded paths.
+    - Established a git-versioned `global/` folder inside `Alpha-Zero-G` monorepo containing rule baselines (`AGENTS.md`, `GEMINI.md`) and a custom `skills/` folder.
+    - Excluded sensitive/local-specific config files (`settings.json`, `config.json`, `mcp_config.json`) from GitHub using `global/.gitignore`, while committing clean `.example` templates for seeding.
+    - Rewrote the setup script into a unified `setup-harness.sh` that dynamically resolves repository root, backs up existing `~/.gemini` structures, seeds missing configurations, and establishes robust cross-platform symlinks.
+    - Documented the transition in `docs/adr/harness/0005-local-monorepo-harness-synchronization.md` (ADR-0005) and registered it in `docs/beliefs.md`.
+    - Refactored `tests/test_harness_bootstrap.py` to utilize isolated mock directories (`MOCK_GLOBAL_SRC`) and tested the sync mechanism, achieving a clean 100% green 12/12 test execution.
+    - Updated all pointers, root rules, and `features.json` to eliminate Google Drive references.
 
 ---
 
 ## 3. Next Session Priorities
 
-1. Delete `feature/adr-workflow-standardization` remote branch (clean housekeeping).
-2. Kick off downstream FPL modeling using the freshly synchronized harness on the Windows desktop!
+1. Push and merge the local monorepo sync changes to the main repository.
+2. Initialize the developer harness on your second device using `bash setup-harness.sh` to see the seamless git-backed local symlinking in action!
+3. Kick off downstream FPL modeling using the freshly synchronized, robust harness!
 
 <!-- Suggested skills: /handoff (end of session), /grill-analytics (before FPL modelling), /tdd (feature work in FPL-Jubilee-Ascent) -->

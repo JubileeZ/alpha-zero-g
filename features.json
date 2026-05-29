@@ -74,7 +74,7 @@
   {
     "id": "F-13",
     "feature": "Pre-flight Symlink Capability Check",
-    "description": "Implement test_symlink_capability() in setup-global-harness.sh to detect if native directory symlinks can be created without admin privileges.",
+    "description": "Implement test_symlink_capability() in setup-harness.sh to detect if native directory symlinks can be created without admin privileges.",
     "passes": true
   },
   {
@@ -86,19 +86,19 @@
   {
     "id": "F-15",
     "feature": "Integrated Symlink Creation Orchestration",
-    "description": "Refactor setup-global-harness.sh Section 5 to use a unified symlink pair list and orchestrate pathways (pre-flight success -> normal run, pre-flight fail -> elevated batch run, fallback to ln -s).",
+    "description": "Refactor setup-harness.sh Section 5 to use a unified symlink pair list and orchestrate pathways (pre-flight success -> normal run, pre-flight fail -> elevated batch run, fallback to ln -s).",
     "passes": true
   },
   {
     "id": "F-16",
     "feature": "Cross-Platform Unit and Integration Tests",
-    "description": "Extend test_harness_bootstrap.py with tests verifying setup-global-harness.sh under mocked Windows settings, covering capability success, capability failure with UAC elevation, and abort path.",
+    "description": "Extend test_harness_bootstrap.py with tests verifying setup-harness.sh under mocked Windows settings, covering capability success, capability failure with UAC elevation, and abort path.",
     "passes": true
   },
   {
     "id": "F-17",
     "feature": "Zero-Touch Documentation and ADR Alignment",
-    "description": "Update ADR-0004 to document the auto-elevation strategy and registry enablement, and update progress.md to record the zero-touch automated setup milestone.",
+    "description": "Update ADR-0004/0005 to document the auto-elevation strategy and registry enablement, and update progress.md to record the zero-touch automated setup milestone.",
     "passes": true
   }
 ]

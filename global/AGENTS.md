@@ -11,16 +11,16 @@ Alpha-Zero-G is a foundational meta-project. Its goal is to design, test, and es
 ## System Pointers (Where to Find Information)
 
 
-| Query / Need                             | File Path                                                                                                                                                  | Scope & Contents                                      |
-| ---------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------- |
-| **Domain Jargon & Jargon Meanings**      | [CONTEXT.md](file:///Users/jubilee/Projects/Alpha-Zero-G/CONTEXT.md)                     | Domain glossary and foundational concepts             |
-| **System Layers & Architecture**         | [docs/architecture.md](file:///Users/jubilee/Projects/Alpha-Zero-G/docs/architecture.md) | Technical stack, rule file mappings, layout           |
-| **Philosophical Guidelines & Decisions** | [docs/beliefs.md](file:///Users/jubilee/Projects/Alpha-Zero-G/docs/beliefs.md)           | High-level agent principles and design justifications |
-| **Component Sanity & Quality**           | [docs/quality.md](file:///Users/jubilee/Projects/Alpha-Zero-G/docs/quality.md)           | Quality checklists and coverage gap tracking          |
-| **Configuration Columns & Variables**    | [docs/DATA_DICT.md](file:///Users/jubilee/Projects/Alpha-Zero-G/docs/DATA_DICT.md)       | Variable listings, data formats, units                |
-| **Modeling Log & Assumptions**           | [docs/MODEL_NOTES.md](file:///Users/jubilee/Projects/Alpha-Zero-G/docs/MODEL_NOTES.md)   | Model experiments, assumptions, metric logs           |
-| **Feature Requirements Status**          | [features.json](file:///Users/jubilee/Projects/Alpha-Zero-G/features.json)               | List of core deliverables and their test states       |
-| **Session Session State Log**            | [progress.md](file:///Users/jubilee/Projects/Alpha-Zero-G/progress.md)                   | Running log of what was built and current priorities  |
+| Query / Need                             | File Path                                                                                                                          | Scope & Contents                                      |
+| ---------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------- |
+| **Domain Jargon & Jargon Meanings**      | [CONTEXT.md](file:///Users/jubilee/Projects/Alpha-Zero-G/CONTEXT.md)                                                               | Domain glossary and foundational concepts             |
+| **System Layers & Architecture**         | [docs/architecture.md](file:///Users/jubilee/Projects/Alpha-Zero-G/docs/architecture.md)                                           | Technical stack, rule file mappings, layout           |
+| **Philosophical Guidelines & Decisions** | [docs/beliefs.md](file:///Users/jubilee/Projects/Alpha-Zero-G/docs/beliefs.md)                                                     | High-level agent principles and design justifications |
+| **Component Sanity & Quality**           | [docs/quality.md](file:///Users/jubilee/Projects/Alpha-Zero-G/docs/quality.md)                                                     | Quality checklists and coverage gap tracking          |
+| **Configuration Columns & Variables**    | [docs/DATA_DICT.md](file:///Users/jubilee/Projects/Alpha-Zero-G/docs/DATA_DICT.md)                                                 | Variable listings, data formats, units                |
+| **Modeling Log & Assumptions**           | [docs/MODEL_NOTES.md](file:///Users/jubilee/Projects/Alpha-Zero-G/docs/MODEL_NOTES.md)                                             | Model experiments, assumptions, metric logs           |
+| **Feature Requirements Status**          | [features.json](file:///Users/jubilee/Projects/Alpha-Zero-G/features.json)                                                         | List of core deliverables and their test states       |
+| **Session Session State Log**            | [progress.md](file:///Users/jubilee/Projects/Alpha-Zero-G/progress.md)                                                             | Running log of what was built and current priorities  |
 
 
 ---
@@ -61,4 +61,3 @@ For any analytical, modeling, or coding task taking longer than 30 minutes, you 
 - **Allowed Freely:** Reading any project files. Writing to `src/`, `notebooks/`, `tests/`, and temporary directories.
 - **Requires Approval:** Deleting files, modifying `.agents/` or `config/` paths, installing system packages, and performing network requests.
 - **Forbidden:** Force-pushing to main (`git push --force`), modifying `.git/` internals, and exposing `.env` secrets.
-
