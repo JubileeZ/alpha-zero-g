@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # Alpha-Zero-G GitHub + Local Harness Sync Setup Script
-# Automatically links ~/.gemini/ configs and global skills to the local repository's global/ folder.
+# Automatically seeds ~/.gemini/ configs and copies global rules/skills physically from the local repository's global/ folder.
 
 set -euo pipefail
 
@@ -16,7 +16,7 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 echo -e "${BLUE}===============================================${NC}"
-echo -e "${BLUE}    Alpha-Zero-G Local Monorepo Harness Sync    ${NC}"
+echo -e "${BLUE}   Alpha-Zero-G Local Monorepo Harness Setup    ${NC}"
 echo -e "${BLUE}===============================================${NC}"
 
 # 1. Resolve Target Home Directory (support TDD mock injection)
@@ -38,27 +38,7 @@ mkdir -p "${GEMINI_DIR}/config"
 mkdir -p "${GLOBAL_SRC_DIR}/config"
 mkdir -p "${GLOBAL_SRC_DIR}/skills"
 
-# 2. Seed real local files from .example templates if missing
-echo -e "\n2. Seeding local configuration baselines from templates..."
-
-seed_from_example() {
-    local target_file="$1"
-    local example_file="$2"
-    if [ ! -f "${target_file}" ]; then
-        if [ -f "${example_file}" ]; then
-            echo -e "  - Seeding: copying baseline $(basename "${example_file}") to $(basename "${target_file}")"
-            cp "${example_file}" "${target_file}"
-        else
-            echo -e "${YELLOW}  - Warning: baseline template $(basename "${example_file}") missing.${NC}"
-        fi
-    fi
-}
-
-seed_from_example "${GLOBAL_SRC_DIR}/settings.json" "${GLOBAL_SRC_DIR}/settings.json.example"
-seed_from_example "${GLOBAL_SRC_DIR}/config/config.json" "${GLOBAL_SRC_DIR}/config/config.json.example"
-seed_from_example "${GLOBAL_SRC_DIR}/config/mcp_config.json" "${GLOBAL_SRC_DIR}/config/mcp_config.json.example"
-
-# 3. Establish Safe Local Backups before symlinking
+# 2. Establish Safe Local Backups of existing physical configurations
 BACKUP_DIR="${REAL_HOME}/.gemini_backup_$(date +%Y%m%d_%H%M%S)"
 BACKUP_MADE=false
 
@@ -70,7 +50,7 @@ backup_file() {
             mkdir -p "${BACKUP_DIR}/antigravity"
             mkdir -p "${BACKUP_DIR}/config"
             BACKUP_MADE=true
-            echo -e "\n3. Creating local backup folder: ${GREEN}${BACKUP_DIR}${NC}"
+            echo -e "\n2. Creating local backup folder: ${GREEN}${BACKUP_DIR}${NC}"
         fi
         # Replicate nested directory layout
         if [[ "${filepath}" == *"antigravity-cli"* ]]; then
@@ -92,7 +72,7 @@ backup_dir() {
             mkdir -p "${BACKUP_DIR}/antigravity-cli"
             mkdir -p "${BACKUP_DIR}/antigravity"
             BACKUP_MADE=true
-            echo -e "\n3. Creating local backup folder: ${GREEN}${BACKUP_DIR}${NC}"
+            echo -e "\n2. Creating local backup folder: ${GREEN}${BACKUP_DIR}${NC}"
         fi
         cp -R "${dirpath}" "${BACKUP_DIR}/antigravity/"
     fi
@@ -108,7 +88,7 @@ backup_dir "${GEMINI_DIR}/antigravity/skills"
 
 # Seed existing local skills to global/skills if any exist
 if [ -d "${GEMINI_DIR}/antigravity/skills" ] && [ ! -L "${GEMINI_DIR}/antigravity/skills" ]; then
-    echo -e "\n4. Importing existing local skills to monorepo..."
+    echo -e "\n3. Importing existing local skills to monorepo..."
     for skill_path in "${GEMINI_DIR}/antigravity/skills"/*; do
         if [ -d "${skill_path}" ]; then
             skill_name=$(basename "${skill_path}")
@@ -120,8 +100,77 @@ if [ -d "${GEMINI_DIR}/antigravity/skills" ] && [ ! -L "${GEMINI_DIR}/antigravit
     done
 fi
 
-# 5. Establish robust local symlinks
-echo -e "\n5. Linking local ~/.gemini paths to repository..."
+# 3. Clean up any existing repository-level symlinks to prevent conflicts
+echo -e "\n3. Cleaning up repository-level symbolic links..."
+cleanup_repo_symlink() {
+    local path="$1"
+    if [ -L "${path}" ]; then
+        echo -e "  - Removing old repository symlink: ${path}"
+        rm -f "${path}"
+    fi
+}
+cleanup_repo_symlink "${GEMINI_DIR}/antigravity-cli/settings.json"
+cleanup_repo_symlink "${GEMINI_DIR}/AGENTS.md"
+cleanup_repo_symlink "${GEMINI_DIR}/GEMINI.md"
+cleanup_repo_symlink "${GEMINI_DIR}/antigravity/skills"
+cleanup_repo_symlink "${GEMINI_DIR}/config/config.json"
+cleanup_repo_symlink "${GEMINI_DIR}/config/mcp_config.json"
+
+# 4. Seed and Deploy Configuration Files (copied physically, only if missing)
+echo -e "\n4. Seeding user configuration files from templates..."
+seed_from_example() {
+    local target_file="$1"
+    local example_file="$2"
+    if [ ! -f "${target_file}" ]; then
+        if [ -f "${example_file}" ]; then
+            echo -e "  - Seeding: copying $(basename "${example_file}") to ${target_file}"
+            cp "${example_file}" "${target_file}"
+        else
+            echo -e "${YELLOW}  - Warning: baseline template $(basename "${example_file}") missing.${NC}"
+        fi
+    else
+        echo -e "  - Preserving existing physical config: ${target_file}"
+    fi
+}
+seed_from_example "${GEMINI_DIR}/antigravity-cli/settings.json" "${GLOBAL_SRC_DIR}/settings.json.example"
+seed_from_example "${GEMINI_DIR}/config/config.json" "${GLOBAL_SRC_DIR}/config/config.json.example"
+seed_from_example "${GEMINI_DIR}/config/mcp_config.json" "${GLOBAL_SRC_DIR}/config/mcp_config.json.example"
+
+# 5. Deploy Global Rules (copied physically, always overwritten to sync rules)
+echo -e "\n5. Deploying universal developer rules to ~/.gemini..."
+deploy_rule_file() {
+    local source_file="$1"
+    local dest_file="$2"
+    if [ -f "${source_file}" ]; then
+        echo -e "  - Deploying rule file: copying $(basename "${source_file}") to ${dest_file}"
+        cp "${source_file}" "${dest_file}"
+    else
+        echo -e "${RED}  - Error: Source rule file missing: ${source_file}${NC}"
+        exit 1
+    fi
+}
+deploy_rule_file "${GLOBAL_SRC_DIR}/AGENTS.md" "${GEMINI_DIR}/AGENTS.md"
+deploy_rule_file "${GLOBAL_SRC_DIR}/GEMINI.md" "${GEMINI_DIR}/GEMINI.md"
+
+# 6. Deploy Global Custom Skills (copied physically to preserve isolation)
+echo -e "\n6. Deploying global custom skills..."
+mkdir -p "${GEMINI_DIR}/antigravity/skills"
+if [ -d "${GLOBAL_SRC_DIR}/skills" ]; then
+    for skill_path in "${GLOBAL_SRC_DIR}/skills"/*; do
+        if [ -d "${skill_path}" ]; then
+            skill_name=$(basename "${skill_path}")
+            # Deploy skill if not existing, or update it
+            if [ ! -d "${GEMINI_DIR}/antigravity/skills/${skill_name}" ]; then
+                echo -e "  - Deploying skill: copying ${skill_name} to ~/.gemini/antigravity/skills/"
+                cp -R "${skill_path}" "${GEMINI_DIR}/antigravity/skills/"
+            fi
+        fi
+    done
+fi
+
+# 7. Establish internal helper symlinks
+# Helper links remain internal to ~/.gemini/ and do not depend on external repos.
+echo -e "\n7. Establishing internal helper symlinks..."
 
 is_windows() {
     [[ "$(uname -s)" == *"MINGW"* ]] || [[ "$(uname -s)" == *"MSYS"* ]]
@@ -138,7 +187,7 @@ test_symlink_capability() {
     fi
     
     local test_link="${GEMINI_DIR}/.symlink_test_$$"
-    local test_target="${GLOBAL_SRC_DIR}"
+    local test_target="${GEMINI_DIR}/antigravity/skills"
     local win_link=$(cygpath -w "${test_link}" | tr -d '\r')
     local win_target=$(cygpath -w "${test_target}" | tr -d '\r')
     
@@ -148,17 +197,6 @@ test_symlink_capability() {
     return ${result}
 }
 
-# Define all symlink pairs (target|link_path)
-SYMLINK_PAIRS=(
-    "${GLOBAL_SRC_DIR}/settings.json|${GEMINI_DIR}/antigravity-cli/settings.json"
-    "${GLOBAL_SRC_DIR}/AGENTS.md|${GEMINI_DIR}/AGENTS.md"
-    "${GLOBAL_SRC_DIR}/GEMINI.md|${GEMINI_DIR}/GEMINI.md"
-    "${GLOBAL_SRC_DIR}/skills|${GEMINI_DIR}/antigravity/skills"
-    "${GLOBAL_SRC_DIR}/config/config.json|${GEMINI_DIR}/config/config.json"
-    "${GLOBAL_SRC_DIR}/config/mcp_config.json|${GEMINI_DIR}/config/mcp_config.json"
-)
-
-# Additional internal helper links to satisfy different configurations
 HELPER_SYMLINK_PAIRS=(
     "${GEMINI_DIR}/antigravity/skills|${GEMINI_DIR}/antigravity-cli/skills"
     "${GEMINI_DIR}/antigravity/skills|${GEMINI_DIR}/config/skills"
@@ -200,22 +238,6 @@ echo Enabling Developer Mode...
 reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\AppModelUnlock" /v AllowDevelopmentWithoutDevLicense /t REG_DWORD /d 1 /f >nul 2>&1
 BATCH_HEADER
     
-    # Append core symlinks
-    for pair in "${SYMLINK_PAIRS[@]}"; do
-        local target="${pair%%|*}"
-        local link_path="${pair##*|}"
-        local win_target=$(cygpath -w "${target}" | tr -d '\r')
-        local win_link=$(cygpath -w "${link_path}" | tr -d '\r')
-        
-        if [ -d "${target}" ]; then
-            echo "if exist \"${win_link}\" rmdir \"${win_link}\" 2>nul" >> "${batch_file}"
-            echo "mklink /d \"${win_link}\" \"${win_target}\"" >> "${batch_file}"
-        else
-            echo "if exist \"${win_link}\" del \"${win_link}\" 2>nul" >> "${batch_file}"
-            echo "mklink \"${win_link}\" \"${win_target}\"" >> "${batch_file}"
-        fi
-    done
-    
     # Append helper symlinks
     for pair in "${HELPER_SYMLINK_PAIRS[@]}"; do
         local target="${pair%%|*}"
@@ -249,9 +271,6 @@ BATCH_HEADER
 if is_windows; then
     if test_symlink_capability; then
         echo -e "  ${GREEN}✔ Symlink capability confirmed (Developer Mode active)${NC}"
-        for pair in "${SYMLINK_PAIRS[@]}"; do
-            create_symlink "${pair%%|*}" "${pair##*|}"
-        done
         for pair in "${HELPER_SYMLINK_PAIRS[@]}"; do
             create_symlink "${pair%%|*}" "${pair##*|}"
         done
@@ -262,32 +281,61 @@ if is_windows; then
     fi
 else
     # macOS/Linux: normal symlinks
-    for pair in "${SYMLINK_PAIRS[@]}"; do
-        create_symlink "${pair%%|*}" "${pair##*|}"
-    done
     for pair in "${HELPER_SYMLINK_PAIRS[@]}"; do
         create_symlink "${pair%%|*}" "${pair##*|}"
     done
 fi
 
-# Verification and reporting loop
+# 8. Verification and reporting loop
+echo -e "\n8. Verifying environment configurations..."
 FAILED=false
-for pair in "${SYMLINK_PAIRS[@]}"; do
-    link_path="${pair##*|}"
-    if [ -e "${link_path}" ] || [ -L "${link_path}" ]; then
-        echo -e "  - ${GREEN}✔${NC} $(basename "${link_path}") -> $(dirname "${link_path}")"
+
+verify_physical_file() {
+    local filepath="$1"
+    if [ -f "${filepath}" ] && [ ! -L "${filepath}" ]; then
+        echo -e "  - ${GREEN}✔${NC} $(basename "${filepath}") [Physical File]"
     else
-        echo -e "  - ${RED}✘${NC} $(basename "${link_path}") — FAILED to establish"
+        echo -e "  - ${RED}✘${NC} $(basename "${filepath}") [FAILED - not a physical file]"
         FAILED=true
     fi
+}
+
+verify_physical_dir() {
+    local dirpath="$1"
+    if [ -d "${dirpath}" ] && [ ! -L "${dirpath}" ]; then
+        echo -e "  - ${GREEN}✔${NC} $(basename "${dirpath}")/ [Physical Directory]"
+    else
+        echo -e "  - ${RED}✘${NC} $(basename "${dirpath}")/ [FAILED - not a physical directory]"
+        FAILED=true
+    fi
+}
+
+verify_symlink() {
+    local link_path="$1"
+    if [ -L "${link_path}" ]; then
+        echo -e "  - ${GREEN}✔${NC} $(basename "${link_path}") -> $(readlink "${link_path}" || echo "Windows Symlink Target") [Symlink]"
+    else
+        echo -e "  - ${RED}✘${NC} $(basename "${link_path}") [FAILED - not a symbolic link]"
+        FAILED=true
+    fi
+}
+
+verify_physical_file "${GEMINI_DIR}/antigravity-cli/settings.json"
+verify_physical_file "${GEMINI_DIR}/AGENTS.md"
+verify_physical_file "${GEMINI_DIR}/GEMINI.md"
+verify_physical_dir "${GEMINI_DIR}/antigravity/skills"
+verify_physical_file "${GEMINI_DIR}/config/config.json"
+verify_physical_file "${GEMINI_DIR}/config/mcp_config.json"
+
+for pair in "${HELPER_SYMLINK_PAIRS[@]}"; do
+    verify_symlink "${pair##*|}"
 done
 
 if [ "${FAILED}" = "true" ]; then
-    echo -e "\n${RED}✘ Failed to synchronize some global configurations!${NC}"
-    echo -e "${YELLOW}    TIP: Please ensure Windows Developer Mode is enabled or run as Administrator.${NC}"
+    echo -e "\n${RED}✘ Verification failed for some configurations!${NC}"
     exit 1
 fi
 
-echo -e "\n${GREEN}✔ Local harness successfully synced!${NC}"
-echo -e "  - All configuration templates, global custom rules, and skills are linked locally."
+echo -e "\n${GREEN}✔ Local harness successfully synced with physical decoupled files!${NC}"
+echo -e "  - All configuration templates and global custom rules are copied and isolated."
 echo -e "${BLUE}===============================================${NC}"
