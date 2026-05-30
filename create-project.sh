@@ -50,6 +50,8 @@ if [ "$#" -lt 4 ]; then
 else
     PROJECT_DESCRIPTION="$4"
 fi
+# Capture template repository remote origin before changing directories
+TEMPLATE_REMOTE=$(git remote get-url origin 2>/dev/null || true)
 
 PROJECT_ROOT_ABS=$(mkdir -p "${DEST_DIR}" && cd "${DEST_DIR}" && pwd)
 
@@ -218,6 +220,17 @@ echo -e "6. Initializing local Git repository baseline..."
         git config user.name "Alpha Zero G Initializer"
         git commit -m "feat: initial harness bootstrap" -q
     )
+
+    # Configure remote origin if template has a remote
+    if [ -n "${TEMPLATE_REMOTE}" ]; then
+        CLEAN_REMOTE="${TEMPLATE_REMOTE%.git}"
+        CLEAN_REMOTE="${CLEAN_REMOTE%/}"
+        TEMPLATE_REPO_NAME=$(basename "${CLEAN_REMOTE}")
+        NEW_REMOTE="${TEMPLATE_REMOTE%${TEMPLATE_REPO_NAME}*}${PROJECT_NAME}.git"
+        git remote add origin "${NEW_REMOTE}" 2>/dev/null || git remote set-url origin "${NEW_REMOTE}"
+        echo -e "  - Configured git remote origin to: ${GREEN}${NEW_REMOTE}${NC}"
+    fi
+
     echo -e "  - Git baseline established successfully."
 )
 

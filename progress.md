@@ -22,6 +22,7 @@ Establish a high-performance, deterministic developer harness for analytics, mod
 
 - `[x]` **Repository Defaults**: Standardized `.gitignore`, compiled standard MIT `LICENSE`, and built introductory `README.md`.
 - `[x]` **Fresh Skills Retrieval Integration**: Integrated shallow-cloning (`--depth 1`) from the `mattpocock/skills` repository. Project creation now dynamically retrieves the latest engineering and productivity skills directly from GitHub, deploying them to the project's local `.agents/skills/` folder. Includes robust offline error recovery and environment-driven test isolation (`SKIP_EXTERNAL_SKILLS`).
+- `[x]` **Git Remote Auto-configuration**: Repaired the incorrect `original` remote in the `FPL-Jubilee-Ascent` project and configured `origin` correctly. Updated the `create-project.sh` generator script in `Alpha-Zero-G` to automatically extract the template's git remote URL, dynamically construct the corresponding URL for the new project, and configure the new project's remote origin automatically upon creation.
 
 ### Project Configuration & Safety
 
@@ -127,6 +128,10 @@ Establish a high-performance, deterministic developer harness for analytics, mod
     - Automatically synced path registration to global trustedWorkspaces.
     - Deterministically executed `init.sh` inside the new workspace, configuring the `uv` environment and installing 55 specialized packages.
     - Verified environment setup by executing initial test suite, ensuring `1 passed` green baseline test execution.
+29. **Git Remote Repair & Auto-configuration (2026-05-30):**
+    - Repaired the incorrect `original` remote in the `FPL-Jubilee-Ascent` project and configured `origin` pointing to the project's own GitHub URL.
+    - Updated `create-project.sh` to extract the host template remote, dynamically construct the new project's remote, and configure the git remote automatically upon creation.
+    - Tested and verified the updated generator by bootstrapping a dummy project and checking that it successfully configured the new git remote.
 
 ---
 
