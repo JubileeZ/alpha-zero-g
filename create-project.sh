@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# Alpha-Zero-G Project Generator Script
+# Alpha-Zero-G Project Generator Script (MVP Edition)
 # Automates the creation of new analytics/statistical workspaces from templates.
 
 set -euo pipefail
@@ -63,8 +63,6 @@ mkdir -p "${PROJECT_ROOT_ABS}/src"
 mkdir -p "${PROJECT_ROOT_ABS}/notebooks"
 mkdir -p "${PROJECT_ROOT_ABS}/tests"
 mkdir -p "${PROJECT_ROOT_ABS}/.agents/skills"
-mkdir -p "${PROJECT_ROOT_ABS}/docs/design"
-mkdir -p "${PROJECT_ROOT_ABS}/docs/adr"
 
 # 2. Deploy standard template files
 echo -e "2. Deploying common template files..."
@@ -79,48 +77,16 @@ cp templates/Makefile "${PROJECT_ROOT_ABS}/Makefile"
 cp templates/.pre-commit-config.yaml "${PROJECT_ROOT_ABS}/.pre-commit-config.yaml"
 cp templates/.env.example "${PROJECT_ROOT_ABS}/.env.example"
 cp .agents/hooks.json "${PROJECT_ROOT_ABS}/.agents/hooks.json"
-mkdir -p "${PROJECT_ROOT_ABS}/.agents/rules"
-cp .agents/rules/* "${PROJECT_ROOT_ABS}/.agents/rules/"
-
-# 3. Copy standard system docs & templates
-cp templates/docs/architecture.md "${PROJECT_ROOT_ABS}/docs/architecture.md"
-cp templates/docs/beliefs.md "${PROJECT_ROOT_ABS}/docs/beliefs.md"
-cp templates/docs/conventions.md "${PROJECT_ROOT_ABS}/docs/conventions.md"
-cp templates/docs/data-rules.md "${PROJECT_ROOT_ABS}/docs/data-rules.md"
-cp templates/docs/modeling-rules.md "${PROJECT_ROOT_ABS}/docs/modeling-rules.md"
-cp templates/docs/context-management.md "${PROJECT_ROOT_ABS}/docs/context-management.md"
-cp templates/docs/session-protocols.md "${PROJECT_ROOT_ABS}/docs/session-protocols.md"
-cp templates/docs/testing-requirements.md "${PROJECT_ROOT_ABS}/docs/testing-requirements.md"
-cp templates/docs/security-rules.md "${PROJECT_ROOT_ABS}/docs/security-rules.md"
-cp templates/docs/domain-rules.md "${PROJECT_ROOT_ABS}/docs/domain-rules.md"
-cp templates/docs/safety-policies.md "${PROJECT_ROOT_ABS}/docs/safety-policies.md"
-cp docs/DATA_DICT.md "${PROJECT_ROOT_ABS}/docs/DATA_DICT.md"
-cp docs/MODEL_NOTES.md "${PROJECT_ROOT_ABS}/docs/MODEL_NOTES.md"
-cp templates/docs/CONTEXT-FORMAT.md "${PROJECT_ROOT_ABS}/docs/CONTEXT-FORMAT.md"
-cp templates/docs/ADR-FORMAT.md "${PROJECT_ROOT_ABS}/docs/ADR-FORMAT.md"
-cp templates/docs/adr/0000-adr-template.md "${PROJECT_ROOT_ABS}/docs/adr/0000-adr-template.md"
-cp templates/docs/adr/OPEN_DECISIONS.md "${PROJECT_ROOT_ABS}/docs/adr/OPEN_DECISIONS.md"
-
-# 3b. Select language-specific quality template
-echo -e "3b. Selecting quality template for project type: ${PROJECT_TYPE}..."
-if [ "${PROJECT_TYPE}" = "python" ]; then
-    cp templates/docs/quality-python.md "${PROJECT_ROOT_ABS}/docs/quality.md"
-elif [ "${PROJECT_TYPE}" = "r" ]; then
-    cp templates/docs/quality-r.md "${PROJECT_ROOT_ABS}/docs/quality.md"
-else
-    cp templates/docs/quality-hybrid.md "${PROJECT_ROOT_ABS}/docs/quality.md"
-fi
-
 cp .gitignore "${PROJECT_ROOT_ABS}/.gitignore"
 cp LICENSE "${PROJECT_ROOT_ABS}/LICENSE"
 
-# 4. Copy language-specific partitioned templates
+# 3. Copy language-specific partitioned templates
 if [ "${PROJECT_TYPE}" = "python" ] || [ "${PROJECT_TYPE}" = "hybrid" ]; then
-    echo -e "3a. Deploying Python-specific templates..."
+    echo -e "3. Deploying Python-specific templates..."
     cp templates/python/pyproject.toml "${PROJECT_ROOT_ABS}/pyproject.toml"
     
-    # Normalize package name (lowercase, replace hyphens with underscores)
-    CLEAN_PKG_NAME=$(echo "${PROJECT_NAME}" | tr '[:upper:]' '[:lower:]' | tr '-' '_')
+    # Normalize package name (lowercase, replace hyphens and spaces with underscores)
+    CLEAN_PKG_NAME=$(echo "${PROJECT_NAME}" | tr '[:upper:]' '[:lower:]' | tr ' ' '_' | tr '-' '_')
     mkdir -p "${PROJECT_ROOT_ABS}/src/${CLEAN_PKG_NAME}"
     
     cp templates/python/src/__init__.py "${PROJECT_ROOT_ABS}/src/__init__.py"
@@ -131,13 +97,13 @@ if [ "${PROJECT_TYPE}" = "python" ] || [ "${PROJECT_TYPE}" = "hybrid" ]; then
 fi
 
 if [ "${PROJECT_TYPE}" = "r" ] || [ "${PROJECT_TYPE}" = "hybrid" ]; then
-    echo -e "3b. Deploying R-specific templates..."
+    echo -e "3. Deploying R-specific templates..."
     cp templates/r/DESCRIPTION "${PROJECT_ROOT_ABS}/DESCRIPTION"
     cp templates/r/src/smoke.R "${PROJECT_ROOT_ABS}/src/smoke.R"
     cp templates/r/tests/testthat.R "${PROJECT_ROOT_ABS}/tests/testthat.R"
 fi
 
-# 5. Replace parameter placeholders
+# 4. Replace parameter placeholders
 echo -e "4. Customizing parameters..."
 ESCAPED_ROOT=$(echo "${PROJECT_ROOT_ABS}" | sed 's/\//\\\//g')
 
@@ -145,7 +111,7 @@ ESCAPED_ROOT=$(echo "${PROJECT_ROOT_ABS}" | sed 's/\//\\\//g')
 replace_placeholders() {
     local target_file="$1"
     if [ -f "${target_file}" ]; then
-        local clean_pkg=$(echo "${PROJECT_NAME}" | tr '[:upper:]' '[:lower:]' | tr '-' '_')
+        local clean_pkg=$(echo "${PROJECT_NAME}" | tr '[:upper:]' '[:lower:]' | tr ' ' '_' | tr '-' '_')
         sed -i.bak "s/{{PROJECT_NAME}}/${PROJECT_NAME}/g" "${target_file}"
         sed -i.bak "s/{{PROJECT_DESCRIPTION}}/${PROJECT_DESCRIPTION}/g" "${target_file}"
         sed -i.bak "s/{{PROJECT_ROOT}}/${ESCAPED_ROOT}/g" "${target_file}"
@@ -155,25 +121,12 @@ replace_placeholders() {
     fi
 }
 
-# Apply to all relevant generated assets
+# Apply placeholders to standard assets
 replace_placeholders "${PROJECT_ROOT_ABS}/AGENTS.md"
 replace_placeholders "${PROJECT_ROOT_ABS}/CONTEXT.md"
 replace_placeholders "${PROJECT_ROOT_ABS}/progress.md"
 replace_placeholders "${PROJECT_ROOT_ABS}/README.md"
 replace_placeholders "${PROJECT_ROOT_ABS}/DEVELOPER_WORKFLOW.md"
-replace_placeholders "${PROJECT_ROOT_ABS}/docs/architecture.md"
-replace_placeholders "${PROJECT_ROOT_ABS}/docs/beliefs.md"
-replace_placeholders "${PROJECT_ROOT_ABS}/docs/conventions.md"
-replace_placeholders "${PROJECT_ROOT_ABS}/docs/data-rules.md"
-replace_placeholders "${PROJECT_ROOT_ABS}/docs/modeling-rules.md"
-replace_placeholders "${PROJECT_ROOT_ABS}/docs/context-management.md"
-replace_placeholders "${PROJECT_ROOT_ABS}/docs/session-protocols.md"
-replace_placeholders "${PROJECT_ROOT_ABS}/docs/testing-requirements.md"
-replace_placeholders "${PROJECT_ROOT_ABS}/docs/security-rules.md"
-replace_placeholders "${PROJECT_ROOT_ABS}/docs/domain-rules.md"
-replace_placeholders "${PROJECT_ROOT_ABS}/docs/safety-policies.md"
-replace_placeholders "${PROJECT_ROOT_ABS}/docs/quality.md"
-replace_placeholders "${PROJECT_ROOT_ABS}/docs/adr/OPEN_DECISIONS.md"
 replace_placeholders "${PROJECT_ROOT_ABS}/Makefile"
 replace_placeholders "${PROJECT_ROOT_ABS}/.pre-commit-config.yaml"
 replace_placeholders "${PROJECT_ROOT_ABS}/.env.example"
@@ -191,7 +144,7 @@ if [ "${PROJECT_TYPE}" = "python" ] || [ "${PROJECT_TYPE}" = "hybrid" ]; then
     replace_placeholders "${PROJECT_ROOT_ABS}/tests/conftest.py"
 fi
 
-# 6. Auto-register in global trusted workspaces (Slice 5)
+# 5. Auto-register in global trusted workspaces
 echo -e "5. Syncing workspace to trusted environment list..."
 PYTHON_CMD="python3"
 if command -v uv &>/dev/null; then
@@ -219,7 +172,7 @@ else:
     print('  - Global settings.json not found. Skipping auto-registration.')
 " || echo -e "${YELLOW}Warning: Failed to update global trustedWorkspaces.${NC}"
 
-# 7. Automated Git Initialization & Baseline Commit (Slice 4)
+# 6. Automated Git Initialization & Baseline Commit
 echo -e "6. Initializing local Git repository baseline..."
 (
     cd "${PROJECT_ROOT_ABS}"

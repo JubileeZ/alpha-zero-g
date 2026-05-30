@@ -19,7 +19,6 @@ shutil.rmtree = rmtree_robust
 TEMPLATES_DIR = "templates"
 PYTHON_TEMPLATES = os.path.join(TEMPLATES_DIR, "python")
 R_TEMPLATES = os.path.join(TEMPLATES_DIR, "r")
-DOCS_TEMPLATES = os.path.join(TEMPLATES_DIR, "docs")
 
 def get_bash_executable():
     """Resolve the bash executable path, supporting Windows Git Bash location if not in PATH.
@@ -43,10 +42,9 @@ def get_bash_executable():
 
 
 def test_slice1_template_directories_exist():
-    """Verify that templates/ is partitioned into python/, r/, and docs/ subdirectories."""
+    """Verify that templates/ is partitioned into python/ and r/ subdirectories."""
     assert os.path.isdir(PYTHON_TEMPLATES), "templates/python directory should exist"
     assert os.path.isdir(R_TEMPLATES), "templates/r directory should exist"
-    assert os.path.isdir(DOCS_TEMPLATES), "templates/docs directory should exist"
 
 def test_slice1_python_templates_present():
     """Verify standard Python templates are present in the partitioned directory."""
@@ -67,16 +65,6 @@ def test_slice1_r_templates_present():
     assert os.path.isfile(description), "R DESCRIPTION template should exist"
     assert os.path.isfile(smoke_r), "R smoke.R template should exist"
     assert os.path.isfile(testthat_r), "R testthat.R template should exist"
-
-def test_slice1_doc_templates_present():
-    """Verify standard glossary, ADR guidelines, and ADR template are present."""
-    context_format = os.path.join(DOCS_TEMPLATES, "CONTEXT-FORMAT.md")
-    adr_format = os.path.join(DOCS_TEMPLATES, "ADR-FORMAT.md")
-    adr_template = os.path.join(DOCS_TEMPLATES, "adr", "0000-adr-template.md")
-    
-    assert os.path.isfile(context_format), "docs CONTEXT-FORMAT.md template should exist"
-    assert os.path.isfile(adr_format), "docs ADR-FORMAT.md template should exist"
-    assert os.path.isfile(adr_template), "docs adr/0000-adr-template.md template should exist"
 
 def test_slice2_readme_template_has_golden_path_workflow():
     """Verify that templates/README.md and templates/DEVELOPER_WORKFLOW.md exist and contain the Golden Path descriptions."""
@@ -106,15 +94,15 @@ def test_slice2_readme_template_has_golden_path_workflow():
     assert "HANDOFF" in content_upper, "DEVELOPER_WORKFLOW.md should mention 'Handoff'"
 
 def test_slice2_agents_template_has_workflow_pointers():
-    """Verify that templates/AGENTS.md contains pointers to the workflow."""
+    """Verify that templates/AGENTS.md contains core operating protocols."""
     agents_path = os.path.join(TEMPLATES_DIR, "AGENTS.md")
     assert os.path.isfile(agents_path), "templates/AGENTS.md template should exist"
     
     with open(agents_path, "r", encoding="utf-8") as f:
         content = f.read()
         
-    assert "Preferred Workflows" in content, "AGENTS.md should have a Preferred Workflows section"
-    assert "grill-with-docs" in content or "grill-analytics" in content, "AGENTS.md should point to grill skills"
+    assert "Core Rules & Operating Protocols" in content, "AGENTS.md should have a Core Rules & Operating Protocols section"
+    assert "Deterministic Python" in content or "deterministic python" in content.lower(), "AGENTS.md should assert deterministic python"
 
 def test_slice3_python_project_generation():
     """Verify that create-project.sh can generate a Python-only project with interactive inputs."""
@@ -133,6 +121,8 @@ def test_slice3_python_project_generation():
     # Assert directory structure
     assert os.path.isdir(os.path.join(dest_dir, "src")), "src/ directory should exist"
     assert os.path.isdir(os.path.join(dest_dir, "tests")), "tests/ directory should exist"
+    assert not os.path.isdir(os.path.join(dest_dir, "docs")), "docs/ directory should NOT exist in MVP"
+    assert not os.path.isdir(os.path.join(dest_dir, ".agents", "rules")), ".agents/rules/ should NOT exist in MVP"
     
     # Assert Python files copied, R files omitted
     assert os.path.isfile(os.path.join(dest_dir, "pyproject.toml")), "pyproject.toml should exist"
@@ -142,14 +132,18 @@ def test_slice3_python_project_generation():
     assert not os.path.isfile(os.path.join(dest_dir, "DESCRIPTION")), "DESCRIPTION should NOT exist in a Python project"
     assert not os.path.isfile(os.path.join(dest_dir, "src", "smoke.R")), "smoke.R should NOT exist in a Python project"
     
-    # Assert glossary, workflow, and ADR format copied
-    assert os.path.isfile(os.path.join(dest_dir, "docs", "CONTEXT-FORMAT.md")), "CONTEXT-FORMAT.md should exist"
-    assert os.path.isfile(os.path.join(dest_dir, "docs", "ADR-FORMAT.md")), "ADR-FORMAT.md should exist"
-    assert os.path.isfile(os.path.join(dest_dir, "docs", "adr", "0000-adr-template.md")), "0000-adr-template.md should exist"
-    assert os.path.isfile(os.path.join(dest_dir, "docs", "adr", "OPEN_DECISIONS.md")), "OPEN_DECISIONS.md should exist"
-    assert not os.path.isfile(os.path.join(dest_dir, "docs", "adr", "0001-dynamic-bootstrapping.md")), "Harness ADR 0001 should NOT be in downstream docs/adr/"
-    assert not os.path.isfile(os.path.join(dest_dir, "docs", "adr", "0002-automated-project-scaffolder.md")), "Harness ADR 0002 should NOT be in downstream docs/adr/"
+    # Assert glossary, workflow, and core files copied
+    assert os.path.isfile(os.path.join(dest_dir, "AGENTS.md")), "AGENTS.md should exist"
+    assert os.path.isfile(os.path.join(dest_dir, "CONTEXT.md")), "CONTEXT.md should exist"
+    assert os.path.isfile(os.path.join(dest_dir, "progress.md")), "progress.md should exist"
+    assert os.path.isfile(os.path.join(dest_dir, "features.json")), "features.json should exist"
+    assert os.path.isfile(os.path.join(dest_dir, "README.md")), "README.md should exist"
     assert os.path.isfile(os.path.join(dest_dir, "DEVELOPER_WORKFLOW.md")), "DEVELOPER_WORKFLOW.md should exist"
+    assert os.path.isfile(os.path.join(dest_dir, "init.sh")), "init.sh should exist"
+    assert os.path.isfile(os.path.join(dest_dir, "Makefile")), "Makefile should exist"
+    assert os.path.isfile(os.path.join(dest_dir, ".pre-commit-config.yaml")), ".pre-commit-config.yaml should exist"
+    assert os.path.isfile(os.path.join(dest_dir, ".env.example")), ".env.example should exist"
+    assert os.path.isfile(os.path.join(dest_dir, ".agents", "hooks.json")), "hooks.json should exist"
 
     # Assert placeholder resolution
     with open(os.path.join(dest_dir, "AGENTS.md"), "r", encoding="utf-8") as f:
@@ -163,12 +157,12 @@ def test_slice3_python_project_generation():
         workflow_content = f.read()
     assert "Test-Python-Project" in workflow_content, "Project name placeholder was not replaced in DEVELOPER_WORKFLOW.md"
 
-    # Assert Git initialization and baseline commit (Slice 4)
+    # Assert Git initialization and baseline commit
     assert os.path.isdir(os.path.join(dest_dir, ".git")), "Git repository should be initialized"
     git_log_res = subprocess.run(["git", "-C", dest_dir, "log", "-n", "1", "--oneline"], capture_output=True, text=True)
     assert "initial harness bootstrap" in git_log_res.stdout, f"Baseline commit should be created. Got: {git_log_res.stdout}"
 
-    # Assert Trusted Workspace auto-registration (Slice 5)
+    # Assert Trusted Workspace auto-registration
     import json
     settings_path = os.path.expanduser("~/.gemini/antigravity-cli/settings.json")
     if os.path.isfile(settings_path):
@@ -213,292 +207,3 @@ def test_slice3_r_project_generation():
     # Clean up
     if os.path.exists(dest_dir):
         shutil.rmtree(dest_dir)
-
-def test_slice6_global_harness_sync():
-    """Verify that setup-harness.sh can backup local configs, seed monorepo settings, and establish symlinks."""
-    import tempfile
-    if os.name == 'nt':
-        # Use system temp directory (NTFS) to bypass Windows symlink limitations
-        mock_home = os.path.join(tempfile.gettempdir(), f"mock_home_{os.getpid()}")
-        mock_global_src = os.path.join(tempfile.gettempdir(), f"mock_global_src_{os.getpid()}")
-    else:
-        mock_home = os.path.abspath("scratch/mock_home")
-        mock_global_src = os.path.abspath("scratch/mock_global_src")
-    
-    # Cleanup previous runs
-    for path in [mock_home, mock_global_src]:
-        if os.path.exists(path):
-            shutil.rmtree(path)
-            
-    # Setup initial local home structure
-    local_gemini = os.path.join(mock_home, ".gemini")
-    os.makedirs(os.path.join(local_gemini, "antigravity-cli"))
-    os.makedirs(os.path.join(local_gemini, "antigravity"))
-    
-    # Write some initial local configs to seed
-    local_settings = os.path.join(local_gemini, "antigravity-cli", "settings.json")
-    local_agents = os.path.join(local_gemini, "AGENTS.md")
-    local_gemini_md = os.path.join(local_gemini, "GEMINI.md")
-    
-    with open(local_settings, "w", encoding="utf-8") as f:
-        f.write('{"colorScheme": "dark"}')
-    with open(local_agents, "w", encoding="utf-8") as f:
-        f.write("# Local AGENTS")
-    with open(local_gemini_md, "w", encoding="utf-8") as f:
-        f.write("# Local GEMINI")
-        
-    os.makedirs(os.path.join(local_gemini, "antigravity", "skills", "test-skill"))
-    with open(os.path.join(local_gemini, "antigravity", "skills", "test-skill", "SKILL.md"), "w", encoding="utf-8") as f:
-        f.write("test skill content")
-        
-    # Seed templates in the mock monorepo global folder
-    os.makedirs(os.path.join(mock_global_src, "config"))
-    os.makedirs(os.path.join(mock_global_src, "skills"))
-    shutil.copy2("global/settings.json.example", os.path.join(mock_global_src, "settings.json.example"))
-    shutil.copy2("global/config/config.json.example", os.path.join(mock_global_src, "config", "config.json.example"))
-    shutil.copy2("global/config/mcp_config.json.example", os.path.join(mock_global_src, "config", "mcp_config.json.example"))
-    shutil.copy2("global/AGENTS.md", os.path.join(mock_global_src, "AGENTS.md"))
-    shutil.copy2("global/GEMINI.md", os.path.join(mock_global_src, "GEMINI.md"))
-    
-    # Execute setup-harness.sh with mock envs
-    import subprocess
-    cmd = [get_bash_executable(), "setup-harness.sh"]
-    env = os.environ.copy()
-    env["MOCK_HOME"] = mock_home
-    env["MOCK_GLOBAL_SRC"] = mock_global_src
-    result = subprocess.run(cmd, capture_output=True, text=True, env=env)
-    
-    assert result.returncode == 0, f"setup-harness.sh failed: {result.stderr}\nStdout: {result.stdout}"
-    
-    # Assert backup folder was created locally
-    backups = [d for d in os.listdir(mock_home) if d.startswith(".gemini_backup_")]
-    assert len(backups) == 1, "A backup of ~/.gemini should have been created"
-    backup_path = os.path.join(mock_home, backups[0])
-    assert os.path.isfile(os.path.join(backup_path, "AGENTS.md")), "AGENTS.md should be backed up"
-    
-    # Assert local ~/.gemini/ configs were seeded or preserved
-    assert os.path.isfile(local_settings), "settings.json should exist in ~/.gemini/antigravity-cli"
-    assert os.path.isfile(os.path.join(local_gemini, "config", "config.json")), "config.json should exist in ~/.gemini/config"
-    assert os.path.isfile(os.path.join(local_gemini, "config", "mcp_config.json")), "mcp_config.json should exist in ~/.gemini/config"
-    assert os.path.isdir(os.path.join(local_gemini, "antigravity", "skills")), "skills/ should exist in ~/.gemini/antigravity"
-    assert os.path.isfile(os.path.join(local_gemini, "antigravity", "skills", "test-skill", "SKILL.md")), "test-skill should be deployed"
-    
-    # Assert local ~/.gemini/ paths are now physical files or directory
-    assert os.path.isfile(local_settings), "Local settings.json should be a physical file"
-    assert os.path.isfile(local_agents), "Local AGENTS.md should be a physical file"
-    assert os.path.isfile(local_gemini_md), "Local GEMINI.md should be a physical file"
-    assert os.path.isdir(os.path.join(local_gemini, "antigravity", "skills")), "Local skills/ should be a physical directory"
-    
-    # Assert helper symlinks are established
-    assert os.path.islink(os.path.join(local_gemini, "antigravity-cli", "skills")), "skills helper symlink in antigravity-cli should exist"
-    assert os.path.islink(os.path.join(local_gemini, "config", "skills")), "skills helper symlink in config should exist"
-    
-    # Clean up
-    for path in [mock_home, mock_global_src]:
-        if os.path.exists(path):
-            shutil.rmtree(path)
-
-
-def test_harness_upgrader():
-    """Verify that upgrade-project.sh can push core changes to downstream, pull downstream updates back to templates, and correctly handle parameter placeholders in AGENTS.md / DEVELOPER_WORKFLOW.md."""
-    import subprocess
-    
-    # 1. Scaffolder creation of dummy downstream
-    dest_dir = "scratch/test-upgrade-target"
-    if os.path.exists(dest_dir):
-        shutil.rmtree(dest_dir)
-        
-    cmd = [get_bash_executable(), "create-project.sh", dest_dir, "Test-Upgrade-Project", "python", "Upgrade testing project"]
-    res = subprocess.run(cmd, capture_output=True, text=True)
-    assert res.returncode == 0
-    
-    # Backup original core files we are going to modify during testing
-    core_init_sh = "templates/init.sh"
-    core_init_sh_backup = "templates/init.sh.bak"
-    shutil.copy2(core_init_sh, core_init_sh_backup)
-    
-    core_agents_md = "templates/AGENTS.md"
-    core_agents_md_backup = "templates/AGENTS.md.bak"
-    shutil.copy2(core_agents_md, core_agents_md_backup)
-    
-    try:
-        # A. TEST --push (Template -> Downstream)
-        # Modify the core template
-        with open(core_init_sh, "a", encoding="utf-8") as f:
-            f.write("\n# core testing modification\n")
-            
-        # Run upgrade-project.sh in push mode
-        upgrade_cmd = [get_bash_executable(), "upgrade-project.sh", "--push", "-y", dest_dir]
-        res_push = subprocess.run(upgrade_cmd, capture_output=True, text=True)
-        assert res_push.returncode == 0, f"Push failed: {res_push.stderr}\nStdout: {res_push.stdout}"
-        
-        # Verify target is updated
-        with open(os.path.join(dest_dir, "init.sh"), "r", encoding="utf-8") as f:
-            target_content = f.read()
-        assert "core testing modification" in target_content, "Push mode did not update downstream target file"
-        
-        # B. TEST --pull (Downstream -> Template)
-        # Modify the downstream target
-        with open(os.path.join(dest_dir, "init.sh"), "a", encoding="utf-8") as f:
-            f.write("\n# downstream testing optimization\n")
-            
-        # Run upgrade-project.sh in pull mode
-        pull_cmd = [get_bash_executable(), "upgrade-project.sh", "--pull", "-y", dest_dir]
-        res_pull = subprocess.run(pull_cmd, capture_output=True, text=True)
-        assert res_pull.returncode == 0, f"Pull failed: {res_pull.stderr}\nStdout: {res_pull.stdout}"
-        
-        # Verify template is updated with the downstream modification
-        with open(core_init_sh, "r", encoding="utf-8") as f:
-            template_content = f.read()
-        assert "downstream testing optimization" in template_content, "Pull mode did not update core template file"
-        
-        # C. TEST PLACEHOLDERS IN --push and --pull
-        # Modify the template file with placeholders
-        with open(core_agents_md, "a", encoding="utf-8") as f:
-            f.write("\n# new guideline for {{PROJECT_NAME}}\n")
-            
-        # Push to downstream
-        res_push_placeholder = subprocess.run([get_bash_executable(), "upgrade-project.sh", "--push", "-y", dest_dir], capture_output=True, text=True)
-        assert res_push_placeholder.returncode == 0, f"Push placeholder failed: {res_push_placeholder.stderr}"
-        
-        # Assert downstream file resolved the placeholder
-        with open(os.path.join(dest_dir, "AGENTS.md"), "r", encoding="utf-8") as f:
-            target_agents_content = f.read()
-        assert "new guideline for Test-Upgrade-Project" in target_agents_content, "Pushing placeholder file did not resolve parameters"
-        assert "{{PROJECT_NAME}}" not in target_agents_content, "Pushing placeholder file left raw placeholder in target"
-        
-        # Modify downstream to optimize the new guidelines
-        updated_agents = target_agents_content.replace("new guideline for Test-Upgrade-Project", "optimal rule for Test-Upgrade-Project")
-        with open(os.path.join(dest_dir, "AGENTS.md"), "w", encoding="utf-8") as f:
-            f.write(updated_agents)
-            
-        # Pull back to templates
-        res_pull_placeholder = subprocess.run([get_bash_executable(), "upgrade-project.sh", "--pull", "-y", dest_dir], capture_output=True, text=True)
-        assert res_pull_placeholder.returncode == 0, f"Pull placeholder failed: {res_pull_placeholder.stderr}\nStdout: {res_pull_placeholder.stdout}"
-        
-        # Assert template file pulled the optimization and RESTORED the placeholder
-        with open(core_agents_md, "r", encoding="utf-8") as f:
-            template_agents_content = f.read()
-        assert "optimal rule for {{PROJECT_NAME}}" in template_agents_content, "Pulling optimized file did not restore the placeholder in templates"
-        assert "Test-Upgrade-Project" not in template_agents_content, "Pulling optimized file leaked target project name into templates"
-        
-    finally:
-        # Restore backups
-        if os.path.exists(core_init_sh_backup):
-            shutil.move(core_init_sh_backup, core_init_sh)
-        if os.path.exists(core_agents_md_backup):
-            shutil.move(core_agents_md_backup, core_agents_md)
-            
-        # Clean up target
-        if os.path.exists(dest_dir):
-            shutil.rmtree(dest_dir)
-
-
-def test_slice6_global_harness_sync_windows_preflight_success():
-    """Verify that setup-harness.sh behaves correctly on Windows when the pre-flight check confirms Developer Mode is active (no elevation needed)."""
-    import tempfile
-    import subprocess
-    
-    mock_home = os.path.join(tempfile.gettempdir(), f"mock_home_pref_succ_{os.getpid()}")
-    mock_global_src = os.path.join(tempfile.gettempdir(), f"mock_global_src_pref_succ_{os.getpid()}")
-    
-    # Cleanup previous runs
-    for path in [mock_home, mock_global_src]:
-        if os.path.exists(path):
-            shutil.rmtree(path)
-            
-    # Setup initial local home structure
-    local_gemini = os.path.join(mock_home, ".gemini")
-    os.makedirs(os.path.join(local_gemini, "antigravity-cli"))
-    os.makedirs(os.path.join(local_gemini, "antigravity"))
-    
-    # Write initial settings.json to seed
-    local_settings = os.path.join(local_gemini, "antigravity-cli", "settings.json")
-    with open(local_settings, "w", encoding="utf-8") as f:
-        f.write('{"colorScheme": "dark"}')
-        
-    # Seed templates in mock monorepo global
-    os.makedirs(os.path.join(mock_global_src, "config"))
-    os.makedirs(os.path.join(mock_global_src, "skills"))
-    shutil.copy2("global/settings.json.example", os.path.join(mock_global_src, "settings.json.example"))
-    shutil.copy2("global/config/config.json.example", os.path.join(mock_global_src, "config", "config.json.example"))
-    shutil.copy2("global/config/mcp_config.json.example", os.path.join(mock_global_src, "config", "mcp_config.json.example"))
-    shutil.copy2("global/AGENTS.md", os.path.join(mock_global_src, "AGENTS.md"))
-    shutil.copy2("global/GEMINI.md", os.path.join(mock_global_src, "GEMINI.md"))
-    
-    cmd = [get_bash_executable(), "setup-harness.sh"]
-    env = os.environ.copy()
-    env["MOCK_HOME"] = mock_home
-    env["MOCK_GLOBAL_SRC"] = mock_global_src
-    # Mock pre-flight symlink capability to return success directly
-    env["MOCK_SYMLINK_CAPABILITY"] = "true"
-    
-    result = subprocess.run(cmd, capture_output=True, text=True, env=env)
-    assert result.returncode == 0, f"Sync script failed: {result.stderr}\nStdout: {result.stdout}"
-    
-    # Verify physical file copies and helper symlinks are successfully established (meaning the pre-flight success pathway successfully completed)
-    assert os.path.isfile(local_settings), "Local settings.json should exist as a physical file copy"
-    assert os.path.islink(os.path.join(local_gemini, "antigravity-cli", "skills")), "skills helper symlink should be created in pre-flight success path"
-    
-    # Clean up
-    for path in [mock_home, mock_global_src]:
-        if os.path.exists(path):
-            shutil.rmtree(path)
-
-
-def test_slice6_global_harness_sync_windows_preflight_fail_elevated_success():
-    """Verify that setup-harness.sh behaves correctly on Windows when the pre-flight check fails but elevation is mock-accepted and successfully creates symlinks."""
-    import tempfile
-    import subprocess
-    
-    mock_home = os.path.join(tempfile.gettempdir(), f"mock_home_pref_fail_{os.getpid()}")
-    mock_global_src = os.path.join(tempfile.gettempdir(), f"mock_global_src_pref_fail_{os.getpid()}")
-    
-    # Cleanup previous runs
-    for path in [mock_home, mock_global_src]:
-        if os.path.exists(path):
-            shutil.rmtree(path)
-            
-    # Setup initial local home structure
-    local_gemini = os.path.join(mock_home, ".gemini")
-    os.makedirs(os.path.join(local_gemini, "antigravity-cli"))
-    os.makedirs(os.path.join(local_gemini, "antigravity"))
-    
-    # Write initial settings.json to seed
-    local_settings = os.path.join(local_gemini, "antigravity-cli", "settings.json")
-    with open(local_settings, "w", encoding="utf-8") as f:
-        f.write('{"colorScheme": "dark"}')
-        
-    # Seed templates in mock monorepo global
-    os.makedirs(os.path.join(mock_global_src, "config"))
-    os.makedirs(os.path.join(mock_global_src, "skills"))
-    shutil.copy2("global/settings.json.example", os.path.join(mock_global_src, "settings.json.example"))
-    shutil.copy2("global/config/config.json.example", os.path.join(mock_global_src, "config", "config.json.example"))
-    shutil.copy2("global/config/mcp_config.json.example", os.path.join(mock_global_src, "config", "mcp_config.json.example"))
-    shutil.copy2("global/AGENTS.md", os.path.join(mock_global_src, "AGENTS.md"))
-    shutil.copy2("global/GEMINI.md", os.path.join(mock_global_src, "GEMINI.md"))
-    
-    cmd = [get_bash_executable(), "setup-harness.sh"]
-    env = os.environ.copy()
-    env["MOCK_HOME"] = mock_home
-    env["MOCK_GLOBAL_SRC"] = mock_global_src
-    # Mock pre-flight symlink capability to fail (simulating no Developer Mode / no admin)
-    env["MOCK_SYMLINK_CAPABILITY"] = "false"
-    # Mock elevation to run direct non-admin batch for testing
-    env["MOCK_ELEVATION_MOCK"] = "true"
-    
-    result = subprocess.run(cmd, capture_output=True, text=True, env=env)
-    
-    # Since mock elevation runs on NTFS temp directory base, the batch script should successfully create physical copies and helper symlinks!
-    assert result.returncode == 0, f"Sync script failed: {result.stderr}\nStdout: {result.stdout}"
-    assert os.path.isfile(local_settings), "Local settings.json should exist as a physical file copy"
-    assert os.path.islink(os.path.join(local_gemini, "antigravity-cli", "skills")), "skills helper symlink should be created via the elevated mock path"
-    
-    # Clean up
-    for path in [mock_home, mock_global_src]:
-        if os.path.exists(path):
-            shutil.rmtree(path)
-
-
-
-
