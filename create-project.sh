@@ -64,6 +64,39 @@ mkdir -p "${PROJECT_ROOT_ABS}/notebooks"
 mkdir -p "${PROJECT_ROOT_ABS}/tests"
 mkdir -p "${PROJECT_ROOT_ABS}/.agents/skills"
 
+# Fetch and deploy fresh skills if not bypassed
+SKIP_EXTERNAL_SKILLS="${SKIP_EXTERNAL_SKILLS:-false}"
+if [ "${SKIP_EXTERNAL_SKILLS}" = "true" ]; then
+    echo -e "  - Skipping external skills retrieval (SKIP_EXTERNAL_SKILLS=true)."
+else
+    echo -e "  - Fetching fresh skills from github.com/mattpocock/skills..."
+    TEMP_SKILLS_DIR=$(mktemp -d)
+    # Perform shallow clone for speed
+    if git clone --depth 1 https://github.com/mattpocock/skills.git "${TEMP_SKILLS_DIR}" -q; then
+        if [ -d "${TEMP_SKILLS_DIR}/skills/productivity" ]; then
+            echo -e "    - Copying productivity skills..."
+            for skill_path in "${TEMP_SKILLS_DIR}"/skills/productivity/*; do
+                if [ -d "${skill_path}" ]; then
+                    cp -r "${skill_path}" "${PROJECT_ROOT_ABS}/.agents/skills/"
+                fi
+            done
+        fi
+        if [ -d "${TEMP_SKILLS_DIR}/skills/engineering" ]; then
+            echo -e "    - Copying engineering skills..."
+            for skill_path in "${TEMP_SKILLS_DIR}"/skills/engineering/*; do
+                if [ -d "${skill_path}" ]; then
+                    cp -r "${skill_path}" "${PROJECT_ROOT_ABS}/.agents/skills/"
+                fi
+            done
+        fi
+        echo -e "  - Fresh skills deployed to .agents/skills/"
+    else
+        echo -e "${YELLOW}  - Warning: Failed to clone mattpocock/skills. Proceeding without fresh skills.${NC}"
+    fi
+    rm -rf "${TEMP_SKILLS_DIR}"
+fi
+
+
 # 2. Deploy standard template files
 echo -e "2. Deploying common template files..."
 cp templates/AGENTS.md "${PROJECT_ROOT_ABS}/AGENTS.md"

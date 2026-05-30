@@ -17,9 +17,9 @@ This document tracks the current state, active focuses, and completed milestones
 
 ## 2. Active Focus / Current Steps
 
-1. **Step 1: Core System Specifications:** Begin the `/grill-analytics` and `/spec-model` workflow to define baseline models and requirements.
+1. **Step 1: System Definitions:** Align on baseline analytics objectives and data columns with the user.
 
 ---
 
 ## 3. Next Session Priorities
-- Map out the primary data pipeline and schemas in `docs/DATA_DICT.md`.
+- Define standard domain terms in the glossary `CONTEXT.md` to guide model development.

@@ -114,7 +114,9 @@ def test_slice3_python_project_generation():
     # Run create-project.sh non-interactively using arguments for this test
     # Args: <destination> <project-name> <project-type> <description>
     cmd = [get_bash_executable(), "create-project.sh", dest_dir, "Test-Python-Project", "python", "A testing python project description"]
-    result = subprocess.run(cmd, capture_output=True, text=True)
+    env = os.environ.copy()
+    env["SKIP_EXTERNAL_SKILLS"] = "true"
+    result = subprocess.run(cmd, capture_output=True, text=True, env=env)
     
     assert result.returncode == 0, f"create-project.sh failed: {result.stderr}"
     
@@ -186,7 +188,9 @@ def test_slice3_r_project_generation():
         
     import subprocess
     cmd = [get_bash_executable(), "create-project.sh", dest_dir, "Test-R-Project", "r", "A testing R project description"]
-    result = subprocess.run(cmd, capture_output=True, text=True)
+    env = os.environ.copy()
+    env["SKIP_EXTERNAL_SKILLS"] = "true"
+    result = subprocess.run(cmd, capture_output=True, text=True, env=env)
     
     assert result.returncode == 0, f"create-project.sh failed: {result.stderr}"
     

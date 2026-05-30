@@ -21,6 +21,7 @@ Establish a high-performance, deterministic developer harness for analytics, mod
 ### Project Scaffolding
 
 - `[x]` **Repository Defaults**: Standardized `.gitignore`, compiled standard MIT `LICENSE`, and built introductory `README.md`.
+- `[x]` **Fresh Skills Retrieval Integration**: Integrated shallow-cloning (`--depth 1`) from the `mattpocock/skills` repository. Project creation now dynamically retrieves the latest engineering and productivity skills directly from GitHub, deploying them to the project's local `.agents/skills/` folder. Includes robust offline error recovery and environment-driven test isolation (`SKIP_EXTERNAL_SKILLS`).
 
 ### Project Configuration & Safety
 
