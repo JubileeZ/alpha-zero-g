@@ -276,23 +276,22 @@ def test_slice6_global_harness_sync():
     backup_path = os.path.join(mock_home, backups[0])
     assert os.path.isfile(os.path.join(backup_path, "AGENTS.md")), "AGENTS.md should be backed up"
     
-    # Assert monorepo configs were seeded from templates
-    repo_settings = os.path.join(mock_global_src, "settings.json")
-    repo_config = os.path.join(mock_global_src, "config", "config.json")
-    repo_mcp = os.path.join(mock_global_src, "config", "mcp_config.json")
-    repo_skills = os.path.join(mock_global_src, "skills")
+    # Assert local ~/.gemini/ configs were seeded or preserved
+    assert os.path.isfile(local_settings), "settings.json should exist in ~/.gemini/antigravity-cli"
+    assert os.path.isfile(os.path.join(local_gemini, "config", "config.json")), "config.json should exist in ~/.gemini/config"
+    assert os.path.isfile(os.path.join(local_gemini, "config", "mcp_config.json")), "mcp_config.json should exist in ~/.gemini/config"
+    assert os.path.isdir(os.path.join(local_gemini, "antigravity", "skills")), "skills/ should exist in ~/.gemini/antigravity"
+    assert os.path.isfile(os.path.join(local_gemini, "antigravity", "skills", "test-skill", "SKILL.md")), "test-skill should be deployed"
     
-    assert os.path.isfile(repo_settings), "settings.json should be seeded from templates"
-    assert os.path.isfile(repo_config), "config.json should be seeded from templates"
-    assert os.path.isfile(repo_mcp), "mcp_config.json should be seeded from templates"
-    assert os.path.isdir(repo_skills), "skills/ should exist"
-    assert os.path.isfile(os.path.join(repo_skills, "test-skill", "SKILL.md")), "Individual skills should be imported to monorepo"
+    # Assert local ~/.gemini/ paths are now physical files or directory
+    assert os.path.isfile(local_settings), "Local settings.json should be a physical file"
+    assert os.path.isfile(local_agents), "Local AGENTS.md should be a physical file"
+    assert os.path.isfile(local_gemini_md), "Local GEMINI.md should be a physical file"
+    assert os.path.isdir(os.path.join(local_gemini, "antigravity", "skills")), "Local skills/ should be a physical directory"
     
-    # Assert local ~/.gemini/ paths are now symlinks pointing to the monorepo global directory
-    assert os.path.islink(local_settings), "Local settings.json should be a symlink"
-    assert os.path.islink(local_agents), "Local AGENTS.md should be a symlink"
-    assert os.path.islink(local_gemini_md), "Local GEMINI.md should be a symlink"
-    assert os.path.islink(os.path.join(local_gemini, "antigravity", "skills")), "Local skills/ should be a symlink"
+    # Assert helper symlinks are established
+    assert os.path.islink(os.path.join(local_gemini, "antigravity-cli", "skills")), "skills helper symlink in antigravity-cli should exist"
+    assert os.path.islink(os.path.join(local_gemini, "config", "skills")), "skills helper symlink in config should exist"
     
     # Clean up
     for path in [mock_home, mock_global_src]:
@@ -437,8 +436,9 @@ def test_slice6_global_harness_sync_windows_preflight_success():
     result = subprocess.run(cmd, capture_output=True, text=True, env=env)
     assert result.returncode == 0, f"Sync script failed: {result.stderr}\nStdout: {result.stdout}"
     
-    # Verify symlink is successfully established (meaning the pre-flight success pathway successfully completed)
-    assert os.path.islink(local_settings), "Local settings.json should be a symlink in the pre-flight success path"
+    # Verify physical file copies and helper symlinks are successfully established (meaning the pre-flight success pathway successfully completed)
+    assert os.path.isfile(local_settings), "Local settings.json should exist as a physical file copy"
+    assert os.path.islink(os.path.join(local_gemini, "antigravity-cli", "skills")), "skills helper symlink should be created in pre-flight success path"
     
     # Clean up
     for path in [mock_home, mock_global_src]:
@@ -489,9 +489,10 @@ def test_slice6_global_harness_sync_windows_preflight_fail_elevated_success():
     
     result = subprocess.run(cmd, capture_output=True, text=True, env=env)
     
-    # Since mock elevation runs on NTFS temp directory base, the batch script should successfully create the symlinks!
+    # Since mock elevation runs on NTFS temp directory base, the batch script should successfully create physical copies and helper symlinks!
     assert result.returncode == 0, f"Sync script failed: {result.stderr}\nStdout: {result.stdout}"
-    assert os.path.islink(local_settings), "Local settings.json should be successfully created via the elevated mock path"
+    assert os.path.isfile(local_settings), "Local settings.json should exist as a physical file copy"
+    assert os.path.islink(os.path.join(local_gemini, "antigravity-cli", "skills")), "skills helper symlink should be created via the elevated mock path"
     
     # Clean up
     for path in [mock_home, mock_global_src]:
