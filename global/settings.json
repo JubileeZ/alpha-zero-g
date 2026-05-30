@@ -1,0 +1,10 @@
+{
+  "trustedWorkspaces": [
+    "/Users/jubilee/Projects/Alpha-Zero-G/scratch/test-scaffold",
+    "/Users/jubilee/Projects/Alpha-Zero-G/scratch/test-py",
+    "/Users/jubilee/Projects/Alpha-Zero-G/scratch/test-r",
+    "/Users/jubilee/Projects/Alpha-Zero-G/scratch/test-upgrade-target",
+    "/Users/jubilee/Projects/Alpha-Zero-G/scratch/test-project-gen"
+  ],
+  "model": "Gemini 3.5 Flash (High)"
+}
