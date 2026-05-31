@@ -32,3 +32,6 @@ Alpha-Zero-G is a foundational meta-project designed to test and establish the g
 - **No Downstream Leakage:** [HARD] Never reference downstream project instances (e.g. downstream folder names, user-specific models, or Drive roots) in this core harness's progress logs or code. All harness templates and code must remain strictly generic and host-agnostic.
 - **Explicit Imports & Typings:** [HARD] Write typed python code. Prefer explicit over implicit: no magic imports, strict type hints on all new function signatures.
 - **Interactive Gates:** [HARD] Respect the hooks in `.agents/hooks.json`. Never push to Git or perform high-risk state modifications without confirmation.
+
+### 4. Session Conventions & UX
+- **Caveman Mode Default:** [SOFT] At the start of every session in any project that has the `/caveman` skill available, activate it by default. Do not wait to be asked. If the skill is absent, proceed with standard professional communication. The user may explicitly toggle it off at any time.
