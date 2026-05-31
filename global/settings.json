@@ -1,4 +1,9 @@
 {
+  "statusLine": {
+    "type": "command",
+    "command": "{{GEMINI_DIR}}/antigravity-cli/statusline.sh",
+    "enabled": true
+  },
   "trustedWorkspaces": [
     "/Users/jubilee/Projects/Alpha-Zero-G/scratch/test-scaffold",
     "/Users/jubilee/Projects/Alpha-Zero-G/scratch/test-py",

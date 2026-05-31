@@ -80,6 +80,7 @@ backup_dir() {
 
 # Scan and backup real local files
 backup_file "${GEMINI_DIR}/antigravity-cli/settings.json"
+backup_file "${GEMINI_DIR}/antigravity-cli/statusline.sh"
 backup_file "${GEMINI_DIR}/AGENTS.md"
 backup_file "${GEMINI_DIR}/GEMINI.md"
 backup_file "${GEMINI_DIR}/config/config.json"
@@ -110,6 +111,7 @@ cleanup_repo_symlink() {
     fi
 }
 cleanup_repo_symlink "${GEMINI_DIR}/antigravity-cli/settings.json"
+cleanup_repo_symlink "${GEMINI_DIR}/antigravity-cli/statusline.sh"
 cleanup_repo_symlink "${GEMINI_DIR}/AGENTS.md"
 cleanup_repo_symlink "${GEMINI_DIR}/GEMINI.md"
 cleanup_repo_symlink "${GEMINI_DIR}/antigravity/skills"
@@ -150,6 +152,20 @@ deploy_config_or_seed() {
 deploy_config_or_seed "${GEMINI_DIR}/antigravity-cli/settings.json" "${GLOBAL_SRC_DIR}/settings.json" "${GLOBAL_SRC_DIR}/settings.json.example"
 deploy_config_or_seed "${GEMINI_DIR}/config/config.json" "${GLOBAL_SRC_DIR}/config/config.json" "${GLOBAL_SRC_DIR}/config/config.json.example"
 deploy_config_or_seed "${GEMINI_DIR}/config/mcp_config.json" "${GLOBAL_SRC_DIR}/config/mcp_config.json" "${GLOBAL_SRC_DIR}/config/mcp_config.json.example"
+
+# Deploy and customize custom statusline script
+if [ -f "${GLOBAL_SRC_DIR}/statusline.sh" ]; then
+    echo -e "  - Deploying statusline script: copying statusline.sh to ${GEMINI_DIR}/antigravity-cli/statusline.sh"
+    cp "${GLOBAL_SRC_DIR}/statusline.sh" "${GEMINI_DIR}/antigravity-cli/statusline.sh"
+    chmod +x "${GEMINI_DIR}/antigravity-cli/statusline.sh"
+fi
+
+# Customize settings.json with actual home/device specific GEMINI_DIR path
+if [ -f "${GEMINI_DIR}/antigravity-cli/settings.json" ]; then
+    echo -e "  - Customizing settings.json for the active user/device..."
+    sed "s|{{GEMINI_DIR}}|${GEMINI_DIR}|g" "${GEMINI_DIR}/antigravity-cli/settings.json" > "${GEMINI_DIR}/antigravity-cli/settings.json.tmp"
+    mv "${GEMINI_DIR}/antigravity-cli/settings.json.tmp" "${GEMINI_DIR}/antigravity-cli/settings.json"
+fi
 
 # 5. Deploy Global Rules (copied physically, always overwritten to sync rules)
 echo -e "\n5. Deploying universal developer rules to ~/.gemini..."
@@ -335,6 +351,7 @@ verify_symlink() {
 }
 
 verify_physical_file "${GEMINI_DIR}/antigravity-cli/settings.json"
+verify_physical_file "${GEMINI_DIR}/antigravity-cli/statusline.sh"
 verify_physical_file "${GEMINI_DIR}/AGENTS.md"
 verify_physical_file "${GEMINI_DIR}/GEMINI.md"
 verify_physical_dir "${GEMINI_DIR}/antigravity/skills"

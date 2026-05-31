@@ -133,13 +133,25 @@ Establish a high-performance, deterministic developer harness for analytics, mod
     - Repaired the incorrect `original` remote in the `FPL-Jubilee-Ascent` project and configured `origin` pointing to the project's own GitHub URL.
     - Updated `create-project.sh` to extract the host template remote, dynamically construct the new project's remote, and configure the git remote automatically upon creation.
     - Tested and verified the updated generator by bootstrapping a dummy project and checking that it successfully configured the new git remote.
+30. **Harness Statusline Portability & Float Formatting (2026-05-31):**
+    - Created `global/statusline.sh` custom statusline script inside the local monorepo harness, with precision float formatting (`awk '{printf "%.1f", $1}'`) to force clean `xx.x%` (instead of `xx.xxxxxxxxx%`) context token percentage outputs.
+    - Updated `global/settings.json` and `settings.json.example` to declare the `statusLine` command utilizing the generic `{{GEMINI_DIR}}` placeholder.
+    - Upgraded `setup-harness.sh` to seamlessly deploy `statusline.sh` to `~/.gemini/antigravity-cli/statusline.sh` (marked executable via `chmod +x`), back it up safely, and dynamically substitute `{{GEMINI_DIR}}` in deployed client settings during bootstrap.
+    - Successfully validated zero-touch cross-device sync installation and verified the formatted CLI status line results in standard TUI mock scenarios.
+31. **Harness Statusline Quota Separation & G1 Overage Credits Integration (2026-05-31):**
+    - Conducted multiple interactive `/grill-me` sessions to align on the exact layout and data sources for the custom statusline.
+    - Redesigned `global/statusline.sh` to extract and display separated Claude and Gemini quotas simultaneously from the background usage cache (`/tmp/antigravity_quota_cache.json`).
+    - Configured the layout to always place **Gemini** before **Claude**. If a quota percentage is unavailable, it is dynamically set to `0.0%` rather than `N/A`.
+    - Integrated time-to-reset parsing for both models, appending the remaining duration in parentheses after the quota percentage (e.g. `(1h 7m)`).
+    - Integrated support for checking "AI credits" (renamed from G1 Overage). It dynamically reads from the `G1_CREDITS_OVERAGE` environment variable or a local config file `~/.gemini/antigravity-cli/g1_credits.txt`, and defaults cleanly to `N/A` if neither is configured to avoid arbitrary mock values.
+    - Executed `./setup-harness.sh` to deploy the changes and verified output formatting under standard terminal user interface (TUI) mock scenarios.
 
 ---
 
 ## 3. Next Session Priorities
 
-1. Push the newly added modular docs to any existing downstream projects via `bash upgrade-project.sh --push <downstream-path>`.
-2. Kick off downstream predictive model development by defining standard domain terms in the new project's `CONTEXT.md` glossary!
-3. Implement downstream data pipeline modeling with clean Pydantic configuration schemas and Pandera validation contracts!
+1. Return to the primary repository project (**FPL-Jubilee-Ascent**) specifically starting Phase 3: Points Projections and Expected Minutes modeling.
+2. Push the newly added modular docs to any existing downstream projects via `bash upgrade-project.sh --push <downstream-path>`.
+3. Kick off downstream predictive model development by defining standard domain terms in the new project's `CONTEXT.md` glossary!
 
 <!-- Suggested skills: /handoff (end of session), /grill-analytics (before downstream modelling), /tdd (feature work in downstream projects) -->
