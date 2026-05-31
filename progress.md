@@ -145,6 +145,11 @@ Establish a high-performance, deterministic developer harness for analytics, mod
     - Integrated time-to-reset parsing for both models, appending the remaining duration in parentheses after the quota percentage (e.g. `(1h 7m)`).
     - Integrated support for checking "AI credits" (renamed from G1 Overage). It dynamically reads from the `G1_CREDITS_OVERAGE` environment variable or a local config file `~/.gemini/antigravity-cli/g1_credits.txt`, and defaults cleanly to `N/A` if neither is configured to avoid arbitrary mock values.
     - Executed `./setup-harness.sh` to deploy the changes and verified output formatting under standard terminal user interface (TUI) mock scenarios.
+32. **Skill Symlink Strategy Simplified — Project-Level Skills Only (2026-05-31):**
+    - Removed the global helper symlink block (section 7) from `setup-harness.sh`: eliminated `HELPER_SYMLINK_PAIRS`, `create_symlink`, `create_symlinks_elevated`, `is_windows`, `test_symlink_capability`, and the symlink orchestrator.
+    - Removed the corresponding `verify_symlink` calls and the now-dead `verify_symlink()` function from the verification section.
+    - Skills are now managed exclusively at the project level (`.agents/skills/`) rather than via global `~/.gemini/antigravity-cli/skills` or `~/.gemini/config/skills` symlinks.
+    - `setup-harness.sh` now only deploys physical files (rules, configs, statusline) with zero symlink side-effects.
 
 ---
 
@@ -153,5 +158,6 @@ Establish a high-performance, deterministic developer harness for analytics, mod
 1. Return to the primary repository project (**FPL-Jubilee-Ascent**) specifically starting Phase 3: Points Projections and Expected Minutes modeling.
 2. Push the newly added modular docs to any existing downstream projects via `bash upgrade-project.sh --push <downstream-path>`.
 3. Kick off downstream predictive model development by defining standard domain terms in the new project's `CONTEXT.md` glossary!
+4. Verify and update `tests/test_harness_bootstrap.py` to drop any test coverage targeting the removed global symlink logic.
 
 <!-- Suggested skills: /handoff (end of session), /grill-analytics (before downstream modelling), /tdd (feature work in downstream projects) -->
