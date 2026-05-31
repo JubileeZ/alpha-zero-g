@@ -1,37 +1,36 @@
 #!/bin/bash
 
-# Required dependencies: jq
+# Required dependencies: jq, bc
 if ! command -v jq >/dev/null 2>&1; then
     echo -e "\033[1;31m[jq missing]\033[0m"
     exit 0
 fi
-
-# Resolve paths
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-GEMINI_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
 
 # 1. Read JSON payload from CLI stdin
 input=$(cat)
 
 # 2. Extract Native Context Metrics
 model_name=$(echo "$input" | jq -r '.model.display_name // "Unknown"')
-input_tokens=$(echo "$input" | jq -r '.context_window.current_usage.input_tokens // 0')
 window_size=$(echo "$input" | jq -r '.context_window.context_window_size // 0')
-used_pct=$(echo "$input" | jq -r '.context_window.used_percentage // 0' | awk '{printf "%.1f", $1}')
+used_pct_raw=$(echo "$input" | jq -r '.context_window.used_percentage // 0')
+used_pct=$(echo "$used_pct_raw" | awk '{printf "%.1f", $1}')
 
-# Format helper for large token counts (e.g., 2000000 -> 2.0M)
+# Derive actual used tokens from percentage * window_size (more accurate than input_tokens alone)
+used_tokens=$(echo "$used_pct_raw $window_size" | awk '{printf "%.0f", $1 * $2 / 100}')
+
+# Format helper for large token counts (e.g., 2000000 -> 2.0M, 98500 -> 98.5k)
 format_tokens() {
     local val=$1
     if [ "$val" -ge 1000000 ]; then
         printf "%.1fM" "$(echo "scale=2; $val/1000000" | bc)"
     elif [ "$val" -ge 1000 ]; then
-        printf "%.0fk" "$(echo "$val/1000" | bc)"
+        printf "%.1fk" "$(echo "scale=1; $val/1000" | bc)"
     else
         echo "$val"
     fi
 }
 
-formatted_used=$(format_tokens "$input_tokens")
+formatted_used=$(format_tokens "$used_tokens")
 formatted_size=$(format_tokens "$window_size")
 
 # 3. Query Quota Cache & Parse Gemini vs Claude
@@ -65,6 +64,22 @@ if command -v antigravity-usage >/dev/null 2>&1; then
     fi
 fi
 
+# Format ms to human-readable reset time
+format_reset_time() {
+    local time_ms=$1
+    if [ -n "$time_ms" ] && [ "$time_ms" != "null" ] && [ "$time_ms" -gt 0 ]; then
+        local time_secs=$((time_ms / 1000))
+        if [ "$time_secs" -ge 3600 ]; then
+            local hrs=$((time_secs / 3600))
+            local mins=$(((time_secs % 3600) / 60))
+            echo " (${hrs}h ${mins}m)"
+        else
+            local mins=$((time_secs / 60))
+            echo " (${mins}m)"
+        fi
+    fi
+}
+
 # Parse Gemini and Claude quotas & reset times from Cache File
 if [ -s "$CACHE_FILE" ]; then
     if jq -e . "$CACHE_FILE" >/dev/null 2>&1; then
@@ -75,19 +90,8 @@ if [ -s "$CACHE_FILE" ]; then
             if [ -n "$gemini_quota_raw" ] && [ "$gemini_quota_raw" != "null" ]; then
                 gemini_pct=$(echo "$gemini_quota_raw" | awk '{printf "%.1f%%", $1 * 100}')
             fi
-
             gemini_time_ms=$(echo "$gemini_model_info" | jq -r '.timeUntilResetMs // empty')
-            if [ -n "$gemini_time_ms" ] && [ "$gemini_time_ms" != "null" ] && [ "$gemini_time_ms" -gt 0 ]; then
-                time_secs=$((gemini_time_ms / 1000))
-                if [ "$time_secs" -ge 3600 ]; then
-                    hrs=$((time_secs / 3600))
-                    mins=$(((time_secs % 3600) / 60))
-                    gemini_reset=" (${hrs}h ${mins}m)"
-                else
-                    mins=$((time_secs / 60))
-                    gemini_reset=" (${mins}m)"
-                fi
-            fi
+            gemini_reset=$(format_reset_time "$gemini_time_ms")
         fi
 
         # 2. Parse Claude Quota & Reset Time
@@ -97,39 +101,16 @@ if [ -s "$CACHE_FILE" ]; then
             if [ -n "$claude_quota_raw" ] && [ "$claude_quota_raw" != "null" ]; then
                 claude_pct=$(echo "$claude_quota_raw" | awk '{printf "%.1f%%", $1 * 100}')
             fi
-
             claude_time_ms=$(echo "$claude_model_info" | jq -r '.timeUntilResetMs // empty')
-            if [ -n "$claude_time_ms" ] && [ "$claude_time_ms" != "null" ] && [ "$claude_time_ms" -gt 0 ]; then
-                time_secs=$((claude_time_ms / 1000))
-                if [ "$time_secs" -ge 3600 ]; then
-                    hrs=$((time_secs / 3600))
-                    mins=$(((time_secs % 3600) / 60))
-                    claude_reset=" (${hrs}h ${mins}m)"
-                else
-                    mins=$((time_secs / 60))
-                    claude_reset=" (${mins}m)"
-                fi
-            fi
+            claude_reset=$(format_reset_time "$claude_time_ms")
         fi
     fi
 fi
 
-# 4. Retrieve AI Credits (from Env, custom config file, or fallback NA)
-ai_credits=""
-if [ -n "${G1_CREDITS_OVERAGE:-}" ]; then
-    ai_credits="${G1_CREDITS_OVERAGE}"
-elif [ -f "${GEMINI_DIR}/antigravity-cli/g1_credits.txt" ]; then
-    ai_credits=$(cat "${GEMINI_DIR}/antigravity-cli/g1_credits.txt" | tr -d '\r\n[:space:]')
-fi
-
-if [ -z "$ai_credits" ]; then
-    ai_credits="N/A"
-fi
-
-# 5. Format & Print ANSI Colored Output (renders directly in TUI status line)
+# 4. Format & Print ANSI Colored Output (renders directly in TUI status line)
 color_model="\033[1;34m"    # Bold Blue
 color_context="\033[1;32m"  # Bold Green
 color_quota="\033[1;33m"    # Bold Yellow
 color_reset="\033[0m"       # Reset Formatting
 
-echo -e "${color_model}Model: ${model_name}${color_reset} | ${color_context}Context: ${formatted_used}/${formatted_size} (${used_pct}%)${color_reset} | ${color_quota}Gemini: ${gemini_pct}${gemini_reset} | Claude: ${claude_pct}${claude_reset} | AI credits: ${ai_credits}${color_reset}"
+echo -e "${color_model}Model: ${model_name}${color_reset} | ${color_context}Context: ${formatted_used}/${formatted_size} (${used_pct}%)${color_reset} | ${color_quota}Gemini: ${gemini_pct}${gemini_reset} | Claude: ${claude_pct}${claude_reset}${color_reset}"
