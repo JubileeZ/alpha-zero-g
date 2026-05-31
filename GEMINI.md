@@ -9,3 +9,6 @@ This file layers project-specific overrides onto the global `~/.gemini/GEMINI.md
 ## Local Skills & Rules Setup
 - [SOFT] If testing or modifying custom skills, keep them in `.agents/skills/` locally first to verify behavior before migrating them to global storage (`~/.gemini/antigravity/skills/`). Local skills override global skills of the same name.
 - [SOFT] Supplemental workspace rules are organized modularly under `.agents/rules/*.md`. Refer to them for specific execution protocols.
+
+## Session Conventions & UX
+- **Caveman Mode Default:** [SOFT] At the start of every session if the `/caveman` skill is available, activate it by default. Do not wait to be asked. If the skill is absent, proceed normally. The user may explicitly toggle it off at any time.

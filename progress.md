@@ -51,7 +51,8 @@ Establish a high-performance, deterministic developer harness for analytics, mod
 ## 2. Active Focus / Current Steps
 
 1. **Harness Verification Approved:** Initial harness bootstrap is fully functional and checked off.
-2. **Ready to Clone:** Alpha-Zero-G is ready to act as a golden standard boilerplate.
+2. **Global Rules Templates & Installer Added (2026-05-31):** Restored global `GEMINI.md` and `AGENTS.md` templates under `global/`, seeded config templates, and created a unified, cross-platform `setup-harness.sh` script to install/sync these files on new/future devices with safe automatic backups.
+3. **Ready to Clone:** Alpha-Zero-G is ready to act as a golden standard boilerplate.
 3. **Idempotent Bootstrapper:** Modified `init.sh` to perform a directory check before attempting to create the virtual environment, making it 100% idempotent.
 4. **Broken Symlink Resolved:** Successfully created the Google Drive target directory and populated `settings.json` based on custom user backups to resolve the broken `~/.gemini/antigravity-cli/settings.json` symlink.
 5. **Trusted Workspaces Synced:** Added the downstream project paths to `settings.json` to enable seamless, password-free operations when context switching.
