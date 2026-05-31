@@ -150,6 +150,11 @@ Establish a high-performance, deterministic developer harness for analytics, mod
     - Removed the corresponding `verify_symlink` calls and the now-dead `verify_symlink()` function from the verification section.
     - Skills are now managed exclusively at the project level (`.agents/skills/`) rather than via global `~/.gemini/antigravity-cli/skills` or `~/.gemini/config/skills` symlinks.
     - `setup-harness.sh` now only deploys physical files (rules, configs, statusline) with zero symlink side-effects.
+33. **Global Custom Skills Repository Integration (2026-06-01):**
+    - Cloned the standard engineering and productivity skills from `github.com/mattpocock/skills` and seeded them to `global/skills/` within the monorepo harness.
+    - Executed `./setup-harness.sh` to physically deploy all 14 skills (`caveman`, `diagnose`, `grill-me`, `grill-with-docs`, `handoff`, `improve-codebase-architecture`, `prototype`, `setup-matt-pocock-skills`, `tdd`, `to-issues`, `to-prd`, `triage`, `write-a-skill`, `zoom-out`) globally to `~/.gemini/antigravity/skills/`, verifying clean cross-platform alignment.
+34. **Caveman Mode Reactivated (2026-06-01):**
+    - User toggled `/caveman on`. Terse, high-density communication protocol activated.
 
 ---
 
