@@ -194,15 +194,16 @@ Establish a high-performance, deterministic developer harness for analytics, mod
     - Generated canonical folder structures dynamically based on type (`--type python|r|hybrid`), replaced placeholders, copied 10 global skills physically, deployed `.gitignore` and `.skillsrc`, generated `docs/adr/ADR-001-project-init.md`, and initialized local Git with a baseline commit.
     - Wrote robust tests in `tests/test_scaffold.py` verifying all requirements.
     - Verified all tests pass cleanly via `uv run pytest tests/test_scaffold.py`.
-42. **In-place Upgrade and Cleanup Execution (2026-06-01):**
-    - Ran `scripts/upgrade-project.sh --yes` directly on the Alpha-Zero-G repository root.
-    - Verified all existing configurations were safely preserved, and successfully generated `docs/adr/ADR-002-alpha-zero-g-upgrade.md` to document the upgrade alignment.
-    - Cleaned up the legacy `scratch/mock_gdrive` directory completely, purging all deprecated settings files and directories while keeping the `scratch` folder empty for utility.
-    - Confirmed full test-suite compliance by running `uv run pytest`, obtaining 100% green status across all 23 unit/integration tests.
+43. **Global Skills Migration & Cleanup (2026-06-01):**
+    - Migrated the custom `to-dfp` and `execute-dfp` skills from `FPL-Jubilee-Ascent` to the main templates repository at `templates/skills/`.
+    - Improved `dfp_planner.py` to dynamically resolve the active project workspace root (searching up from `os.getcwd()` for `.git` or `AGENTS.md`) so it writes to the correct project directory when executed globally.
+    - Updated `templates/skills_manifest.txt`, `scripts/setup-device.sh`, `scripts/setup-device.ps1`, and `scripts/scaffold.py` to support dynamic, custom templates/skills/ copies and recursive directory matching for restructured skills packages.
+    - Cleaned up redundant local copies of all 16 skills under `FPL-Jubilee-Ascent/.agents/skills/` via Git tracking deletion, keeping the project perfectly portable.
+    - Verified all 23 unit/integration tests successfully run green.
 
 ---
 
 ## 3. Next Session Priorities
 
-1. Continue maintaining and monitoring the golden standard harness.
+1. Maintain and monitor the golden standard harness and global skills integrations.
 
