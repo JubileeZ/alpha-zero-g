@@ -183,13 +183,19 @@ Establish a high-performance, deterministic developer harness for analytics, mod
     - Added user confirmation prompt logic for deploying global configurations with non-interactive fallbacks.
     - Implemented rigorous unit/integration tests in `tests/test_setup.py` verifying first-run, second-run (overwrite and skip), exit 0 codes, and settings merges, resulting in 100% test coverage.
     - Verified all 17/17 tests pass successfully.
+40. **Task 7 — Project Upgrader Added (2026-06-01):**
+    - Implemented `scripts/upgrade-project.sh` (Bash) and `scripts/upgrade-project.ps1` (PowerShell) inside `scripts/` directory.
+    - Added safety features: verifies execution inside a valid project (detecting `.git` or `AGENTS.md`), supports `--dry-run` to print audits without writing, never overwrites user files, and appends `## Alpha-Zero-G` block to existing `AGENTS.md` if absent.
+    - Automated missing directories creation and dynamically scanned `docs/adr/` to identify the next free ADR index and generated `docs/adr/ADR-NNN-alpha-zero-g-upgrade.md`.
+    - Wrote rigorous integration tests in `tests/test_upgrade.py` verifying dry-run behaviour, non-destructive appends, and dynamic ADR generation.
+    - Verified all tests pass cleanly via `uv run pytest tests/test_upgrade.py`.
 
 ---
 
 ## 3. Next Session Priorities
 
 1. Implement **Task 6 — Project Scaffolding** (`scripts/scaffold-project.sh` and `.ps1`) incorporating non-empty folder guards.
-2. Implement **Task 7 — Project Upgrader** (`scripts/upgrade-project.sh` and `.ps1`) incorporating ADR trigger checks.
 
 <!-- Suggested skills: /handoff (end of session), /tdd (feature work in downstream projects) -->
+
 
