@@ -177,13 +177,19 @@ Establish a high-performance, deterministic developer harness for analytics, mod
     - Formats output exactly as `[<project>] <branch> | <model-hint> | <date>`.
     - Protected with 100% crash protection wrap in the main execution block.
     - Wrote rigorous unit tests under `tests/test_statusline.py` and confirmed 100% test coverage with all 14/14 tests passing.
+39. **Cross-Platform Device Setup Scripts Added (2026-06-01):**
+    - Implemented `scripts/setup-device.sh` (Bash) and `scripts/setup-device.ps1` (PowerShell) performing 9 ordered setup steps with OK/SKIP/FAIL statuses and Exit summary.
+    - Used inline Python standard library JSON merging for robust `settings.json` patching.
+    - Added user confirmation prompt logic for deploying global configurations with non-interactive fallbacks.
+    - Implemented rigorous unit/integration tests in `tests/test_setup.py` verifying first-run, second-run (overwrite and skip), exit 0 codes, and settings merges, resulting in 100% test coverage.
+    - Verified all 17/17 tests pass successfully.
 
 ---
 
 ## 3. Next Session Priorities
 
-1. Develop **Task 5 — Device Setup Scripts** (`scripts/setup-device.sh` and `.ps1`) in Bash and PowerShell utilizing Python standard library JSON merging.
-2. Implement **Task 6 — Project Scaffolding** (`scripts/scaffold-project.sh` and `.ps1`) and **Task 7 — Project Upgrader** (`scripts/upgrade-project.sh` and `.ps1`) incorporating non-empty folder guards and ADR trigger checks.
+1. Implement **Task 6 — Project Scaffolding** (`scripts/scaffold-project.sh` and `.ps1`) incorporating non-empty folder guards.
+2. Implement **Task 7 — Project Upgrader** (`scripts/upgrade-project.sh` and `.ps1`) incorporating ADR trigger checks.
 
 <!-- Suggested skills: /handoff (end of session), /tdd (feature work in downstream projects) -->
 
