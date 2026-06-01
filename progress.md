@@ -165,6 +165,10 @@ Establish a high-performance, deterministic developer harness for analytics, mod
     - Built Base Templates (Issue #3) under `templates/global/` and `templates/project/` exactly as specified.
     - Guaranteed all template files are strictly under 100 lines and use portable relative references.
     - Wrote new test suite in `tests/test_phase1.py` and deleted obsolete test bootstrap file. Ran `uv run pytest` successfully with 100% green compliance.
+37. **mattpocock/skills Integration Completed (2026-06-01):**
+    - Created `templates/skills_manifest.txt` with 10 engineering and productivity skills.
+    - Wrote `tests/test_skills.py` to validate manifest and project template files.
+    - Verified all tests pass cleanly via `uv run pytest`.
 
 ---
 
@@ -175,4 +179,3 @@ Establish a high-performance, deterministic developer harness for analytics, mod
 3. Implement **Task 6 — Project Scaffolding** (`scripts/scaffold-project.sh` and `.ps1`) and **Task 7 — Project Upgrader** (`scripts/upgrade-project.sh` and `.ps1`) incorporating non-empty folder guards and ADR trigger checks.
 
 <!-- Suggested skills: /handoff (end of session), /tdd (feature work in downstream projects) -->
-
