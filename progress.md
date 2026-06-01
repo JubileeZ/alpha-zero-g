@@ -169,13 +169,21 @@ Establish a high-performance, deterministic developer harness for analytics, mod
     - Created `templates/skills_manifest.txt` with 10 engineering and productivity skills.
     - Wrote `tests/test_skills.py` to validate manifest and project template files.
     - Verified all tests pass cleanly via `uv run pytest`.
+38. **Cross-Platform Python TUI Statusline Script Added (2026-06-01):**
+    - Implemented `scripts/statusline.py` using 100% Python 3 standard library.
+    - Features upwards traversal from current directory to locate `AGENTS.md` and capture the `# Project: <name>` block, falling back to the current directory name.
+    - Safely invokes `git branch --show-current` with gracefall fallbacks.
+    - Parses settings.json for model hints, falling back to "Gemini" on missing/invalid files.
+    - Formats output exactly as `[<project>] <branch> | <model-hint> | <date>`.
+    - Protected with 100% crash protection wrap in the main execution block.
+    - Wrote rigorous unit tests under `tests/test_statusline.py` and confirmed 100% test coverage with all 14/14 tests passing.
 
 ---
 
 ## 3. Next Session Priorities
 
-1. Code **Task 4 — Statusline Script** (`scripts/statusline.py`) implementing Python 3 stdlib upward searching, git branch commands, and fallback formatting.
-2. Develop **Task 5 — Device Setup Scripts** (`scripts/setup-device.sh` and `.ps1`) in Bash and PowerShell utilizing Python standard library JSON merging.
-3. Implement **Task 6 — Project Scaffolding** (`scripts/scaffold-project.sh` and `.ps1`) and **Task 7 — Project Upgrader** (`scripts/upgrade-project.sh` and `.ps1`) incorporating non-empty folder guards and ADR trigger checks.
+1. Develop **Task 5 — Device Setup Scripts** (`scripts/setup-device.sh` and `.ps1`) in Bash and PowerShell utilizing Python standard library JSON merging.
+2. Implement **Task 6 — Project Scaffolding** (`scripts/scaffold-project.sh` and `.ps1`) and **Task 7 — Project Upgrader** (`scripts/upgrade-project.sh` and `.ps1`) incorporating non-empty folder guards and ADR trigger checks.
 
 <!-- Suggested skills: /handoff (end of session), /tdd (feature work in downstream projects) -->
+
