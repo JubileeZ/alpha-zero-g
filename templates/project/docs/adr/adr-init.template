@@ -1,0 +1,13 @@
+# ADR-001: Project Bootstrapped
+**Status:** Accepted
+**Date:** {{DATE}}
+
+## Context
+We need to initialize the repository with standard configurations and directory structure.
+
+## Decision
+We bootstrap the project using the Alpha-Zero-G MVP template.
+
+## Consequences
+- Good: Consistent layout, TDD setup, clear safety guidelines, portable rules.
+- Bad: None.

@@ -1,0 +1,5 @@
+# Alpha-Zero-G Skill Configuration
+
+[skills]
+# Points to global skills directory
+path = ~/.gemini/antigravity-cli/skills/

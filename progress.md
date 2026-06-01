@@ -155,14 +155,24 @@ Establish a high-performance, deterministic developer harness for analytics, mod
     - Executed `./setup-harness.sh` to physically deploy all 14 skills (`caveman`, `diagnose`, `grill-me`, `grill-with-docs`, `handoff`, `improve-codebase-architecture`, `prototype`, `setup-matt-pocock-skills`, `tdd`, `to-issues`, `to-prd`, `triage`, `write-a-skill`, `zoom-out`) globally to `~/.gemini/antigravity/skills/`, verifying clean cross-platform alignment.
 34. **Caveman Mode Reactivated (2026-06-01):**
     - User toggled `/caveman on`. Terse, high-density communication protocol activated.
+35. **Revamp Grilling & Mappings Aligned (2026-06-01):**
+    - Drew the revamp tasks dependency flow diagram.
+    - Performed detailed `/grill-with-docs` session aligning on **No-Symlink Portability**: physical copies for skills, pure `@-import` file-references for `CLAUDE.md`, selective source directory generation, and resilient merges for settings.
+    - Updated [CONTEXT.md](CONTEXT.md) glossary with the new portability term.
+    - Ran `/setup-matt-pocock-skills` to establish standard GitHub issue tracking, canonical triage labels, and domain routing documents under `docs/agents/`.
+36. **Revamp Phase 1 Executed (2026-06-01):**
+    - Purged legacy files (Issue #2): deleted `create-project.sh`, `init.sh`, `setup-harness.sh`, `global/statusline.sh`, `global/settings.json`, `global/settings.json.example`, `global/AGENTS.md`, `global/GEMINI.md`, and the entire `docs/adr/harness/` directory.
+    - Built Base Templates (Issue #3) under `templates/global/` and `templates/project/` exactly as specified.
+    - Guaranteed all template files are strictly under 100 lines and use portable relative references.
+    - Wrote new test suite in `tests/test_phase1.py` and deleted obsolete test bootstrap file. Ran `uv run pytest` successfully with 100% green compliance.
 
 ---
 
 ## 3. Next Session Priorities
 
-1. Return to the primary repository project (**FPL-Jubilee-Ascent**) specifically starting Phase 3: Points Projections and Expected Minutes modeling.
-2. Push the newly added modular docs to any existing downstream projects via `bash upgrade-project.sh --push <downstream-path>`.
-3. Kick off downstream predictive model development by defining standard domain terms in the new project's `CONTEXT.md` glossary!
-4. Verify and update `tests/test_harness_bootstrap.py` to drop any test coverage targeting the removed global symlink logic.
+1. Code **Task 4 — Statusline Script** (`scripts/statusline.py`) implementing Python 3 stdlib upward searching, git branch commands, and fallback formatting.
+2. Develop **Task 5 — Device Setup Scripts** (`scripts/setup-device.sh` and `.ps1`) in Bash and PowerShell utilizing Python standard library JSON merging.
+3. Implement **Task 6 — Project Scaffolding** (`scripts/scaffold-project.sh` and `.ps1`) and **Task 7 — Project Upgrader** (`scripts/upgrade-project.sh` and `.ps1`) incorporating non-empty folder guards and ADR trigger checks.
 
-<!-- Suggested skills: /handoff (end of session), /grill-analytics (before downstream modelling), /tdd (feature work in downstream projects) -->
+<!-- Suggested skills: /handoff (end of session), /tdd (feature work in downstream projects) -->
+
