@@ -40,3 +40,9 @@ Standard, generic developer utility files (such as `init.sh`, `.agents/hooks.jso
 ### No-Symlink Portability
 The architectural constraint of using physical copies (for skills) and pure `@-import` file references (for `CLAUDE.md`) instead of system-level symbolic links, ensuring absolute cross-device compatibility and path-independence on both macOS and Windows.
 
+### AFK Issue
+A development slice with clear interfaces and zero architectural ambiguity, suitable for direct, unattended implementation by a TDD subagent.
+
+### HITL Issue
+A development slice with high design complexity or algorithmic ambiguity, requiring an interactive grilling session to align on requirements before code implementation.
+

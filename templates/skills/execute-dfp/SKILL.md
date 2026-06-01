@@ -1,51 +1,61 @@
 ---
 name: execute-dfp
-description: Orchestrates autonomous agents to execute a dependency flow plan (DFP). Use when the user wants to run a multi-agent orchestration loop to tackle open issues sequentially using grilling and TDD.
+description: Stateful orchestrator that runs a parallel execution dependency flow plan (DFP) using subagents. Use when executing layered issues in parallel using TDD or Grilling sessions.
 ---
 
 # Dependency Flow Executor (execute-dfp)
 
 ## Quick start
 
-To start orchestrating the dependency flow plan:
-1. Ensure the DFP flow is generated (using `to-dfp`).
-2. Identify the first incomplete layer (Layer 1).
-3. Run the orchestration workflow below for each issue.
+1. Run `to-dfp` to generate `dependency_flow_plan.md`.
+2. Locate the first incomplete layer.
+3. Start the orchestrator state machine.
 
 ## Workflows
 
-### 1. Process Layer Issues
-For the current layer in the DFP flow, identify all issues that have no active open blockers. Tackle them in order or concurrently:
+### 1. Initialize State Machine
+Orchestrator reads or creates `dfp_state.json` in workspace root:
+```json
+{
+  "current_layer": 1,
+  "active_subagents": {},
+  "completed_issues": [],
+  "failed_issues": {}
+}
+```
 
-### 2. Grill & Align (grill-with-docs)
-To prevent context bloat in the main orchestrator, spawn a dedicated subagent for the grilling session:
-1. Call `invoke_subagent` with:
-   - **Role**: "Grill Master for Issue #<number>"
-   - **TypeName**: "self"
-   - **Prompt**: "Execute a `/grill-with-docs` session for Issue #<number>. Challenge the design against our existing domain model, align on equations and schemas, and update CONTEXT.md and ADRs. Report back by sending a message to parent ID containing `{\"status\": \"clean\"}` once requirements are clean and locked in."
-2. The subagent must explicitly trigger and run the `/grill-with-docs` skill.
-3. Once the subagent reports that the issue is "clean" via `send_message`, proceed to the next step.
+### 2. Spawn Parallel Layer Subagents
+Identify all incomplete issues in the current layer with zero active blockers. Construct a single concurrent `invoke_subagent` array call:
+For each issue, check GitHub labels (`ready-for-agent` vs `needs-triage`):
 
-### 3. Spawn TDD Subagent
-To prevent context bloat in the main orchestrator, spawn a separate subagent to implement the code changes:
-1. Call `invoke_subagent` with:
-   - **Role**: "TDD Developer for Issue #<number>"
-   - **TypeName**: "self"
-   - **Prompt**: "Implement Issue #<number> using the `/tdd` skill. Target 100% test coverage, strict type hints, and full Ruff/Mypy compliance. Report back by sending a message to parent ID containing `{\"status\": \"success\"}` or `{\"status\": \"failed\", \"error\": \"...\"}`."
-2. The subagent follows the strict Red-Green-Refactor loop.
+- **If `ready-for-agent` (AFK)**: Spawn TDD subagent directly:
+  - **Role**: "TDD Developer for Issue #<number>"
+  - **TypeName**: "self"
+  - **Prompt**: "Implement Issue #<number> using `/tdd`. Target 100% test coverage and Ruff/Mypy compliance. Send `{\"status\": \"success\", \"issue\": <number>}` on finish."
+- **If `needs-triage` or other (HITL)**: Spawn Grill subagent:
+  - **Role**: "Grill Master for Issue #<number>"
+  - **TypeName**: "self"
+  - **Prompt**: "Run `/grill-with-docs` for Issue #<number>. When aligned, post Agent Brief, apply `ready-for-agent` label, and send `{\"status\": \"ready\", \"issue\": <number>}`."
 
-### 4. Handle Subagent Outcomes
-Asynchronous messages from subagents trigger the orchestrator's wake up:
-- **Success**: Close the GitHub issue:
+Save active subagents in `dfp_state.json` under `"active_subagents"`.
+
+### 3. Handle Asynchronous Wakeups
+When subagents complete and send callbacks, parse `dfp_state.json`:
+
+- **Grill callback (`ready`)**: Remove from `active_subagents`. Instantly spawn TDD subagent for that issue. Update state.
+- **TDD callback (`success`)**: Remove from `active_subagents`. Close GitHub issue:
   ```bash
-  gh issue close <number> --comment "Successfully resolved via TDD subagent."
+  gh issue close <number> --comment "Resolved via parallel TDD subagent."
   ```
-  Update progress.md and move to next issue/layer.
-- **Failure**: Pause execution, collect error details/test logs from the message payload, and present options to the USER for guidance.
+  Add to `completed_issues`. Update state.
+- **Failure callback**: Remove from `active_subagents`. Add to `failed_issues`. Do not kill other running subagents; let them finish.
 
-### 5. Interruptions & Pausing
-The orchestrator must check for user intervention at the start of every wakeup/invocation:
-- If the USER sends any message containing "stop", "pause", or "abort":
-  1. Immediately halt launching new tasks or layers.
-  2. Kill active subagents using `manage_subagents` tool with `Action="kill"`.
-  3. Report current status and ask the USER for instructions.
+### 4. Triage and Advance
+Once `"active_subagents"` is empty for the current layer:
+- If `"failed_issues"` is not empty: Present failure details to USER, halt execution, and await manual triage.
+- If all layer issues succeeded: Increment `current_layer`, wipe `failed_issues`, and proceed to next layer.
+
+### 5. Manual Interrupts
+If USER inputs "pause", "stop", or "abort":
+- Kill all active subagents using `manage_subagents` with `Action="kill"`.
+- Clean up active list in `dfp_state.json`. Report status.
