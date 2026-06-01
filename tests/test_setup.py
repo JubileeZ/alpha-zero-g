@@ -12,7 +12,7 @@ def create_mock_git(tmp_path):
 if [ "$1" = "clone" ]; then
     dest="${@: -1}"
     mkdir -p "$dest"
-    for s in diagnose improve-codebase-architecture setup-matt-pocock-skills tdd to-issues to-prd zoom-out caveman handoff write-a-skill; do
+    for s in diagnose improve-codebase-architecture setup-matt-pocock-skills tdd to-issues to-prd zoom-out caveman handoff write-a-skill to-dfp execute-dfp; do
         mkdir -p "$dest/$s"
         echo "mock" > "$dest/$s/SKILL.md"
     done
@@ -60,7 +60,7 @@ def test_bash_setup_second_run_skip(tmp_path):
     
     skills_dir = mock_home / ".agent-skills" / "mattpocock"
     skills_dir.mkdir(parents=True)
-    for s in ["diagnose", "improve-codebase-architecture", "setup-matt-pocock-skills", "tdd", "to-issues", "to-prd", "zoom-out", "caveman", "handoff", "write-a-skill"]:
+    for s in ["diagnose", "improve-codebase-architecture", "setup-matt-pocock-skills", "tdd", "to-issues", "to-prd", "zoom-out", "caveman", "handoff", "write-a-skill", "to-dfp", "execute-dfp"]:
         (skills_dir / s).mkdir()
         
     gemini_dir = mock_home / ".gemini"

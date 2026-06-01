@@ -68,7 +68,9 @@ def test_bash_scaffold_python(tmp_path):
         "zoom-out",
         "caveman",
         "handoff",
-        "write-a-skill"
+        "write-a-skill",
+        "to-dfp",
+        "execute-dfp"
     ]
     for skill in expected_skills:
         assert (project_dir / ".agents/skills" / skill / "SKILL.md").is_file()

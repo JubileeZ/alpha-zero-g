@@ -16,7 +16,9 @@ def test_skills_manifest_exists_and_valid() -> None:
         "zoom-out",
         "caveman",
         "handoff",
-        "write-a-skill"
+        "write-a-skill",
+        "to-dfp",
+        "execute-dfp"
     ]
     
     with open(manifest_path, "r", encoding="utf-8") as f:

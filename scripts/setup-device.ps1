@@ -38,16 +38,25 @@ if (!(Test-Path $ManifestPath)) {
         $Skill = $Line.Split("#")[0].Trim()
         if ([string]::IsNullOrWhiteSpace($Skill)) { continue }
         
-        $SrcSkill = Join-Path $TargetSkillsDir $Skill
+        $LocalSrcSkill = Join-Path $RepoRoot "templates\skills\$Skill"
         $DstSkill = Join-Path $DestSkillsDir $Skill
         
-        if (Test-Path $SrcSkill) {
+        if (Test-Path $LocalSrcSkill) {
             if (Test-Path $DstSkill) {
                 Remove-Item -Recurse -Force $DstSkill > $null 2>&1
             }
-            Copy-Item -Recurse -Force $SrcSkill $DstSkill > $null 2>&1
+            Copy-Item -Recurse -Force $LocalSrcSkill $DstSkill > $null 2>&1
         } else {
-            $Failed = $true
+            # Search recursively in TargetSkillsDir
+            $SrcSkill = Get-ChildItem -Path $TargetSkillsDir -Directory -Filter $Skill -Recurse | Select-Object -First 1
+            if ($SrcSkill) {
+                if (Test-Path $DstSkill) {
+                    Remove-Item -Recurse -Force $DstSkill > $null 2>&1
+                }
+                Copy-Item -Recurse -Force $SrcSkill.FullName $DstSkill > $null 2>&1
+            } else {
+                $Failed = $true
+            }
         }
     }
     

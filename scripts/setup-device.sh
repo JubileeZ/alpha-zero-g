@@ -38,14 +38,21 @@ else
         skill=$(echo "$skill" | sed -e 's/#.*//' -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
         [ -z "$skill" ] && continue
         
-        SRC_SKILL="$TARGET_SKILLS_DIR/$skill"
+        LOCAL_SRC_SKILL="$REPO_ROOT/templates/skills/$skill"
         DST_SKILL="$DEST_SKILLS_DIR/$skill"
         
-        if [ -d "$SRC_SKILL" ]; then
+        if [ -d "$LOCAL_SRC_SKILL" ]; then
             rm -rf "$DST_SKILL"
-            cp -r "$SRC_SKILL" "$DST_SKILL"
+            cp -r "$LOCAL_SRC_SKILL" "$DST_SKILL"
         else
-            FAILED=1
+            # Search recursively in TARGET_SKILLS_DIR
+            SRC_SKILL=$(find "$TARGET_SKILLS_DIR" -type d -name "$skill" -print -quit)
+            if [ -n "$SRC_SKILL" ] && [ -d "$SRC_SKILL" ]; then
+                rm -rf "$DST_SKILL"
+                cp -r "$SRC_SKILL" "$DST_SKILL"
+            else
+                FAILED=1
+            fi
         fi
     done < "$MANIFEST_PATH"
     

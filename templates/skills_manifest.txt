@@ -8,3 +8,5 @@ zoom-out
 caveman
 handoff
 write-a-skill
+to-dfp
+execute-dfp
