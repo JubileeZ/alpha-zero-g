@@ -35,3 +35,20 @@ Alpha-Zero-G is a foundational meta-project designed to test and establish the g
 
 ### 4. Session Conventions & UX
 - **Caveman Mode Default:** [SOFT] At the start of every session if the `/caveman` skill available, activate it by default. Do not wait to be asked. If the skill is absent, proceed normally. The user may explicitly toggle it off at any time.
+
+---
+
+## Agent skills
+
+### Issue tracker
+
+Issues and PRDs live as GitHub issues. Uses `gh` CLI. See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Canonical triage roles map to default GitHub labels. See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Single-context layout mapping `CONTEXT.md` and `docs/adr/`. See `docs/agents/domain.md`.
+

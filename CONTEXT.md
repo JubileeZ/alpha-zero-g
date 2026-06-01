@@ -36,3 +36,7 @@ Programmatic interceptors defined in `.agents/hooks.json` that capture tool invo
 
 ### Project Utility Files
 Standard, generic developer utility files (such as `init.sh`, `.agents/hooks.json`, `DEVELOPER_WORKFLOW.md`, `Makefile`, and base templates) that are identical across workspaces.
+
+### No-Symlink Portability
+The architectural constraint of using physical copies (for skills) and pure `@-import` file references (for `CLAUDE.md`) instead of system-level symbolic links, ensuring absolute cross-device compatibility and path-independence on both macOS and Windows.
+

@@ -32,7 +32,7 @@ This file defines the universal working style, code style defaults, safety bound
 ## Output Format
 - [HARD] When creating new files, show the full path relative to the repo root.
 - [HARD] When editing existing files, show a standard diff or clearly state what changed and where.
-- [HARD] NEVER use absolute `file:///` URLs or local filesystem paths in rule files (`AGENTS.md`, `GEMINI.md`) or documentation. All links must use standard, relative Markdown paths (e.g., `[workflows.md](.agents/rules/workflows.md)`) to maintain platform portability across different systems, strictly conforming to ADR-0007.
+- [HARD] NEVER use absolute `file:///` URLs or local filesystem paths in rule files (`AGENTS.md`, `GEMINI.md`) or documentation. All links must use standard, relative Markdown paths (e.g., `[workflows.md](.agents/rules/workflows.md)`) to maintain platform portability across different systems.
 
 ## Session Conventions & UX
 - **Caveman Mode Default:** [SOFT] At the start of every session if the `/caveman` skill is available, activate it by default. Do not wait to be asked. If the skill is absent, proceed normally. The user may explicitly toggle it off at any time.
