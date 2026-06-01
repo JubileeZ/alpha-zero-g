@@ -194,11 +194,15 @@ Establish a high-performance, deterministic developer harness for analytics, mod
     - Generated canonical folder structures dynamically based on type (`--type python|r|hybrid`), replaced placeholders, copied 10 global skills physically, deployed `.gitignore` and `.skillsrc`, generated `docs/adr/ADR-001-project-init.md`, and initialized local Git with a baseline commit.
     - Wrote robust tests in `tests/test_scaffold.py` verifying all requirements.
     - Verified all tests pass cleanly via `uv run pytest tests/test_scaffold.py`.
+42. **In-place Upgrade and Cleanup Execution (2026-06-01):**
+    - Ran `scripts/upgrade-project.sh --yes` directly on the Alpha-Zero-G repository root.
+    - Verified all existing configurations were safely preserved, and successfully generated `docs/adr/ADR-002-alpha-zero-g-upgrade.md` to document the upgrade alignment.
+    - Cleaned up the legacy `scratch/mock_gdrive` directory completely, purging all deprecated settings files and directories while keeping the `scratch` folder empty for utility.
+    - Confirmed full test-suite compliance by running `uv run pytest`, obtaining 100% green status across all 23 unit/integration tests.
 
 ---
 
 ## 3. Next Session Priorities
 
-1. Complete any pending integration trials or refinement steps for all device and scaffolder tasks.
+1. Continue maintaining and monitoring the golden standard harness.
 
-<!-- Suggested skills: /handoff (end of session), /tdd (feature work in downstream projects) -->
