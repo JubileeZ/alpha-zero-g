@@ -203,6 +203,12 @@ Establish a high-performance, deterministic developer harness for analytics, mod
 44. **Improving execute-dfp Skill (2026-06-01):**
     - Initiated `/grill-with-docs` session to align on execute-dfp improvements.
     - Proposed dynamic grilling (grill vs. TDD-only) and robust concurrent subagent execution.
+45. **Enhanced Statusline Portability & Mathematical Correctness (2026-06-01):**
+    - Restored rich context window metrics, Gemini/Claude quota tracking, and time until reset inside the 100% Python `scripts/statusline.py` status line script.
+    - Removed obsolete AI credits block as requested.
+    - Adjusted context token display calculation to mathematically derive active used tokens using `(used_percentage / 100) * window_size` to ensure exact numeric alignment (e.g. `624/1.0M (0.1%)` instead of input tokens mismatched to window size).
+    - Deployed script globally to `~/.agent-config/statusline.py` and verified fallback and rich piped execution formats.
+    - Updated unit/integration tests in `tests/test_statusline.py` for 100% coverage compliance.
 
 ---
 
