@@ -52,3 +52,8 @@ Canonical triage roles map to default GitHub labels. See `docs/agents/triage-lab
 
 Single-context layout mapping `CONTEXT.md` and `docs/adr/`. See `docs/agents/domain.md`.
 
+
+## Alpha-Zero-G
+- **Deterministic Python**: Always execute via `uv run` (`uv run pytest`, `uv run python`).
+- **No Symlink Portability**: All project rules are physical copies and use relative links.
+- **Explicit Typings**: Require strict type hints in Python.
