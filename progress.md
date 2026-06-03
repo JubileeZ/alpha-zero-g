@@ -200,9 +200,12 @@ Establish a high-performance, deterministic developer harness for analytics, mod
     - Updated `templates/skills_manifest.txt`, `scripts/setup-device.sh`, `scripts/setup-device.ps1`, and `scripts/scaffold.py` to support dynamic, custom templates/skills/ copies and recursive directory matching for restructured skills packages.
     - Cleaned up redundant local copies of all 16 skills under `FPL-Jubilee-Ascent/.agents/skills/` via Git tracking deletion, keeping the project perfectly portable.
     - Verified all 23 unit/integration tests successfully run green.
-44. **Improving execute-dfp Skill (2026-06-01):**
+44. **Improving execute-dfp Skill (2026-06-03):**
     - Initiated `/grill-with-docs` session to align on execute-dfp improvements.
     - Proposed dynamic grilling (grill vs. TDD-only) and robust concurrent subagent execution.
+    - Updated `execute-dfp` to a continuous graph execution model natively parsing the Mermaid DFP instead of strict layers.
+    - Formatted `execute-dfp` skill according to the `/write-a-skill` template guidelines.
+    - Pushed changes to `Alpha-Zero-G` repo for cross-device portability.
 45. **Enhanced Statusline Portability & Mathematical Correctness (2026-06-01):**
     - Restored rich context window metrics, Gemini/Claude quota tracking, and time until reset inside the 100% Python `scripts/statusline.py` status line script.
     - Removed obsolete AI credits block as requested.
@@ -214,6 +217,5 @@ Establish a high-performance, deterministic developer harness for analytics, mod
 
 ## 3. Next Session Priorities
 
-1. Finalize execute-dfp improvements based on the grilling feedback.
-2. Maintain and monitor the golden standard harness and global skills integrations.
+1. Maintain and monitor the golden standard harness and global skills integrations.
 

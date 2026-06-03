@@ -1,6 +1,6 @@
 ---
 name: execute-dfp
-description: Stateful orchestrator that runs a parallel execution dependency flow plan (DFP) using subagents. Use when executing layered issues in parallel using TDD or Grilling sessions.
+description: Execute a Dependency Flow Plan (DFP) graph in parallel using subagents. Use when running issues that have dependencies on each other, or when asked to execute a DFP or run issues in parallel.
 ---
 
 # Dependency Flow Executor (execute-dfp)
@@ -8,54 +8,35 @@ description: Stateful orchestrator that runs a parallel execution dependency flo
 ## Quick start
 
 1. Run `to-dfp` to generate `dependency_flow_plan.md`.
-2. Locate the first incomplete layer.
-3. Start the orchestrator state machine.
+2. Start the orchestrator state machine.
+3. The orchestrator will parse the Mermaid graph and spawn subagents for root issues.
 
 ## Workflows
 
 ### 1. Initialize State Machine
-Orchestrator reads or creates `dfp_state.json` in workspace root:
-```json
-{
-  "current_layer": 1,
-  "active_subagents": {},
-  "completed_issues": [],
-  "failed_issues": {}
-}
-```
+- [ ] Read or create `dfp_state.json` in workspace root.
+- [ ] Initialize the `"issues"` map to track status (`pending`, `running`, `completed`, `failed`) and `conversation_id`.
 
-### 2. Spawn Parallel Layer Subagents
-Identify all incomplete issues in the current layer with zero active blockers. Construct a single concurrent `invoke_subagent` array call:
-For each issue, check GitHub labels (`ready-for-agent` vs `needs-triage`):
-
-- **If `ready-for-agent` (AFK)**: Spawn TDD subagent directly:
-  - **Role**: "TDD Developer for Issue #<number>"
-  - **TypeName**: "self"
-  - **Prompt**: "Implement Issue #<number> using `/tdd`. Target 100% test coverage and Ruff/Mypy compliance. Send `{\"status\": \"success\", \"issue\": <number>}` on finish."
-- **If `needs-triage` or other (HITL)**: Spawn Grill subagent:
-  - **Role**: "Grill Master for Issue #<number>"
-  - **TypeName**: "self"
-  - **Prompt**: "Run `/grill-with-docs` for Issue #<number>. When aligned, post Agent Brief, apply `ready-for-agent` label, and send `{\"status\": \"ready\", \"issue\": <number>}`."
-
-Save active subagents in `dfp_state.json` under `"active_subagents"`.
+### 2. Spawn Ready Subagents (Graph Execution)
+- [ ] Parse the Mermaid graph in `dependency_flow_plan.md` to find **root issues** (in-degree 0) and issues where **all parent dependencies have a `completed` status**.
+- [ ] Filter this list to issues currently marked as `pending`.
+- [ ] For each ready issue with label `ready-for-agent`: Spawn TDD subagent (`Role`: "TDD Developer", `TypeName`: "self").
+- [ ] For each ready issue with label `needs-triage`: Spawn Grill subagent (`Role`: "Grill Master", `TypeName`: "self").
+- [ ] Update `dfp_state.json` to mark spawned issues as `"running"` and record their `"conversation_id"`.
 
 ### 3. Handle Asynchronous Wakeups
 When subagents complete and send callbacks, parse `dfp_state.json`:
+- [ ] **Grill callback (`ready`)**: Instantly spawn TDD subagent for that issue. Keep status as `running` but update `conversation_id`.
+- [ ] **TDD callback (`success`)**: Update issue status to `completed` and close the GitHub issue using `gh issue close`.
+- [ ] **Failure callback**: Update issue status to `failed`. Do not kill other running subagents; independent branches continue executing.
+- [ ] **Loop**: After any callback, immediately return to Step 2 to evaluate the Mermaid graph and spawn newly unblocked issues.
 
-- **Grill callback (`ready`)**: Remove from `active_subagents`. Instantly spawn TDD subagent for that issue. Update state.
-- **TDD callback (`success`)**: Remove from `active_subagents`. Close GitHub issue:
-  ```bash
-  gh issue close <number> --comment "Resolved via parallel TDD subagent."
-  ```
-  Add to `completed_issues`. Update state.
-- **Failure callback**: Remove from `active_subagents`. Add to `failed_issues`. Do not kill other running subagents; let them finish.
-
-### 4. Triage and Advance
-Once `"active_subagents"` is empty for the current layer:
-- If `"failed_issues"` is not empty: Present failure details to USER, halt execution, and await manual triage.
-- If all layer issues succeeded: Increment `current_layer`, wipe `failed_issues`, and proceed to next layer.
+### 4. Triage and Halts
+- [ ] If an issue fails, leave its dependents as `pending`.
+- [ ] Halt execution and alert the user for manual triage ONLY when there are no `"running"` issues AND there are `"pending"` issues permanently blocked by a `"failed"` dependency.
+- [ ] If all issues in the graph reach `"completed"`, announce the DFP execution is finished.
 
 ### 5. Manual Interrupts
 If USER inputs "pause", "stop", or "abort":
-- Kill all active subagents using `manage_subagents` with `Action="kill"`.
-- Clean up active list in `dfp_state.json`. Report status.
+- [ ] Kill all subagents marked `"running"` using `manage_subagents` with their `conversation_id`.
+- [ ] Revert their status in `dfp_state.json` back to `"pending"`.
