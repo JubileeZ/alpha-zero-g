@@ -106,8 +106,24 @@ def main():
     deploy_global_file(4, "GEMINI.md")
     deploy_global_file(5, "CLAUDE.md")
     
-    # Step 6
-    print("Step 6: Copy statusline.py to ~/.agent-config/statusline.py... ", end="")
+    # Step 6: Install antigravity-usage (quota tracker for statusline)
+    print("Step 6: Install antigravity-usage via npm... ", end="", flush=True)
+    try:
+        npm_bin = shutil.which("npm")
+        if npm_bin:
+            res = subprocess.run([npm_bin, "install", "-g", "antigravity-usage"], capture_output=True, text=True, timeout=60)
+            if res.returncode == 0:
+                print("OK")
+                ok_count += 1
+            else:
+                print(f"FAIL ({res.stderr.strip()[:80]})")
+        else:
+            print("SKIP (npm not found)")
+    except Exception as e:
+        print(f"FAIL ({e})")
+
+    # Step 7
+    print("Step 7: Copy statusline.py to ~/.agent-config/statusline.py... ", end="")
     agent_config_dir = home / ".agent-config"
     agent_config_dir.mkdir(parents=True, exist_ok=True)
     try:
@@ -117,8 +133,8 @@ def main():
     except Exception:
         print("FAIL")
         
-    # Step 7
-    print("Step 7: Patch ~/.gemini/antigravity-cli/settings.json... ", end="")
+    # Step 8
+    print("Step 8: Patch ~/.gemini/antigravity-cli/settings.json... ", end="")
     try:
         settings_path = home / ".gemini" / "antigravity-cli" / "settings.json"
         settings_path.parent.mkdir(parents=True, exist_ok=True)
@@ -143,8 +159,8 @@ def main():
     except Exception:
         print("FAIL")
         
-    # Step 8
-    print("Step 8: Verify statusline execution... ", end="")
+    # Step 9
+    print("Step 9: Verify statusline execution... ", end="")
     try:
         py_exec = "python3" if sys.platform != "win32" else "python"
         target = agent_config_dir / "statusline.py"
@@ -158,7 +174,7 @@ def main():
     except Exception:
         print("FAIL")
         
-    print(f"Step 9: Exit summary: {ok_count}/8 steps OK.")
+    print(f"Step 10: Exit summary: {ok_count}/9 steps OK.")
 
 if __name__ == "__main__":
     main()
