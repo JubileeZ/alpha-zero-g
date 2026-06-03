@@ -5,6 +5,7 @@ import json
 import subprocess
 import shutil
 import time
+import tempfile
 from datetime import datetime
 
 def find_project_name(start_dir: str) -> str:
@@ -32,7 +33,7 @@ def get_model_hint(settings_path: str = None) -> str:
     try:
         path = settings_path or os.path.expanduser("~/.gemini/antigravity-cli/settings.json")
         with open(path, "r", encoding="utf-8") as f:
-            return json.load(f).get(".model", "Gemini")
+            return json.load(f).get("model", "Gemini")
     except Exception: return "Gemini"
 
 def format_tokens(val) -> str:
@@ -74,7 +75,7 @@ def main() -> None:
                 fmt_used = format_tokens(used_tokens)
                 fmt_size = format_tokens(window_size)
                 
-                cache_file = "/tmp/antigravity_quota_cache.json"
+                cache_file = os.path.join(tempfile.gettempdir(), "antigravity_quota_cache.json")
                 usage_bin = shutil.which("antigravity-usage")
                 if usage_bin:
                     age = time.time() - os.path.getmtime(cache_file) if os.path.exists(cache_file) else 999.0

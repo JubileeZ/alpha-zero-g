@@ -12,15 +12,9 @@ Rather than serving as a software codebase itself, it provides the scripts, temp
 
 Run this once per physical machine (Mac or Windows) to configure your global `~/.gemini/` settings, ensuring that your Antigravity or AI tool configurations are correctly synced to this harness's best practices.
 
-### Mac / Linux
+### All Platforms (Mac, Linux, Windows)
 ```bash
-bash scripts/setup-device.sh
-```
-
-### Windows
-Open a PowerShell terminal and run:
-```powershell
-.\scripts\setup-device.ps1
+uv run python scripts/setup-device.py
 ```
 
 ---
@@ -29,15 +23,10 @@ Open a PowerShell terminal and run:
 
 Use the scaffolding tool to instantly generate a pristine workspace for your next idea (e.g. FPL Model or Crypto Bot). It automatically builds the canonical folder structure, deploys AI rules (`AGENTS.md`), copies custom `.agents/skills/`, and initializes Git.
 
-### Mac / Linux
+### All Platforms (Mac, Linux, Windows)
 ```bash
-# Usage: bash scripts/scaffold-project.sh <project-name> --type <python|r|hybrid> [destination-path]
-bash scripts/scaffold-project.sh "My New Analytics Project" --type python ../My-New-Project
-```
-
-### Windows
-```powershell
-.\scripts\scaffold-project.ps1 -ProjectName "My New Analytics Project" -Type python -DestinationPath "..\My-New-Project"
+# Usage: uv run python scripts/scaffold.py <project-name> <python|r|hybrid> [destination-path]
+uv run python scripts/scaffold.py "My New Analytics Project" python ../My-New-Project
 ```
 
 Once bootstrapped, navigate to the new project and initialize dependencies:
@@ -52,13 +41,10 @@ uv sync
 
 As Alpha-Zero-G's core rules and templates evolve, you can push updates from this repository to your downstream projects without overwriting your project-specific domain code or logic.
 
-### Mac / Linux
+### All Platforms (Mac, Linux, Windows)
 ```bash
-# Usage: bash scripts/upgrade-project.sh <path-to-existing-project>
-bash scripts/upgrade-project.sh ../My-New-Project
-```
-
-### Windows
-```powershell
-.\scripts\upgrade-project.ps1 "..\My-New-Project"
+# Usage: uv run python scripts/upgrade-project.py
+# Must be run from inside the target project directory
+cd ../My-New-Project
+uv run python ../Alpha-Zero-G/scripts/upgrade-project.py
 ```
