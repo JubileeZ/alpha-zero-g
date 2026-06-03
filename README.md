@@ -35,9 +35,7 @@ When cloned to start a new project, this harness establishes a clean, minimal st
 │
 ├── features.json                # Structured feature requirements and status
 ├── progress.md                  # Human & Agent session state log
-├── init.sh                      # Deterministic project bootstrap script
 ├── pyproject.toml               # Python dependencies (managed by uv)
-├── Makefile                     # Standard development commands (lint, test, format)
 │
 └── .agents/
     └── hooks.json               # Hard safety enforcement rules (blocking/confirmations)
@@ -45,65 +43,39 @@ When cloned to start a new project, this harness establishes a clean, minimal st
 
 ---
 
-## The Golden Path Developer Workflow
-
-To ensure high-performance, deterministic development and perfect session continuity when pair-programming with AI agents, always follow the exact multi-phase cycle below:
-
-```
-┌───────────┐     ┌───────────┐     ┌───────────┐     ┌───────────┐
-│  1. BOOT  │ ──> │ 2. GRILL  │ ──> │  3. SPEC  │ ──> │ 4. SLICE  │
-└───────────┘     └───────────┘     └───────────┘     └───────────┘
-                                                            │
-┌───────────┐     ┌───────────┐     ┌───────────┐           ▼
-│8. HANDOFF │ <── │7.REFACTOR │ <── │ 6. VERIFY │ <── │  5. SHIP  │
-└───────────┘     └───────────┘     └───────────┘     └───────────┘
-```
-
-1. **BOOT:** CD into the workspace and run `bash init.sh` to sync the virtual environment and verify a green smoke-test baseline.
-2. **GRILL:** Stress-test ideas, identify edge cases, and align on goals with the user before writing any code. Update the domain glossary `CONTEXT.md` inline.
-3. **SPEC:** Propose and compile design specifications in scratch files or inline before starting implementation.
-4. **SLICE:** Break approved designs into thin, independent vertical slices listed in `features.json`.
-5. **SHIP (TDD):** Implement behavior-driven tests, watch them fail, write minimal code to pass, and refactor. Always run python executions and tests via `uv run`.
-6. **VERIFY:** Conduct post-modeling/post-computation checks (assert shapes, nulls, print matrices).
-7. **REFACTOR:** Clean up code, remove duplication, and verify tests remain green.
-8. **HANDOFF:** Update `progress.md` with active states and next steps before ending the session.
-
----
-
 ## Getting Started
 
-To initialize the project environment (whether on a local machine, or a fresh container / remote workspace), run:
+This project relies on the blazing fast `uv` package manager. To initialize the project environment (whether on a local machine, or a fresh container / remote workspace), run:
 
 ```bash
-bash init.sh
+uv sync
 ```
 
-This bootstrap script will:
-1. Detect and install the `uv` package manager if missing.
-2. Synchronize Python virtual environments matching `pyproject.toml` (targeting Python 3.12).
-3. Execute smoke tests to verify the system works before letting the agent make changes.
+This command will automatically resolve and synchronize the Python virtual environment defined in `pyproject.toml`.
 
 ---
 
 ## Bootstrapping a New Project
 
-Alpha-Zero-G comes with an automated project generator script `create-project.sh` located at the root. This script copies templates, builds the workspace directories, and automatically customizes paths and names for your new project.
+Alpha-Zero-G comes with automated project generator scripts located in the `scripts/` folder. These scripts copy templates, build workspace directories, and automatically customize paths and names for your new project.
 
 ### Quick Start: Bootstrapping a New Project
 
 To create a new workspace (e.g., your FPL Model or Crypto Bot), run the following command from the root of the Alpha-Zero-G project:
 
 ```bash
-bash create-project.sh <destination-path> "[Project Name]"
+bash scripts/scaffold-project.sh <destination-path> "[Project Name]"
 ```
+
+*(Note: Use `scripts/scaffold-project.ps1` if you are on Windows).*
 
 #### Example:
 ```bash
-bash create-project.sh ../FPL-Model "Fantasy Premier League Score Projections"
+bash scripts/scaffold-project.sh ../FPL-Model "Fantasy Premier League Score Projections"
 ```
 
-Once bootstrapped, navigate to the directory and boot the environment:
+Once bootstrapped, navigate to the directory and sync the environment:
 ```bash
 cd ../FPL-Model
-bash init.sh
+uv sync
 ```
