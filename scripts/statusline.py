@@ -48,6 +48,28 @@ def format_reset_time(time_ms) -> str:
         return f" ({secs//3600}h {(secs%3600)//60}m)" if secs >= 3600 else (f" ({secs//60}m)" if secs > 0 else "")
     except Exception: return ""
 
+def get_stdin_nonblocking():
+    if sys.stdin.isatty(): return ""
+    try:
+        import platform, time
+        end_time = time.time() + 0.05
+        if platform.system() == "Windows":
+            import ctypes
+            from ctypes import wintypes
+            hStdin = ctypes.windll.kernel32.GetStdHandle(-10)
+            while time.time() < end_time:
+                avail = wintypes.DWORD()
+                res = ctypes.windll.kernel32.PeekNamedPipe(hStdin, None, 0, None, ctypes.byref(avail), None)
+                if res and avail.value > 0:
+                    return sys.stdin.read(avail.value).strip()
+                time.sleep(0.01)
+        else:
+            import select
+            r, _, _ = select.select([sys.stdin], [], [], 0.05)
+            if r: return sys.stdin.readline().strip()
+    except Exception: pass
+    return ""
+
 def main() -> None:
     try:
         project = find_project_name(os.getcwd())
@@ -55,10 +77,7 @@ def main() -> None:
         model_hint = get_model_hint()
         date_str = datetime.now().strftime("%Y-%m-%d")
         
-        stdin_data = ""
-        if not sys.stdin.isatty():
-            try: stdin_data = sys.stdin.read().strip()
-            except Exception: pass
+        stdin_data = get_stdin_nonblocking()
             
         if stdin_data:
             try:

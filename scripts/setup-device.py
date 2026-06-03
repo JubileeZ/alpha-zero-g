@@ -16,6 +16,15 @@ def main():
     ok_count = 0
     home = Path.home()
     
+    # Step 0: Ensure Git is in PATH on Windows
+    if sys.platform == "win32":
+        print("Step 0: Ensuring Git/bin is in PATH... ", end="", flush=True)
+        try:
+            ps_cmd = r"$path = [Environment]::GetEnvironmentVariable('Path', 'User'); if ($path -notmatch 'Git\\bin') { [Environment]::SetEnvironmentVariable('Path', $path + ';C:\Program Files\Git\bin', 'User'); Write-Host 'ADDED' } else { Write-Host 'SKIP' }"
+            res = subprocess.run(["powershell", "-NoProfile", "-Command", ps_cmd], capture_output=True, text=True)
+            print(res.stdout.strip() if res.stdout.strip() else "OK")
+        except Exception as e:
+            print(f"FAIL ({e})")
     # Step 1
     print("Step 1: Clone mattpocock/skills to ~/.agent-skills/mattpocock/... ", end="")
     target_skills_dir = home / ".agent-skills" / "mattpocock"
@@ -120,7 +129,8 @@ def main():
         if "statusLine" not in data or not isinstance(data["statusLine"], dict):
             data["statusLine"] = {}
         
-        cmd = "python3 ~/.agent-config/statusline.py" if sys.platform != "win32" else "python %USERPROFILE%\\\\.agent-config\\\\statusline.py"
+        statusline_path = (home / ".agent-config" / "statusline.py").as_posix()
+        cmd = f"python3 {statusline_path}" if sys.platform != "win32" else f"python {statusline_path}"
         data["statusLine"].update({
             "type": "custom",
             "command": cmd,
