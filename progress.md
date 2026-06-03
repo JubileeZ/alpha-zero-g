@@ -236,10 +236,15 @@ Establish a high-performance, deterministic developer harness for analytics, mod
     - Rewrote `scripts/setup-device.py` to dynamically pull the latest `mattpocock/skills` repository (using `git pull` if it already exists, instead of skipping).
     - Configured the installer to automatically copy all folders recursively from the `skills/engineering/` and `skills/productivity/` categories, ensuring all future skills in those categories are inherently supported.
     - Maintained correct deployment for local custom skills located in `templates/skills/` (like `execute-dfp` and `to-dfp`).
+50. **Roadmap PRD & Memory Compaction Alignment (2026-06-04):**
+    - Finalized and published a comprehensive PRD for F-27 (Context Compaction / Archival System) and F-28 (Default Configs Template / Safety Guardrails) to the GitHub issue tracker under issue #9 with the `ready-for-agent` label.
+    - Updated Implementation Decisions to enforce the `/write-a-skill` layout and structure guidelines for the new `/compact-memory` skill.
 
 ---
 
 ## 3. Next Session Priorities
 
-1. Maintain and monitor the golden standard harness and global skills integrations.
+1. Implement F-27 (Context Compaction) by creating the `/compact-memory` skill in templates/skills/ matching `/write-a-skill` standards.
+2. Implement F-28 (Default Configs Template) to seed planningMode by default in settings.json.
+
 

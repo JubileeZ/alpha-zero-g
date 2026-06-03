@@ -18,6 +18,9 @@ Guidance files (like `AGENTS.md` and custom instructions) that define protocols 
 ### Feedback Sensors
 Automated tools and processes (such as linters, test runners, and validation scripts via `pytest` and `scaffold.py`) that verify the correctness of the agent's changes *after* execution.
 
+### Context Compaction
+The architectural process of moving stale or completed milestones from active memory (`progress.md`) into a long-term storage directory (`docs/archive/`). This prevents token bloat and context degradation over long-running sessions.
+
 ---
 
 ## Technical Stack & Configuration Terms
