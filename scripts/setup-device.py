@@ -80,7 +80,7 @@ def main():
         if not src.exists():
             print("FAIL (source file missing)")
             return
-        if dest.exists():
+        if dest.exists() and not getattr(sys, "auto_confirm", False):
             choice = input(f"\nFile {dest} already exists. Overwrite? (y/n): ")
             if choice.strip().lower() == "y":
                 shutil.copy2(src, dest)

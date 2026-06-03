@@ -74,27 +74,7 @@ def main() -> None:
                 except Exception:
                     pass
                     
-    # Physically copy global skills to .agents/skills/
-    manifest_path = os.path.join(root, "templates/skills_manifest.txt")
-    skills = []
-    if os.path.exists(manifest_path):
-        try:
-            with open(manifest_path, 'r', encoding='utf-8') as f:
-                for line in f:
-                    line = line.split('#')[0].strip()
-                    if line:
-                        skills.append(line)
-        except Exception:
-            pass
-    if not skills:
-        skills = ["diagnose", "improve-codebase-architecture", "setup-matt-pocock-skills", "tdd", "to-issues", "to-prd", "zoom-out", "caveman", "handoff", "write-a-skill", "to-dfp", "execute-dfp"]
-        
-    for s in skills:
-        src = os.path.join(root, "templates/skills", s)
-        if not os.path.exists(src):
-            src = os.path.join(os.path.expanduser("~"), ".gemini/antigravity/skills", s)
-        if os.path.exists(src):
-            shutil.copytree(src, os.path.join(dest, ".agents/skills", s), dirs_exist_ok=True)
+    # .agents/skills/ directory is already created above and left empty for project-specific overrides.
             
     # Initialize git and commit baseline changes
     print("git init")
