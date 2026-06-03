@@ -224,6 +224,13 @@ Establish a high-performance, deterministic developer harness for analytics, mod
     - Verified the test suite executes identically with 100% green coverage on Windows.
     - Updated `README.md` to split execution commands cleanly into Mac/Linux (bash) and Windows (PowerShell) sections, correcting scaffold arguments.
 
+48. **Statusline Urgency Bar Refinement & Revert (2026-06-03):**
+    - Initially modified the statusline layout to use repeating `[]` blocks.
+    - Reverted to the single bar layout (`[████░░░░░░]`) while retaining the updated deterministic stage triggers, degrading threshold calculations, and state mappings.
+    - Mathematically refined the visual fullness of the single urgency bar to map exactly to the `proximity_percentage` (progress towards the degrading threshold), capped at 100%. Clarified that the `X% to Degrading` metric refers strictly to the percentage of the budget consumed towards the threshold, not the remaining buffer.
+    - Deployed the updated clean python script directly to `~/.agent-config/statusline.py` for immediate execution in `agy` TUI.
+    - Verified all 11 unit tests pass cleanly.
+
 ---
 
 ## 3. Next Session Priorities

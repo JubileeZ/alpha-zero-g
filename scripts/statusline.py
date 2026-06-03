@@ -149,30 +149,30 @@ def main() -> None:
                 fmt_used = format_tokens(used_tokens)
                 fmt_size = format_tokens(window_size)
                 
-                # Context Color Logic based on absolute thresholds
-                if used_tokens < 70000:
-                    ctx_color = "\033[1;32m" # Green (Safe)
-                    ctx_status = "Safe"
-                elif used_tokens < 100000:
-                    ctx_color = "\033[38;5;208m" # Orange (Caution)
-                    ctx_status = "Caution"
-                elif used_tokens < 500000:
-                    ctx_color = "\033[1;31m" # Red (Degrading)
-                    ctx_status = "Degrading"
-                else:
-                    ctx_color = "\033[1;5;31m" # Flashing Bright Red (Critical)
+                degrading_threshold = min(150000, int(0.70 * window_size))
+                proximity_percentage = int((used_tokens / degrading_threshold) * 100) if degrading_threshold > 0 else 0
+                
+                utilization = (used_tokens / window_size) if window_size > 0 else 0
+                
+                if utilization >= 0.85 or used_tokens > 200000:
+                    ctx_color = "\033[1;5;31m" # Flashing Bright Red
                     ctx_status = "Critical"
+                elif proximity_percentage >= 100 or 150001 <= used_tokens <= 200000:
+                    ctx_color = "\033[1;31m" # Red
+                    ctx_status = "Degrading"
+                elif (0.50 <= utilization < 0.70) or 100001 <= used_tokens <= 150000:
+                    ctx_color = "\033[38;5;208m" # Orange
+                    ctx_status = "Caution"
+                else:
+                    ctx_color = "\033[1;32m" # Green
+                    ctx_status = "Safe"
                     
-                # Visual progress bar spanning up to 50% of max context
-                max_visual = window_size * 0.5
-                fraction = min(1.0, used_tokens / max_visual) if max_visual > 0 else 0
-                bar_len = 10
-                filled = int(round(fraction * bar_len))
-                empty = bar_len - filled
+                filled = min(10, max(0, int(round(proximity_percentage / 10.0))))
+                        
+                empty = 10 - filled
                 bar_str = "█" * filled + "░" * empty
                 
-                safe_pct = int((used_tokens / 100000.0) * 100)
-                ctx_str = f"Context: {fmt_used}/{fmt_size} ({used_pct}%) / {ctx_color}[{bar_str}] {safe_pct}% ({ctx_status})\033[0m"
+                ctx_str = f"Context: {fmt_used}/{fmt_size} / {ctx_color}[{bar_str}] {proximity_percentage}% to Degrading ({ctx_status})\033[0m"
                 
                 # Quota: try antigravity-usage tool
                 cache_file = os.path.join(tempfile.gettempdir(), "antigravity_quota_cache.json")

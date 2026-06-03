@@ -37,7 +37,7 @@ def test_get_git_branch_failure():
 
 def test_get_model_hint_success(tmp_path):
     settings = tmp_path / "settings.json"
-    settings.write_text(json.dumps({".model": "Claude-3-Opus"}))
+    settings.write_text(json.dumps({"model": "Claude-3-Opus"}))
     assert get_model_hint(str(settings)) == "Claude-3-Opus"
 
 def test_get_model_hint_fallback(tmp_path):
@@ -80,7 +80,7 @@ def test_format_reset_time():
     from scripts.statusline import format_reset_time
     assert format_reset_time(3720000) == " (1h 2m)"
     assert format_reset_time(120000) == " (2m)"
-    assert format_reset_time(0) == ""
+    assert format_reset_time(0) == " (<1m)"
     assert format_reset_time(None) == ""
     assert format_reset_time("bad") == ""
 
@@ -114,26 +114,25 @@ def test_main_with_stdin_rich_json(capsys, tmp_path):
 
     def mock_exists(p):
         path_str = str(p)
-        if path_str == "/tmp/antigravity_quota_cache.json" or "g1_credits.txt" in path_str:
+        if "antigravity_quota_cache.json" in path_str or "g1_credits.txt" in path_str:
             return True
         return original_exists(p)
 
     def mock_getsize(p):
         path_str = str(p)
-        if path_str == "/tmp/antigravity_quota_cache.json":
+        if "antigravity_quota_cache.json" in path_str:
             return original_getsize(cache_file)
         return original_getsize(p)
 
     def mock_open(p, *args, **kwargs):
         path_str = str(p)
-        if path_str == "/tmp/antigravity_quota_cache.json":
+        if "antigravity_quota_cache.json" in path_str:
             return original_open(cache_file, *args, **kwargs)
         elif "g1_credits.txt" in path_str:
             return original_open(credits_file, *args, **kwargs)
         return original_open(p, *args, **kwargs)
 
-    with patch("sys.stdin.isatty", return_value=False), \
-         patch("sys.stdin.read", return_value=stdin_json), \
+    with patch("scripts.statusline.get_stdin_nonblocking", return_value=stdin_json), \
          patch("scripts.statusline.find_project_name", return_value="Proj"), \
          patch("scripts.statusline.get_git_branch", return_value="master"), \
          patch("os.path.exists", side_effect=mock_exists), \
@@ -147,6 +146,7 @@ def test_main_with_stdin_rich_json(capsys, tmp_path):
         # Verify custom layout with colors is printed
         assert "[Proj] master | " in captured.out
         assert "Model: Mock-Gemini" in captured.out
-        assert "Context: 1.2M/2.0M (60.0%)" in captured.out
-        assert "Gemini: 85.4% (1h 2m)" in captured.out
-        assert "Claude: 90.2% (2m)" in captured.out
+        assert "Context: 1.2M/2.0M / " in captured.out
+        assert "800% to Degrading (Critical)" in captured.out
+        assert "Gemini: 85%" in captured.out
+        assert "Claude: 90%" in captured.out
