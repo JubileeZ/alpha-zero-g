@@ -106,6 +106,42 @@
     "feature": "Research Gaps Closure and Infrastructure Template Enrichment",
     "description": "Enriched AGENTS.md rules with coding/data/modeling best practices. Deployed Makefile, pre-commit config, env.example, config.py, and conftest.py templates dynamically linked by package name.",
     "passes": true
+  },
+  {
+    "id": "F-21",
+    "feature": "Harness Statusline Portability & Quota Integration",
+    "description": "Implemented cross-platform Python TUI statusline script with Gemini/Claude quota tracking and time until reset, establishing mathematically correct context token displays.",
+    "passes": true
+  },
+  {
+    "id": "F-22",
+    "feature": "Global Custom Skills Repository Integration",
+    "description": "Cloned mattpocock/skills standard engineering and productivity skills to the monorepo harness and verified cross-platform offline copies.",
+    "passes": true
+  },
+  {
+    "id": "F-23",
+    "feature": "Cross-Platform Device Setup Scripts",
+    "description": "Implemented setup-device.sh and setup-device.ps1 replacing legacy harness setup, performing settings.json patching and global configs deployment.",
+    "passes": true
+  },
+  {
+    "id": "F-24",
+    "feature": "Unified Project Scaffolder",
+    "description": "Added scaffold-project.sh and scaffold-project.ps1 delegating to modular scaffold.py to dynamically bootstrap canonical environments based on type.",
+    "passes": true
+  },
+  {
+    "id": "F-25",
+    "feature": "Unified Project Upgrader",
+    "description": "Added upgrade-project.sh and upgrade-project.ps1 to verify project execution securely, never overwriting user files, auto-generating ADR backups, and updating AGENTS.md blocks.",
+    "passes": true
+  },
+  {
+    "id": "F-26",
+    "feature": "Global Skills Migration & DFP Execution Improvement",
+    "description": "Migrated custom skills (to-dfp, execute-dfp) to templates/skills, establishing dynamic workspace resolution and continuous graph execution via Mermaid DFP.",
+    "passes": true
   }
 ]
 

@@ -212,6 +212,11 @@ Establish a high-performance, deterministic developer harness for analytics, mod
     - Adjusted context token display calculation to mathematically derive active used tokens using `(used_percentage / 100) * window_size` to ensure exact numeric alignment (e.g. `624/1.0M (0.1%)` instead of input tokens mismatched to window size).
     - Deployed script globally to `~/.agent-config/statusline.py` and verified fallback and rich piped execution formats.
     - Updated unit/integration tests in `tests/test_statusline.py` for 100% coverage compliance.
+46. **Full Project Review & Artifact Cleanup (2026-06-03):**
+    - Conducted a comprehensive `/grill-with-docs` session to align the repository state with the Phase 1 architectural revamp.
+    - Synced `features.json` to F-26, accurately reflecting all new cross-platform setup, `scaffold.py`, and statusline scripts.
+    - Updated `CONTEXT.md` inline to correctly document `pytest`, `scaffold.py`, and project utility updates (replacing legacy `init.sh` references).
+    - Executed a physical audit purging `templates/init.sh`, the obsolete `docs/handoff.md`, `scratch/debug_test.py`, and auto-generated `__pycache__` and `.egg-info` directories, ensuring zero technical debt.
 
 ---
 

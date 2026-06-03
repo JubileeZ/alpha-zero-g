@@ -1,95 +1,48 @@
 # Alpha-Zero-G
 
-**The Foundational Agentic Harness for Python & R Analytics (MVP Edition)**
+**The Foundational Agentic Harness for Python & R Analytics**
 
-Alpha-Zero-G is a highly engineered, minimal, and cross-tool development environment (a "harness") designed for building analytics and statistical modeling projects alongside Agentic AIs (such as Antigravity, Cursor, and Claude Code). 
+Alpha-Zero-G is a meta-project that acts as a **boilerplate generator and environment manager** for building analytics and statistical modeling projects alongside Agentic AIs (Antigravity, Cursor, Claude). 
 
-Rather than serving as a software codebase, it defines the structures, rules, and safety parameters that allow AI agents to work autonomously, safely, and continuously across sessions without regression.
-
----
-
-## Harness Rule Hierarchy
-
-This harness is built around a streamlined hierarchy of rule files that guide the AI's actions:
-
-```
-  SYSTEM RULES (Immutable Deepmind rules)
-       ↓
-  GEMINI.md (Antigravity-specific local/global overrides)
-       ↓
-  AGENTS.md (Cross-tool standard rules for Cursor/Claude/Gemini)
-```
+Rather than serving as a software codebase itself, it provides the scripts, templates, and baseline rules to rapidly scaffold and continuously upgrade downstream AI workspaces.
 
 ---
 
-## Directory Structure (MVP)
+## 1. Global Device Setup
 
-When cloned to start a new project, this harness establishes a clean, minimal structure:
-
-```
-<project-root>/
-│
-├── AGENTS.md                    # Core cross-tool navigation map & rules
-├── GEMINI.md                    # Antigravity session-specific overrides
-├── CLAUDE.md                    # Claude session-specific overrides
-├── README.md                    # Project-specific onboarding
-│
-├── .gitignore                   # Standard ignore paths
-├── .skillsrc                    # Local skill configurations
-│
-├── src/                         # Python source code (if Python/Hybrid)
-├── R/                           # R scripts (if R/Hybrid)
-├── tests/                       # Automated test suite
-│
-├── data/
-│   ├── raw/                     # Immutable source data
-│   ├── interim/                 # Intermediate outputs
-│   └── processed/               # Final model outputs
-│
-├── docs/
-│   ├── adr/                     # Architectural Decision Records
-│   └── research/                # Data exploration notes
-│
-└── .agents/
-    ├── rules/                   # Modular AI execution protocols
-    └── skills/                  # Local project-specific AI skills
-```
-
----
-
-## Getting Started
-
-This project relies on the blazing fast `uv` package manager. To initialize the project environment (whether on a local machine, or a fresh container / remote workspace), run:
+Run this once per physical machine (Mac or Windows) to configure your global `~/.gemini/` settings, ensuring that your Antigravity or AI tool configurations are correctly synced to this harness's best practices.
 
 ```bash
+bash scripts/setup-device.sh
+# OR on Windows: .\scripts\setup-device.ps1
+```
+
+---
+
+## 2. Scaffold a New Project
+
+Use the scaffolding tool to instantly generate a pristine workspace for your next idea (e.g. FPL Model or Crypto Bot). It automatically builds the canonical folder structure, deploys AI rules (`AGENTS.md`), copies custom `.agents/skills/`, and initializes Git.
+
+```bash
+# Usage: bash scripts/scaffold-project.sh <destination-path> "[Project Name]" <type: python|r|hybrid>
+bash scripts/scaffold-project.sh ../My-New-Project "My New Analytics Project" python
+```
+
+Once bootstrapped, navigate to the new project and initialize dependencies:
+```bash
+cd ../My-New-Project
 uv sync
 ```
 
-This command will automatically resolve and synchronize the Python virtual environment defined in `pyproject.toml`.
-
 ---
 
-## Bootstrapping a New Project
+## 3. Upgrade Existing Projects
 
-Alpha-Zero-G comes with automated project generator scripts located in the `scripts/` folder. These scripts copy templates, build workspace directories, and automatically customize paths and names for your new project.
-
-### Quick Start: Bootstrapping a New Project
-
-To create a new workspace (e.g., your FPL Model or Crypto Bot), run the following command from the root of the Alpha-Zero-G project:
+As Alpha-Zero-G's core rules and templates evolve, you can push updates from this repository to your downstream projects without overwriting your project-specific domain code or logic.
 
 ```bash
-bash scripts/scaffold-project.sh <destination-path> "[Project Name]"
+# Usage: bash scripts/upgrade-project.sh <path-to-existing-project>
+bash scripts/upgrade-project.sh ../My-New-Project
 ```
 
-*(Note: Use `scripts/scaffold-project.ps1` if you are on Windows).*
-
-#### Example:
-```bash
-bash scripts/scaffold-project.sh ../FPL-Model "Fantasy Premier League Score Projections"
-```
-
-Once bootstrapped, navigate to the directory and sync the environment:
-```bash
-cd ../FPL-Model
-uv sync
-```
+*(Note: All scripts have `.ps1` equivalents for native Windows PowerShell execution).*

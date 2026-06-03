@@ -15,7 +15,7 @@ To ensure high-performance, deterministic development and perfect session contin
 ### 1. BOOT (Session Startup)
 * **Actions:** Open this workspace and run the idempotent local bootstrapper:
   ```bash
-  bash init.sh
+  uv sync
   ```
 * **Why:** This synchronizes your virtual environment and runs smoke sensors to ensure a clean, green baseline before touching any files.
 * **Important:** During the session, NEVER execute unmanaged system `python`, `python3`, or `pip`. Always prepend Python executions with `uv run` to guarantee that dependencies are correctly resolved from the virtual environment.
