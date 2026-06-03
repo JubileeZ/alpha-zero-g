@@ -74,7 +74,7 @@ function Deploy-GlobalFile {
         [int]$StepNum,
         [string]$Filename
     )
-    Write-Host -NoNewline "Step $StepNum: Deploy global $Filename to ~/.gemini/$Filename... "
+    Write-Host -NoNewline "Step $($StepNum): Deploy global $Filename to ~/.gemini/$Filename... "
     $Src = Join-Path $GlobalTemplatesDir $Filename
     $Dest = Join-Path $HOME ".gemini\$Filename"
     

@@ -9,6 +9,21 @@ UPGRADE_SH = os.path.abspath(os.path.join(os.path.dirname(__file__), "../scripts
 UPGRADE_PS1 = os.path.abspath(os.path.join(os.path.dirname(__file__), "../scripts/upgrade-project.ps1"))
 TEMPLATES_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "../templates/project"))
 
+# Detect interpreters
+has_bash = shutil.which("bash") is not None
+pwsh = shutil.which("pwsh") or shutil.which("powershell")
+has_powershell = pwsh is not None
+
+run_configs = []
+if has_bash:
+    run_configs.append(("bash", ["bash", UPGRADE_SH]))
+if has_powershell:
+    run_configs.append(("powershell", [pwsh, "-File", UPGRADE_PS1]))
+
+@pytest.fixture(params=run_configs, ids=lambda x: x[0])
+def upgrade_cmd(request):
+    return request.param[1]
+
 @pytest.fixture
 def temp_project():
     """Create a temporary directory simulating a legacy project."""
@@ -17,14 +32,14 @@ def temp_project():
     if os.path.exists(temp_dir):
         shutil.rmtree(temp_dir)
 
-def test_upgrade_fails_outside_valid_project(temp_project):
+def test_upgrade_fails_outside_valid_project(temp_project, upgrade_cmd):
     """Ensure upgrade script fails when not inside a valid git/AGENTS.md repo."""
     # temp_project has neither .git nor AGENTS.md
-    res = subprocess.run([UPGRADE_SH], cwd=temp_project, capture_output=True, text=True)
+    res = subprocess.run(upgrade_cmd, cwd=temp_project, capture_output=True, text=True)
     assert res.returncode != 0
     assert "not inside a valid project" in res.stderr.lower() or "error" in res.stderr.lower()
 
-def test_upgrade_dry_run(temp_project):
+def test_upgrade_dry_run(temp_project, upgrade_cmd):
     """Ensure --dry-run prints audit and makes no changes."""
     # Make it a valid project by creating AGENTS.md
     agents_path = os.path.join(temp_project, "AGENTS.md")
@@ -32,7 +47,7 @@ def test_upgrade_dry_run(temp_project):
         f.write("# Project: Legacy\n\nSome custom instructions.\n")
     
     # Run with --dry-run
-    res = subprocess.run([UPGRADE_SH, "--dry-run"], cwd=temp_project, capture_output=True, text=True)
+    res = subprocess.run(upgrade_cmd + ["--dry-run"], cwd=temp_project, capture_output=True, text=True)
     assert res.returncode == 0
     assert "missing" in res.stdout.lower() or "present" in res.stdout.lower()
     
@@ -40,7 +55,7 @@ def test_upgrade_dry_run(temp_project):
     contents = os.listdir(temp_project)
     assert contents == ["AGENTS.md"]
 
-def test_upgrade_real_run_and_adr_generation(temp_project):
+def test_upgrade_real_run_and_adr_generation(temp_project, upgrade_cmd):
     """Ensure a real upgrade creates folders/files, appends to AGENTS.md, and generates ADR."""
     # Make it a valid project
     agents_path = os.path.join(temp_project, "AGENTS.md")
@@ -54,7 +69,7 @@ def test_upgrade_real_run_and_adr_generation(temp_project):
         f.write("ADR-001")
         
     # Run upgrade (non-interactive using --yes)
-    res = subprocess.run([UPGRADE_SH, "--yes"], cwd=temp_project, capture_output=True, text=True)
+    res = subprocess.run(upgrade_cmd + ["--yes"], cwd=temp_project, capture_output=True, text=True)
     assert res.returncode == 0
     
     # Check that directories were created
@@ -86,14 +101,14 @@ def test_upgrade_real_run_and_adr_generation(temp_project):
     assert "ADR-002" in adr_content
     assert "Alpha-Zero-G Upgrade" in adr_content
 
-def test_upgrade_does_not_duplicate_agents_block(temp_project):
+def test_upgrade_does_not_duplicate_agents_block(temp_project, upgrade_cmd):
     """Ensure we do not append the block again if it already exists."""
     agents_path = os.path.join(temp_project, "AGENTS.md")
     block = "\n## Alpha-Zero-G\n- **Deterministic Python**"
     with open(agents_path, "w", encoding="utf-8") as f:
         f.write("# Project: TestProj\n" + block)
         
-    res = subprocess.run([UPGRADE_SH, "--yes"], cwd=temp_project, capture_output=True, text=True)
+    res = subprocess.run(upgrade_cmd + ["--yes"], cwd=temp_project, capture_output=True, text=True)
     assert res.returncode == 0
     
     with open(agents_path, "r", encoding="utf-8") as f:

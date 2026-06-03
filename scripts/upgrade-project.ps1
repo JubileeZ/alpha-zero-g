@@ -84,7 +84,7 @@ $dateStr = (Get-Date).ToString("yyyy-MM-dd")
 $adrFile = "docs/adr/ADR-$nextPad-alpha-zero-g-upgrade.md"
 
 @"
-# ADR-$nextPad: Alpha-Zero-G Upgrade
+# ADR-$($nextPad): Alpha-Zero-G Upgrade
 **Status:** Accepted
 **Date:** $dateStr
 

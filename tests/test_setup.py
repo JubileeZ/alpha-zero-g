@@ -23,6 +23,10 @@ exit 1
     git_script.chmod(0o755)
     return str(git_dir)
 
+has_bash = shutil.which("bash") is not None
+bash_only = pytest.mark.skipif(not has_bash, reason="bash not available")
+
+@bash_only
 def test_bash_setup_first_run(tmp_path):
     mock_home = tmp_path / "home"
     mock_home.mkdir()
@@ -54,6 +58,7 @@ def test_bash_setup_first_run(tmp_path):
     assert os.path.exists(mock_home / ".agent-config" / "statusline.py")
     assert os.path.exists(mock_home / ".gemini" / "AGENTS.md")
 
+@bash_only
 def test_bash_setup_second_run_skip(tmp_path):
     mock_home = tmp_path / "home"
     mock_home.mkdir()

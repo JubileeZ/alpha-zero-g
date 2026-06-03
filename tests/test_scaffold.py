@@ -4,6 +4,10 @@ import subprocess
 import pytest
 from pathlib import Path
 
+has_bash = shutil.which("bash") is not None
+bash_only = pytest.mark.skipif(not has_bash, reason="bash not available")
+
+@bash_only
 def test_bash_scaffold_python(tmp_path):
     """Test Bash project scaffolder with Python type."""
     project_dir = tmp_path / "my_python_project"
@@ -85,6 +89,7 @@ def test_bash_scaffold_python(tmp_path):
     assert res_git.returncode == 0
     assert "chore: scaffold via alpha-zero-g" in res_git.stdout
 
+@bash_only
 def test_bash_scaffold_r(tmp_path):
     """Test Bash project scaffolder with R type."""
     project_dir = tmp_path / "my_r_project"
@@ -99,6 +104,7 @@ def test_bash_scaffold_r(tmp_path):
     assert (project_dir / "R").is_dir()
     assert not (project_dir / "src").exists()
 
+@bash_only
 def test_bash_scaffold_hybrid(tmp_path):
     """Test Bash project scaffolder with hybrid type."""
     project_dir = tmp_path / "my_hybrid_project"
