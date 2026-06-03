@@ -9,7 +9,6 @@ from pathlib import Path
 def main():
     script_dir = Path(__file__).resolve().parent
     repo_root = script_dir.parent
-    manifest_path = repo_root / "templates" / "skills_manifest.txt"
     global_templates_dir = repo_root / "templates" / "global"
     statusline_src = script_dir / "statusline.py"
     
@@ -26,57 +25,58 @@ def main():
         except Exception as e:
             print(f"FAIL ({e})")
     # Step 1
-    print("Step 1: Clone mattpocock/skills to ~/.agent-skills/mattpocock/... ", end="")
+    print("Step 1: Update/Clone mattpocock/skills to ~/.agent-skills/mattpocock/... ", end="")
     target_skills_dir = home / ".agent-skills" / "mattpocock"
+    target_skills_dir.parent.mkdir(parents=True, exist_ok=True)
     if target_skills_dir.exists():
-        print("SKIP")
+        res = subprocess.run(["git", "pull"], cwd=str(target_skills_dir), capture_output=True)
+        if res.returncode == 0:
+            print("OK (updated)")
+            ok_count += 1
+        else:
+            print(f"FAIL (pull failed)")
     else:
-        target_skills_dir.parent.mkdir(parents=True, exist_ok=True)
         res = subprocess.run(["git", "clone", "--depth", "1", "https://github.com/mattpocock/skills.git", str(target_skills_dir)], capture_output=True)
         if res.returncode == 0:
-            print("OK")
+            print("OK (cloned)")
             ok_count += 1
         else:
             print("FAIL")
             
     # Step 2
-    print("Step 2: Copy selected skills to ~/.gemini/antigravity-cli/skills/... ", end="")
+    print("Step 2: Copy all productivity & engineering skills to ~/.gemini/antigravity-cli/skills/... ", end="")
     dest_skills_dir = home / ".gemini" / "antigravity-cli" / "skills"
     dest_skills_dir.mkdir(parents=True, exist_ok=True)
     
-    if not manifest_path.exists():
-        print("FAIL (manifest missing)")
-    else:
-        failed = False
-        with open(manifest_path, "r", encoding="utf-8") as f:
-            for line in f:
-                skill = line.split("#")[0].strip()
-                if not skill:
-                    continue
-                local_src = repo_root / "templates" / "skills" / skill
-                dst_skill = dest_skills_dir / skill
-                
-                if local_src.is_dir():
+    failed = False
+    for category in ["engineering", "productivity"]:
+        cat_dir = target_skills_dir / "skills" / category
+        if cat_dir.exists() and cat_dir.is_dir():
+            for item in os.listdir(cat_dir):
+                src_skill = cat_dir / item
+                if src_skill.is_dir():
+                    dst_skill = dest_skills_dir / item
                     if dst_skill.exists():
                         shutil.rmtree(dst_skill)
-                    shutil.copytree(local_src, dst_skill)
-                else:
-                    found = False
-                    for root, dirs, files in os.walk(target_skills_dir):
-                        if skill in dirs:
-                            src_skill = Path(root) / skill
-                            if dst_skill.exists():
-                                shutil.rmtree(dst_skill)
-                            shutil.copytree(src_skill, dst_skill)
-                            found = True
-                            break
-                    if not found:
-                        failed = True
-        if not failed:
-            print("OK")
-            ok_count += 1
+                    shutil.copytree(src_skill, dst_skill)
         else:
-            print("FAIL (some skills missing in source)")
+            failed = True
+            
+    local_skills_dir = repo_root / "templates" / "skills"
+    if local_skills_dir.exists() and local_skills_dir.is_dir():
+        for item in os.listdir(local_skills_dir):
+            src_skill = local_skills_dir / item
+            if src_skill.is_dir():
+                dst_skill = dest_skills_dir / item
+                if dst_skill.exists():
+                    shutil.rmtree(dst_skill)
+                shutil.copytree(src_skill, dst_skill)
+                
+    if not failed:
+        print("OK")
+        ok_count += 1
+    else:
+        print("FAIL (some source directories missing)")
             
     # Function to deploy global file
     def deploy_global_file(step_num, filename):

@@ -17,6 +17,12 @@ Run this once per physical machine (Mac or Windows) to configure your global `~/
 uv run python scripts/setup-device.py
 ```
 
+### Updating Global Skills
+Because skills are fetched dynamically from the `mattpocock/skills` repository, you can update your local environment at any time (pulling in the newest community tools) simply by re-running the setup script:
+```bash
+uv run python scripts/setup-device.py
+```
+
 ---
 
 ## 2. Scaffold a New Project

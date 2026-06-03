@@ -230,6 +230,12 @@ Establish a high-performance, deterministic developer harness for analytics, mod
     - Mathematically refined the visual fullness of the single urgency bar to map exactly to the `proximity_percentage` (progress towards the degrading threshold), capped at 100%. Clarified that the `X% to Degrading` metric refers strictly to the percentage of the budget consumed towards the threshold, not the remaining buffer.
     - Deployed the updated clean python script directly to `~/.agent-config/statusline.py` for immediate execution in `agy` TUI.
     - Verified all 11 unit tests pass cleanly.
+49. **Dynamic Skills Fetching & Manifest Removal (2026-06-03):**
+    - Deprecated the hardcoded `templates/skills_manifest.txt` allowlist to enable automatic integration of upstream community skills.
+    - Deleted `templates/skills_manifest.txt` and removed the dependent tests from `tests/test_skills.py`.
+    - Rewrote `scripts/setup-device.py` to dynamically pull the latest `mattpocock/skills` repository (using `git pull` if it already exists, instead of skipping).
+    - Configured the installer to automatically copy all folders recursively from the `skills/engineering/` and `skills/productivity/` categories, ensuring all future skills in those categories are inherently supported.
+    - Maintained correct deployment for local custom skills located in `templates/skills/` (like `execute-dfp` and `to-dfp`).
 
 ---
 
