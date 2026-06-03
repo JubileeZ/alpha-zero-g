@@ -31,14 +31,28 @@ When cloned to start a new project, this harness establishes a clean, minimal st
 │
 ├── AGENTS.md                    # Core cross-tool navigation map & rules
 ├── GEMINI.md                    # Antigravity session-specific overrides
-├── CONTEXT.md                   # Project glossary (domain-specific jargon)
+├── CLAUDE.md                    # Claude session-specific overrides
+├── README.md                    # Project-specific onboarding
 │
-├── features.json                # Structured feature requirements and status
-├── progress.md                  # Human & Agent session state log
-├── pyproject.toml               # Python dependencies (managed by uv)
+├── .gitignore                   # Standard ignore paths
+├── .skillsrc                    # Local skill configurations
+│
+├── src/                         # Python source code (if Python/Hybrid)
+├── R/                           # R scripts (if R/Hybrid)
+├── tests/                       # Automated test suite
+│
+├── data/
+│   ├── raw/                     # Immutable source data
+│   ├── interim/                 # Intermediate outputs
+│   └── processed/               # Final model outputs
+│
+├── docs/
+│   ├── adr/                     # Architectural Decision Records
+│   └── research/                # Data exploration notes
 │
 └── .agents/
-    └── hooks.json               # Hard safety enforcement rules (blocking/confirmations)
+    ├── rules/                   # Modular AI execution protocols
+    └── skills/                  # Local project-specific AI skills
 ```
 
 ---
