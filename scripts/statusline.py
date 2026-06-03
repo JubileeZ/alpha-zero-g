@@ -172,7 +172,7 @@ def main() -> None:
                 bar_str = "█" * filled + "░" * empty
                 
                 safe_pct = int((used_tokens / 100000.0) * 100)
-                ctx_str = f"Context: {fmt_used}/{fmt_size} ({used_pct}%) // {ctx_color}{safe_pct}% ({ctx_status}) [{bar_str}]\033[0m"
+                ctx_str = f"Context: {fmt_used}/{fmt_size} ({used_pct}%) / {ctx_color}[{bar_str}] {safe_pct}% ({ctx_status})\033[0m"
                 
                 # Quota: try antigravity-usage tool
                 cache_file = os.path.join(tempfile.gettempdir(), "antigravity_quota_cache.json")
