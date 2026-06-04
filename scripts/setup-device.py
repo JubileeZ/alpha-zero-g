@@ -144,12 +144,17 @@ def main():
                 data = json.load(f)
         if "statusLine" not in data or not isinstance(data["statusLine"], dict):
             data["statusLine"] = {}
+        if "planningMode" not in data or not isinstance(data["planningMode"], dict):
+            data["planningMode"] = {}
         
         statusline_path = (home / ".agent-config" / "statusline.py").as_posix()
         cmd = f"python3 {statusline_path}" if sys.platform != "win32" else f"python {statusline_path}"
         data["statusLine"].update({
             "type": "custom",
             "command": cmd,
+            "enabled": True
+        })
+        data["planningMode"].update({
             "enabled": True
         })
         with open(settings_path, "w", encoding="utf-8") as f:

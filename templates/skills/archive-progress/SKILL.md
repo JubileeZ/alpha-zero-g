@@ -1,9 +1,10 @@
 ---
-name: compact-memory
+name: archive-progress
 description: Archive old progress.md milestones to docs/archive/ to prevent token bloat. Use when the user asks to compact memory, archive progress, or run the context compaction.
+destructiveHint: true
 ---
 
-# Compact Memory (compact-memory)
+# Archive Progress (archive-progress)
 
 ## Quick start
 
@@ -14,7 +15,7 @@ description: Archive old progress.md milestones to docs/archive/ to prevent toke
 ## Workflows
 
 ### 1. Execute Script
-- [ ] Execute `uv run python .agents/skills/compact-memory/scripts/compact.py` (or the relative path to where the skill is stored).
+- [ ] Execute `uv run python .agents/skills/archive-progress/scripts/compact.py` (or the relative path to where the skill is stored).
 - [ ] Verify the output confirms how many items were archived.
 
 ### 2. Verify State

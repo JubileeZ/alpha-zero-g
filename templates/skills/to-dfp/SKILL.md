@@ -1,6 +1,7 @@
 ---
 name: to-dfp
 description: Generates a parallel execution dependency flow plan (DFP) from active GitHub issues. Use when the user wants to organize, layer, or plan the execution sequence of open issues or wants to generate a dependency flow plan.
+readOnlyHint: true
 ---
 
 # Dependency Flow Planner (to-dfp)

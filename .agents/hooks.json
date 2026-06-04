@@ -71,6 +71,30 @@
       },
       "action": "require_approval",
       "message": "Installing software packages globally requires approval. Prefer local environments."
+    },
+    {
+      "match": {
+        "tool": "run_command",
+        "command_pattern": "(curl|wget|ngrok)\\s+"
+      },
+      "action": "require_approval",
+      "message": "Executing external network requests or tunnels requires human approval."
+    },
+    {
+      "match": {
+        "tool": "view_file",
+        "path_pattern": "(\\.aws[\\\\/]credentials|\\.kube[\\\\/]config|\\.npmrc)$"
+      },
+      "action": "block",
+      "message": "Agent access to local developer credentials is fundamentally blocked."
+    },
+    {
+      "match": {
+        "tool": "read_file",
+        "path_pattern": "(\\.aws[\\\\/]credentials|\\.kube[\\\\/]config|\\.npmrc)$"
+      },
+      "action": "block",
+      "message": "Agent access to local developer credentials is fundamentally blocked."
     }
   ]
 }

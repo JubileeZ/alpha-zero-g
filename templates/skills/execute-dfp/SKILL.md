@@ -1,6 +1,7 @@
 ---
 name: execute-dfp
 description: Execute a Dependency Flow Plan (DFP) graph in parallel using subagents. Use when running issues that have dependencies on each other, or when asked to execute a DFP or run issues in parallel.
+destructiveHint: true
 ---
 
 # Dependency Flow Executor (execute-dfp)

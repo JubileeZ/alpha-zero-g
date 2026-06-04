@@ -23,3 +23,8 @@ repos:
       - id: detect-private-key
       - id: no-commit-to-branch
         args: [--branch, main, --branch, master]
+
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.18.2
+    hooks:
+      - id: gitleaks

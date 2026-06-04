@@ -79,14 +79,15 @@ Establish a high-performance, deterministic developer harness for analytics, mod
 
 50. **Roadmap PRD & Memory Compaction Alignment (2026-06-04):**
     - Finalized and published a comprehensive PRD for F-27 (Context Compaction / Archival System) and F-28 (Default Configs Template / Safety Guardrails) to the GitHub issue tracker under issue #9 with the `ready-for-agent` label.
-    - Updated Implementation Decisions to enforce the `/write-a-skill` layout and structure guidelines for the new `/compact-memory` skill.
+    - Updated Implementation Decisions to enforce the `/write-a-skill` layout and structure guidelines for the new `/archive-progress` skill.
 
-51. **Context Compaction Implemented (2026-06-04):**
-    - Developed the `/compact-memory` skill under `templates/skills/compact-memory/` matching the `/write-a-skill` standards.
+51. **Context Compaction Implemented & Renamed (2026-06-04):**
+    - Developed the `/archive-progress` skill under `templates/skills/archive-progress/` matching the `/write-a-skill` standards (renamed from compact-memory for clarity).
     - Created `SKILL.md` with trigger instructions and workflow.
     - Wrote `scripts/compact.py` to parse `progress.md` and safely archive older milestones under the Active Focus section to `docs/archive/progress-archive.md`, retaining the 5 most recent items.
     - Executed the script, successfully archiving 46 items and reducing token bloat.
     - Marked F-27 as completed in `features.json`.
+
 
 ---
 
