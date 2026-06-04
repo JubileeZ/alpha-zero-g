@@ -3,7 +3,7 @@
 Guidelines for writing clean, readable, and consistent code in this project.
 
 ## Python Styling
-- Use 2-space indentation (standard for Antigravity rules).
+- Use 4-space indentation (standard for Antigravity rules).
 - Enforce strict type hints for all public functions and classes.
 - Prefer explicit imports over wildcards or implicit resolution.
 - Format code using modern Python conventions (e.g. Ruff/Black styles).

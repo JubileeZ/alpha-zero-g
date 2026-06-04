@@ -113,22 +113,41 @@ def main() -> None:
             if os.path.exists(test_src):
                 os.makedirs(os.path.join(dest, "tests"), exist_ok=True)
                 shutil.copy(test_src, os.path.join(dest, "tests/testthat.R"))
+
+    # Deploy shared templates from templates/
+    shared_templates = [
+        "progress.md",
+        "features.json",
+        "CONTEXT.md",
+        "DEVELOPER_WORKFLOW.md",
+        ".env.example",
+        "Makefile",
+        ".pre-commit-config.yaml",
+    ]
+    for f in shared_templates:
+        src = os.path.join(root, "templates", f)
+        if os.path.exists(src):
+            shutil.copy(src, os.path.join(dest, f))
             
-    # Replace {{PROJECT_NAME}} and description placeholders
+    # Replace {{PROJECT_NAME}}, {{PROJECT_DESCRIPTION}} and {{PROJECT_GOAL_SUMMARY}} placeholders
     for r, ds, fs in os.walk(dest):
         for f in fs:
+            ext = os.path.splitext(f)[1]
             if (
-                f.endswith(".md")
-                or f.endswith(".template")
-                or f in (".skillsrc", ".gitignore")
-                or f == "DESCRIPTION"
+                ext in (".md", ".template", ".yaml", ".yml", ".json")
+                or f in (".skillsrc", ".gitignore", "Makefile", ".env.example", "DESCRIPTION")
             ):
                 p = os.path.join(r, f)
                 try:
                     with open(p, "r", encoding="utf-8", errors="ignore") as file:
                         content = file.read()
-                    new_content = content.replace("{{PROJECT_NAME}}", name).replace(
-                        "{{PROJECT_DESCRIPTION}}", f"Scaffolded {name} project."
+                    new_content = (
+                        content.replace("{{PROJECT_NAME}}", name)
+                        .replace("{{PROJECT_DESCRIPTION}}", f"Scaffolded {name} project.")
+                        .replace(
+                            "{{PROJECT_GOAL_SUMMARY}}",
+                            f"Establish analytical modeling environment for {name}.",
+                        )
                     )
                     if new_content != content:
                         with open(p, "w", encoding="utf-8") as file:
@@ -157,7 +176,6 @@ def main() -> None:
     )
 
     print(f"[OK] Project '{name}' successfully scaffolded.")
-
 
 if __name__ == "__main__":
     main()

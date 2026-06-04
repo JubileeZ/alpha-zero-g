@@ -1,4 +1,5 @@
 import os
+import sys
 import shutil
 import subprocess
 import pytest
@@ -6,7 +7,11 @@ import sys
 from pathlib import Path
 
 def test_scaffold_python(tmp_path):
+<<<<<<< HEAD
     """Test project scaffolder with Python type."""
+=======
+    """Test Python project scaffolder with Python type."""
+>>>>>>> subagent-TDD-Developer--Issue-11--self-2e4348f9
     project_dir = tmp_path / "my_python_project"
     script_path = Path("scripts/scaffold.py").resolve()
     
@@ -17,6 +22,10 @@ def test_scaffold_python(tmp_path):
         text=True
     )
     
+<<<<<<< HEAD
+=======
+    # Assert successful execution
+>>>>>>> subagent-TDD-Developer--Issue-11--self-2e4348f9
     assert res.returncode == 0, f"Scaffolder failed: {res.stderr}\nStdout: {res.stdout}"
     
     # Verify directories
@@ -56,7 +65,38 @@ def test_scaffold_python(tmp_path):
     # Verify .gitignore and .skillsrc deployment
     assert (project_dir / ".gitignore").is_file()
     assert (project_dir / ".skillsrc").is_file()
-    
+    # Verify newly required deployed templates
+    shared_templates = [
+        "progress.md",
+        "features.json",
+        "CONTEXT.md",
+        "DEVELOPER_WORKFLOW.md",
+        ".env.example",
+        "Makefile",
+        ".pre-commit-config.yaml",
+    ]
+    for f in shared_templates:
+        assert (
+            project_dir / f
+        ).is_file(), f"Shared template {f} missing from destination"
+
+    # Verify placeholder resolution in progress.md and CONTEXT.md
+    progress_file = project_dir / "progress.md"
+    with open(progress_file, "r", encoding="utf-8") as f:
+        progress_content = f.read()
+    assert "{{PROJECT_NAME}}" not in progress_content
+    assert "my_python_project" in progress_content
+    assert "{{PROJECT_GOAL_SUMMARY}}" not in progress_content
+    assert (
+        "Establish analytical modeling environment for my_python_project."
+        in progress_content
+    )
+
+    context_file = project_dir / "CONTEXT.md"
+    with open(context_file, "r", encoding="utf-8") as f:
+        context_content = f.read()
+    assert "{{PROJECT_NAME}}" not in context_content
+    assert "my_python_project" in context_content
     # Verify Git commit
     res_git = subprocess.run(
         ["git", "log", "-1", "--pretty=%s"],
@@ -67,7 +107,6 @@ def test_scaffold_python(tmp_path):
     assert res_git.returncode == 0
     assert "chore: scaffold via alpha-zero-g" in res_git.stdout
 
-def test_scaffold_r(tmp_path):
     """Test project scaffolder with R type."""
     project_dir = tmp_path / "my_r_project"
     script_path = Path("scripts/scaffold.py").resolve()

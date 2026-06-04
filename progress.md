@@ -32,10 +32,10 @@ Establish a high-performance, deterministic developer harness for analytics, mod
 
 ### System of Record Documentation
 
-- `[x]` **Architecture Guidelines**: Created `docs/architecture.md` containing layer diagrams.
-- `[x]` **Decisions Registry (ADR)**: Generated `docs/beliefs.md` tracking dynamic bootstrapper decisions (ADR-001).
-- `[x]` **Quality & Standards**: Created checklists in `docs/quality.md`.
-- `[x]` **Dictionaries & Experiment Trackers**: Created `docs/DATA_DICT.md` and `docs/MODEL_NOTES.md` templates.
+- `[x]` **Architecture Guidelines**: Created `docs/architecture.md` containing layer diagrams. (deprecated)
+- `[x]` **Decisions Registry (ADR)**: Generated `docs/beliefs.md` tracking dynamic bootstrapper decisions (ADR-001). (deprecated)
+- `[x]` **Quality & Standards**: Created checklists in `docs/quality.md`. (deprecated)
+- `[x]` **Dictionaries & Experiment Trackers**: Created `docs/DATA_DICT.md` and `docs/MODEL_NOTES.md` templates. (deprecated)
 
 ### Environment Setup & Verification
 
