@@ -147,7 +147,7 @@
     "id": "F-27",
     "feature": "Context Compaction (Archival System)",
     "description": "Implement a system to archive old progress.md milestones to docs/archive/ to prevent token bloat and maintain agent reasoning performance.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "F-28",
