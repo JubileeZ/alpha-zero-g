@@ -1,10 +1,24 @@
 #!/usr/bin/env python3
 import datetime
 import os
+import re
 import shutil
 import subprocess
 import sys
 
+
+def slugify_package_name(name: str) -> str:
+    # Lowercase, replace spaces, dashes, dots, and underscores with a single underscore
+    s = name.lower()
+    s = re.sub(r'[\s\-._]+', '_', s)
+    # Strip any characters that are not lowercase alphanumeric or underscore
+    s = re.sub(r'[^a-z0-9_]', '', s)
+    # Ensure it starts with a letter or underscore
+    if s and s[0].isdigit():
+        s = '_' + s
+    if not s:
+        s = "project_package"
+    return s
 
 def main() -> None:
     # reconfigure stdout for utf-8 if possible to avoid Windows UnicodeEncodeError
@@ -24,7 +38,8 @@ def main() -> None:
     if ptype not in ("python", "r", "hybrid"):
         print("Error: Invalid project type. Must be 'python', 'r', or 'hybrid'.")
         sys.exit(1)
-
+        
+    package_name = slugify_package_name(name)
     dest = os.path.abspath(dest)
     os.makedirs(dest, exist_ok=True)
 
@@ -128,13 +143,43 @@ def main() -> None:
         src = os.path.join(root, "templates", f)
         if os.path.exists(src):
             shutil.copy(src, os.path.join(dest, f))
+
+    # Python-specific structure deployment
+    if ptype in ("python", "hybrid"):
+        # Create src/<package_name> directory
+        pkg_dir = os.path.join(dest, "src", package_name)
+        os.makedirs(pkg_dir, exist_ok=True)
+        
+        # Copy config.py from templates
+        config_src = os.path.join(root, "templates/python/src/{{project_name}}/config.py")
+        if os.path.exists(config_src):
+            shutil.copy(config_src, os.path.join(pkg_dir, "config.py"))
             
-    # Replace {{PROJECT_NAME}}, {{PROJECT_DESCRIPTION}} and {{PROJECT_GOAL_SUMMARY}} placeholders
+        # Copy __init__.py from templates to src/<package_name>/__init__.py
+        init_src = os.path.join(root, "templates/python/src/__init__.py")
+        if os.path.exists(init_src):
+            shutil.copy(init_src, os.path.join(pkg_dir, "__init__.py"))
+            
+        # Deploy pyproject.toml
+        pyproject_src = os.path.join(root, "templates/python/pyproject.toml")
+        if os.path.exists(pyproject_src):
+            shutil.copy(pyproject_src, os.path.join(dest, "pyproject.toml"))
+            
+        # Deploy conftest.py and test_smoke.py
+        conftest_src = os.path.join(root, "templates/python/tests/conftest.py")
+        if os.path.exists(conftest_src):
+            shutil.copy(conftest_src, os.path.join(dest, "tests", "conftest.py"))
+            
+        smoke_src = os.path.join(root, "templates/python/tests/test_smoke.py")
+        if os.path.exists(smoke_src):
+            shutil.copy(smoke_src, os.path.join(dest, "tests", "test_smoke.py"))
+            
+    # Replace {{PROJECT_NAME}}, {{PACKAGE_NAME}}, {{PROJECT_DESCRIPTION}} and {{PROJECT_GOAL_SUMMARY}} placeholders
     for r, ds, fs in os.walk(dest):
         for f in fs:
             ext = os.path.splitext(f)[1]
             if (
-                ext in (".md", ".template", ".yaml", ".yml", ".json")
+                ext in (".md", ".template", ".py", ".toml", ".yaml", ".yml", ".json")
                 or f in (".skillsrc", ".gitignore", "Makefile", ".env.example", "DESCRIPTION")
             ):
                 p = os.path.join(r, f)
@@ -143,6 +188,7 @@ def main() -> None:
                         content = file.read()
                     new_content = (
                         content.replace("{{PROJECT_NAME}}", name)
+                        .replace("{{PACKAGE_NAME}}", package_name)
                         .replace("{{PROJECT_DESCRIPTION}}", f"Scaffolded {name} project.")
                         .replace(
                             "{{PROJECT_GOAL_SUMMARY}}",

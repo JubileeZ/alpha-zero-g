@@ -1,10 +1,10 @@
 import os
+import sys
 import json
 import shutil
 import pytest
 from pathlib import Path
 import subprocess
-import sys
 import importlib.util
 
 # Load setup-device.py dynamically as a module
@@ -57,3 +57,29 @@ def test_setup_device(tmp_path, monkeypatch, capsys):
     
     assert os.path.exists(mock_home / ".agent-config" / "statusline.py")
     assert os.path.exists(mock_home / ".gemini" / "AGENTS.md")
+
+def test_setup_second_run_skip(tmp_path, monkeypatch, capsys):
+    mock_home = tmp_path / "home"
+    mock_home.mkdir()
+    
+    monkeypatch.setattr(Path, "home", lambda: mock_home)
+    monkeypatch.setattr(sys, "auto_confirm", False, raising=False)
+    
+    skills_dir = mock_home / ".agent-skills" / "mattpocock"
+    skills_dir.mkdir(parents=True)
+    for s in ["diagnose", "improve-codebase-architecture", "tdd", "to-issues", "to-prd", "caveman", "handoff", "write-a-skill", "to-dfp", "execute-dfp"]:
+        (skills_dir / s).mkdir()
+        
+    gemini_dir = mock_home / ".gemini"
+    gemini_dir.mkdir(parents=True)
+    for f in ["AGENTS.md", "GEMINI.md", "CLAUDE.md"]:
+        (gemini_dir / f).write_text("existing content", encoding="utf-8")
+        
+    inputs = ["n", "n", "n"]
+    input_iter = iter(inputs)
+    monkeypatch.setattr("builtins.input", lambda prompt="": next(input_iter))
+    
+    main()
+    
+    captured = capsys.readouterr()
+    assert "Step 1:" in captured.out

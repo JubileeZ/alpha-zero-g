@@ -7,17 +7,17 @@ import sys
 from pathlib import Path
 
 def test_scaffold_python(tmp_path):
-    """Test project scaffolder with Python type."""
-    project_dir = tmp_path / "my_python_project"
+    project_dir = tmp_path / "my-python-project"
     script_path = Path("scripts/scaffold.py").resolve()
     
     # Run scaffolder
     res = subprocess.run(
-        [sys.executable, str(script_path), "my_python_project", "python", str(project_dir)],
+        [sys.executable, str(script_path), "my-python-project", "python", str(project_dir)],
         capture_output=True,
         text=True
     )
     
+    # Assert successful execution
     assert res.returncode == 0, f"Scaffolder failed: {res.stderr}\nStdout: {res.stdout}"
     
     # Verify directories
@@ -44,7 +44,7 @@ def test_scaffold_python(tmp_path):
     with open(agents_file, "r", encoding="utf-8") as f:
         agents_content = f.read()
     assert "{{PROJECT_NAME}}" not in agents_content
-    assert "my_python_project" in agents_content
+    assert "my-python-project" in agents_content
     
     # Verify ADR-001 generation
     adr_file = project_dir / "docs/adr/ADR-001-project-init.md"
@@ -77,10 +77,10 @@ def test_scaffold_python(tmp_path):
     with open(progress_file, "r", encoding="utf-8") as f:
         progress_content = f.read()
     assert "{{PROJECT_NAME}}" not in progress_content
-    assert "my_python_project" in progress_content
+    assert "my-python-project" in progress_content
     assert "{{PROJECT_GOAL_SUMMARY}}" not in progress_content
     assert (
-        "Establish analytical modeling environment for my_python_project."
+        "Establish analytical modeling environment for my-python-project."
         in progress_content
     )
 
@@ -88,7 +88,7 @@ def test_scaffold_python(tmp_path):
     with open(context_file, "r", encoding="utf-8") as f:
         context_content = f.read()
     assert "{{PROJECT_NAME}}" not in context_content
-    assert "my_python_project" in context_content
+    assert "my-python-project" in context_content
     # Verify Git commit
     res_git = subprocess.run(
         ["git", "log", "-1", "--pretty=%s"],
@@ -99,6 +99,7 @@ def test_scaffold_python(tmp_path):
     assert res_git.returncode == 0
     assert "chore: scaffold via alpha-zero-g" in res_git.stdout
 
+def test_scaffold_r(tmp_path):
     """Test project scaffolder with R type."""
     project_dir = tmp_path / "my_r_project"
     script_path = Path("scripts/scaffold.py").resolve()
@@ -144,3 +145,48 @@ def test_scaffold_hybrid(tmp_path):
         desc_content = f.read()
     assert "Package: my_hybrid_project" in desc_content
     assert "{{PROJECT_NAME}}" not in desc_content
+
+
+def test_scaffold_python_structure_and_slugification(tmp_path):
+    """Test Python package structure deployment and slugification logic."""
+    project_dir = tmp_path / "My-Awesome-Project"
+    script_path = Path("scripts/scaffold.py").resolve()
+    
+    # Run scaffolder
+    res = subprocess.run(
+        [sys.executable, str(script_path), "My-Awesome-Project", "python", str(project_dir)],
+        capture_output=True,
+        text=True
+    )
+    assert res.returncode == 0
+    
+    # PACKAGE_NAME derivation: My-Awesome-Project -> my_awesome_project
+    package_name = "my_awesome_project"
+    
+    # Verify src/<package_name>/__init__.py and config.py exist
+    assert (project_dir / "src" / package_name).is_dir()
+    assert (project_dir / "src" / package_name / "__init__.py").is_file()
+    assert (project_dir / "src" / package_name / "config.py").is_file()
+    
+    # Verify templates/python/src/__init__.py didn't just get copied to src/__init__.py
+    assert not (project_dir / "src" / "__init__.py").exists()
+    
+    # Verify pyproject.toml deployed
+    pyproject_file = project_dir / "pyproject.toml"
+    assert pyproject_file.is_file()
+    with open(pyproject_file, "r", encoding="utf-8") as f:
+        pyproject_content = f.read()
+    assert 'name = "my_awesome_project"' in pyproject_content
+    assert "{{PACKAGE_NAME}}" not in pyproject_content
+    
+    # Verify conftest.py and test_smoke.py deployed
+    conftest_file = project_dir / "tests" / "conftest.py"
+    smoke_file = project_dir / "tests" / "test_smoke.py"
+    assert conftest_file.is_file()
+    assert smoke_file.is_file()
+    
+    # Verify conftest.py PACKAGE_NAME replacement
+    with open(conftest_file, "r", encoding="utf-8") as f:
+        conftest_content = f.read()
+    assert "from my_awesome_project.config import Settings, settings" in conftest_content
+    assert "{{PACKAGE_NAME}}" not in conftest_content

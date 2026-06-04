@@ -8,11 +8,9 @@ import pytest
 UPGRADE_PY = os.path.abspath(os.path.join(os.path.dirname(__file__), "../scripts/upgrade-project.py"))
 TEMPLATES_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "../templates/project"))
 
-run_configs = [("python", [sys.executable, UPGRADE_PY])]
-
-@pytest.fixture(params=run_configs, ids=lambda x: x[0])
-def upgrade_cmd(request):
-    return request.param[1]
+@pytest.fixture
+def upgrade_cmd():
+    return [sys.executable, UPGRADE_PY]
 
 @pytest.fixture
 def temp_project():
@@ -53,7 +51,7 @@ def test_upgrade_real_run_and_adr_generation(temp_project, upgrade_cmd):
         f.write("ADR-001")
         
     res = subprocess.run(upgrade_cmd + ["--yes"], cwd=temp_project, capture_output=True, text=True)
-    assert res.returncode == 0
+    assert res.returncode == 0, f"Upgrade failed: {res.stderr}\nStdout: {res.stdout}"
     
     assert os.path.isdir(os.path.join(temp_project, ".agents", "rules"))
     assert os.path.isdir(os.path.join(temp_project, "docs", "research"))
