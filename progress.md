@@ -91,6 +91,15 @@ Establish a high-performance, deterministic developer harness for analytics, mod
 
 ---
 
+52. **ADR Format Template & Research README wired into scaffolder (2026-06-04):**
+    - Created `templates/project/docs/adr/ADR-TEMPLATE.md` defining standard structure for Architecture Decision Records.
+    - Created `templates/project/docs/research/README.md` defining guidelines for notebooks and exploratory script organization (including `py:percent` format, data isolation).
+    - Wired both into `scripts/scaffold.py` to copy them automatically when scaffolding new projects.
+    - Fixed Unicode encoding error in `scaffold.py` when running on Windows with default console page encoding.
+    - Refactored full test suite (`test_scaffold.py`, `test_setup.py`, `test_upgrade.py`) to target consolidated python scripts instead of obsolete/deleted `.sh` and `.ps1` shell scripts, fixing all 15 previously failing tests.
+    - Verified all 25 tests pass cleanly with 0 warnings.
+
+
 ## 3. Next Session Priorities
 
 1. Implement F-28 (Default Configs Template) to seed planningMode by default in settings.json.

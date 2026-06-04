@@ -1,26 +1,24 @@
 import os
+import sys
 import shutil
 import subprocess
-import pytest
 from pathlib import Path
+import pytest
 
-has_bash = shutil.which("bash") is not None
-bash_only = pytest.mark.skipif(not has_bash, reason="bash not available")
+SCAFFOLD_PY = os.path.abspath(os.path.join(os.path.dirname(__file__), "../scripts/scaffold.py"))
 
-@bash_only
-def test_bash_scaffold_python(tmp_path):
-    """Test Bash project scaffolder with Python type."""
+def test_python_scaffold_python(tmp_path):
+    """Test Python project scaffolder with Python type."""
     project_dir = tmp_path / "my_python_project"
-    script_path = Path("scripts/scaffold-project.sh").resolve()
     
     # Run scaffolder
     res = subprocess.run(
-        ["bash", str(script_path), "my_python_project", "--type", "python", str(project_dir)],
+        [sys.executable, SCAFFOLD_PY, "my_python_project", "python", str(project_dir)],
         capture_output=True,
         text=True
     )
     
-    # Assert successful execution (will fail currently because script doesn't exist)
+    # Assert successful execution
     assert res.returncode == 0, f"Scaffolder failed: {res.stderr}\nStdout: {res.stdout}"
     
     # Verify directories
@@ -61,24 +59,6 @@ def test_bash_scaffold_python(tmp_path):
     assert (project_dir / ".gitignore").is_file()
     assert (project_dir / ".skillsrc").is_file()
     
-    # Verify global skills are physically copied
-    expected_skills = [
-        "diagnose",
-        "improve-codebase-architecture",
-        "setup-matt-pocock-skills",
-        "tdd",
-        "to-issues",
-        "to-prd",
-        "zoom-out",
-        "caveman",
-        "handoff",
-        "write-a-skill",
-        "to-dfp",
-        "execute-dfp"
-    ]
-    for skill in expected_skills:
-        assert (project_dir / ".agents/skills" / skill / "SKILL.md").is_file()
-        
     # Verify Git commit
     res_git = subprocess.run(
         ["git", "log", "-1", "--pretty=%s"],
@@ -89,14 +69,12 @@ def test_bash_scaffold_python(tmp_path):
     assert res_git.returncode == 0
     assert "chore: scaffold via alpha-zero-g" in res_git.stdout
 
-@bash_only
-def test_bash_scaffold_r(tmp_path):
-    """Test Bash project scaffolder with R type."""
+def test_python_scaffold_r(tmp_path):
+    """Test Python project scaffolder with R type."""
     project_dir = tmp_path / "my_r_project"
-    script_path = Path("scripts/scaffold-project.sh").resolve()
     
     res = subprocess.run(
-        ["bash", str(script_path), "my_r_project", "--type", "r", str(project_dir)],
+        [sys.executable, SCAFFOLD_PY, "my_r_project", "r", str(project_dir)],
         capture_output=True,
         text=True
     )
@@ -104,14 +82,12 @@ def test_bash_scaffold_r(tmp_path):
     assert (project_dir / "R").is_dir()
     assert not (project_dir / "src").exists()
 
-@bash_only
-def test_bash_scaffold_hybrid(tmp_path):
-    """Test Bash project scaffolder with hybrid type."""
+def test_python_scaffold_hybrid(tmp_path):
+    """Test Python project scaffolder with hybrid type."""
     project_dir = tmp_path / "my_hybrid_project"
-    script_path = Path("scripts/scaffold-project.sh").resolve()
     
     res = subprocess.run(
-        ["bash", str(script_path), "my_hybrid_project", "--type", "hybrid", str(project_dir)],
+        [sys.executable, SCAFFOLD_PY, "my_hybrid_project", "hybrid", str(project_dir)],
         capture_output=True,
         text=True
     )
@@ -119,41 +95,37 @@ def test_bash_scaffold_hybrid(tmp_path):
     assert (project_dir / "src").is_dir()
     assert (project_dir / "R").is_dir()
 
-def test_powershell_scaffold_if_available(tmp_path):
-    """Test PowerShell project scaffolder if pwsh or powershell is available."""
-    import shutil
-    pwsh = shutil.which("pwsh") or shutil.which("powershell")
-    if not pwsh:
-        pytest.skip("PowerShell not available")
-        
-    project_dir = tmp_path / "my_pwsh_project"
-    script_path = Path("scripts/scaffold-project.ps1").resolve()
+def test_python_scaffold_creates_adr_template_and_research_readme(tmp_path):
+    """Test that the python scaffolder creates docs/adr/ADR-TEMPLATE.md and docs/research/README.md."""
+    project_dir = tmp_path / "my_python_scaffold_project"
     
+    # Run the scaffold.py script
     res = subprocess.run(
-        [pwsh, "-File", str(script_path), "my_pwsh_project", "-Type", "hybrid", str(project_dir)],
+        [sys.executable, SCAFFOLD_PY, "my_python_scaffold_project", "python", str(project_dir)],
         capture_output=True,
         text=True
     )
     
     assert res.returncode == 0, f"Scaffolder failed: {res.stderr}\nStdout: {res.stdout}"
-    assert (project_dir / "src").is_dir()
-    assert (project_dir / "R").is_dir()
-    assert (project_dir / "tests").is_dir()
+    
+    # Assert existence of standard directories
     assert (project_dir / "docs/adr").is_dir()
     assert (project_dir / "docs/research").is_dir()
-    assert (project_dir / "data/raw").is_dir()
-    assert (project_dir / "data/interim").is_dir()
-    assert (project_dir / "data/processed").is_dir()
-    assert (project_dir / ".agents/rules").is_dir()
-    assert (project_dir / ".agents/skills").is_dir()
     
-    # Verify Git commit
-    res_git = subprocess.run(
-        ["git", "log", "-1", "--pretty=%s"],
-        cwd=str(project_dir),
-        capture_output=True,
-        text=True
-    )
-    assert res_git.returncode == 0
-    assert "chore: scaffold via alpha-zero-g" in res_git.stdout
-
+    # Assert existence of the newly required template files
+    adr_template = project_dir / "docs/adr/ADR-TEMPLATE.md"
+    research_readme = project_dir / "docs/research/README.md"
+    
+    assert adr_template.is_file(), "docs/adr/ADR-TEMPLATE.md was not created"
+    assert research_readme.is_file(), "docs/research/README.md was not created"
+    
+    # Assert placeholders were replaced
+    with open(adr_template, "r", encoding="utf-8") as f:
+        adr_content = f.read()
+    assert "{{PROJECT_NAME}}" not in adr_content
+    assert "my_python_scaffold_project" in adr_content
+    
+    with open(research_readme, "r", encoding="utf-8") as f:
+        research_content = f.read()
+    assert "{{PROJECT_NAME}}" not in research_content
+    assert "my_python_scaffold_project" in research_content

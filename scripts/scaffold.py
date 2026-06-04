@@ -45,6 +45,16 @@ def main() -> None:
         for f in os.listdir(rules_src):
             shutil.copy(os.path.join(rules_src, f), os.path.join(dest, ".agents/rules", f))
             
+    # Copy ADR-TEMPLATE.md if it exists
+    adr_template_src = os.path.join(ptemp, "docs/adr/ADR-TEMPLATE.md")
+    if os.path.exists(adr_template_src):
+        shutil.copy(adr_template_src, os.path.join(dest, "docs/adr/ADR-TEMPLATE.md"))
+        
+    # Copy docs/research/README.md if it exists
+    research_readme_src = os.path.join(ptemp, "docs/research/README.md")
+    if os.path.exists(research_readme_src):
+        shutil.copy(research_readme_src, os.path.join(dest, "docs/research/README.md"))
+        
     # Generate docs/adr/ADR-001-project-init.md
     adr_temp = os.path.join(ptemp, "docs/adr/adr-init.template")
     if os.path.exists(adr_temp):
@@ -88,7 +98,7 @@ def main() -> None:
     print("git commit -m \"chore: scaffold via alpha-zero-g\"")
     subprocess.run(["git", "commit", "-m", "chore: scaffold via alpha-zero-g", "-q"], cwd=dest)
     
-    print(f"✔ Project '{name}' successfully scaffolded.")
+    print(f"Success: Project '{name}' successfully scaffolded.")
 
 if __name__ == "__main__":
     main()
