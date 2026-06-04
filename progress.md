@@ -23,6 +23,7 @@ Establish a high-performance, deterministic developer harness for analytics, mod
 - `[x]` **Repository Defaults**: Standardized `.gitignore`, compiled standard MIT `LICENSE`, and built introductory `README.md`.
 - `[x]` **Fresh Skills Retrieval Integration**: Integrated shallow-cloning (`--depth 1`) from the `mattpocock/skills` repository. Project creation now dynamically retrieves the latest engineering and productivity skills directly from GitHub, deploying them to the project's local `.agents/skills/` folder. Includes robust offline error recovery and environment-driven test isolation (`SKIP_EXTERNAL_SKILLS`).
 - `[x]` **Git Remote Auto-configuration**: Repaired the incorrect `original` remote in the `FPL-Jubilee-Ascent` project and configured `origin` correctly. Updated the `create-project.sh` generator script in `Alpha-Zero-G` to automatically extract the template's git remote URL, dynamically construct the corresponding URL for the new project, and configure the new project's remote origin automatically upon creation.
+- `[x]` **CI/CD Workflow Template**: Created `.github/workflows/ci.yml` template, wired it into `scaffold.py`, and added `tests/test_ci_workflow.py` validating that scaffolding generates a valid YAML workflow.
 
 ### Project Configuration & Safety
 
@@ -87,6 +88,12 @@ Establish a high-performance, deterministic developer harness for analytics, mod
     - Wrote `scripts/compact.py` to parse `progress.md` and safely archive older milestones under the Active Focus section to `docs/archive/progress-archive.md`, retaining the 5 most recent items.
     - Executed the script, successfully archiving 46 items and reducing token bloat.
     - Marked F-27 as completed in `features.json`.
+
+52. **CI/CD Workflow Template (2026-06-04):**
+    - Created `.github/workflows/ci.yml` template to test Python and R structures dynamically.
+    - Wired CI/CD deployment into `scaffold.py` to copy the `.github` directory during project initialization.
+    - Fixed a Windows print encoding crash in `scaffold.py` by replacing unicode checkmarks with safe ASCII output.
+    - Deployed `tests/test_ci_workflow.py` with 100% green coverage verifying correct CI/CD templating and valid YAML output.
 
 
 ---

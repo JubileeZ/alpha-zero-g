@@ -1,0 +1,65 @@
+﻿name: CI/CD
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  test-python:
+    name: Test Python
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        run: curl -LsSf https://astral.sh/uv/install.sh | sh
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Check Python project structure
+        id: check_py
+        run: |
+          if [ -f "pyproject.toml" ]; then
+            echo "has_python=true" >> $GITHUB_OUTPUT
+          else
+            echo "has_python=false" >> $GITHUB_OUTPUT
+          fi
+        shell: bash
+
+      - name: Lint and Test with Pytest
+        if: steps.check_py.outputs.has_python == 'true'
+        run: |
+          uv run pytest
+
+  test-r:
+    name: Test R
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up R
+        uses: r-lib/actions/setup-r@v2
+
+      - name: Check R project structure
+        id: check_r
+        run: |
+          if [ -d "R" ] || [ -f "renv.lock" ]; then
+            echo "has_r=true" >> $GITHUB_OUTPUT
+          else
+            echo "has_r=false" >> $GITHUB_OUTPUT
+          fi
+        shell: bash
+
+      - name: Set up renv
+        if: steps.check_r.outputs.has_r == 'true'
+        uses: r-lib/actions/setup-renv@v2
+
+      - name: Run R tests
+        if: steps.check_r.outputs.has_r == 'true'
+        run: |
+          Rscript -e "if (dir.exists('tests')) testthat::test_dir('tests')"
