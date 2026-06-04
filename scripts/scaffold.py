@@ -58,16 +58,29 @@ def main() -> None:
         src = os.path.join(ptemp, s)
         if os.path.exists(src):
             shutil.copy(src, os.path.join(dest, d))
+
+    # Deploy shared templates from templates/
+    shared_templates = [
+        "progress.md", "features.json", "CONTEXT.md", "DEVELOPER_WORKFLOW.md",
+        ".env.example", "Makefile", ".pre-commit-config.yaml"
+    ]
+    for f in shared_templates:
+        src = os.path.join(root, "templates", f)
+        if os.path.exists(src):
+            shutil.copy(src, os.path.join(dest, f))
             
-    # Replace {{PROJECT_NAME}} and description placeholders
+    # Replace {{PROJECT_NAME}}, {{PROJECT_DESCRIPTION}} and {{PROJECT_GOAL_SUMMARY}} placeholders
     for r, ds, fs in os.walk(dest):
         for f in fs:
-            if f.endswith('.md') or f.endswith('.template') or f in ('.skillsrc', '.gitignore'):
+            if f.endswith('.md') or f.endswith('.template') or f.endswith('.yaml') or f.endswith('.json') or f in ('.skillsrc', '.gitignore', 'Makefile', '.env.example'):
                 p = os.path.join(r, f)
                 try:
                     with open(p, 'r', encoding='utf-8', errors='ignore') as file:
                         content = file.read()
-                    new_content = content.replace('{{PROJECT_NAME}}', name).replace('{{PROJECT_DESCRIPTION}}', f"Scaffolded {name} project.")
+                    new_content = (content
+                                   .replace('{{PROJECT_NAME}}', name)
+                                   .replace('{{PROJECT_DESCRIPTION}}', f"Scaffolded {name} project.")
+                                   .replace('{{PROJECT_GOAL_SUMMARY}}', f"Establish analytical modeling environment for {name}."))
                     if new_content != content:
                         with open(p, 'w', encoding='utf-8') as file:
                             file.write(new_content)
@@ -88,7 +101,10 @@ def main() -> None:
     print("git commit -m \"chore: scaffold via alpha-zero-g\"")
     subprocess.run(["git", "commit", "-m", "chore: scaffold via alpha-zero-g", "-q"], cwd=dest)
     
-    print(f"✔ Project '{name}' successfully scaffolded.")
+    try:
+        print(f"✔ Project '{name}' successfully scaffolded.")
+    except UnicodeEncodeError:
+        print(f"Project '{name}' successfully scaffolded.")
 
 if __name__ == "__main__":
     main()

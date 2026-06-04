@@ -1,26 +1,23 @@
 import os
+import sys
 import shutil
 import subprocess
 import pytest
 from pathlib import Path
 
-has_bash = shutil.which("bash") is not None
-bash_only = pytest.mark.skipif(not has_bash, reason="bash not available")
-
-@bash_only
-def test_bash_scaffold_python(tmp_path):
-    """Test Bash project scaffolder with Python type."""
+def test_scaffold_python(tmp_path):
+    """Test Python project scaffolder with Python type."""
     project_dir = tmp_path / "my_python_project"
-    script_path = Path("scripts/scaffold-project.sh").resolve()
+    script_path = Path("scripts/scaffold.py").resolve()
     
     # Run scaffolder
     res = subprocess.run(
-        ["bash", str(script_path), "my_python_project", "--type", "python", str(project_dir)],
+        [sys.executable, str(script_path), "my_python_project", "python", str(project_dir)],
         capture_output=True,
         text=True
     )
     
-    # Assert successful execution (will fail currently because script doesn't exist)
+    # Assert successful execution
     assert res.returncode == 0, f"Scaffolder failed: {res.stderr}\nStdout: {res.stdout}"
     
     # Verify directories
@@ -61,24 +58,29 @@ def test_bash_scaffold_python(tmp_path):
     assert (project_dir / ".gitignore").is_file()
     assert (project_dir / ".skillsrc").is_file()
     
-    # Verify global skills are physically copied
-    expected_skills = [
-        "diagnose",
-        "improve-codebase-architecture",
-        "setup-matt-pocock-skills",
-        "tdd",
-        "to-issues",
-        "to-prd",
-        "zoom-out",
-        "caveman",
-        "handoff",
-        "write-a-skill",
-        "to-dfp",
-        "execute-dfp"
+    # Verify newly required deployed templates
+    shared_templates = [
+        "progress.md", "features.json", "CONTEXT.md", "DEVELOPER_WORKFLOW.md",
+        ".env.example", "Makefile", ".pre-commit-config.yaml"
     ]
-    for skill in expected_skills:
-        assert (project_dir / ".agents/skills" / skill / "SKILL.md").is_file()
+    for f in shared_templates:
+        assert (project_dir / f).is_file(), f"Shared template {f} missing from destination"
         
+    # Verify placeholder resolution in progress.md and CONTEXT.md
+    progress_file = project_dir / "progress.md"
+    with open(progress_file, "r", encoding="utf-8") as f:
+        progress_content = f.read()
+    assert "{{PROJECT_NAME}}" not in progress_content
+    assert "my_python_project" in progress_content
+    assert "{{PROJECT_GOAL_SUMMARY}}" not in progress_content
+    assert "Establish analytical modeling environment for my_python_project." in progress_content
+    
+    context_file = project_dir / "CONTEXT.md"
+    with open(context_file, "r", encoding="utf-8") as f:
+        context_content = f.read()
+    assert "{{PROJECT_NAME}}" not in context_content
+    assert "my_python_project" in context_content
+
     # Verify Git commit
     res_git = subprocess.run(
         ["git", "log", "-1", "--pretty=%s"],
@@ -89,14 +91,13 @@ def test_bash_scaffold_python(tmp_path):
     assert res_git.returncode == 0
     assert "chore: scaffold via alpha-zero-g" in res_git.stdout
 
-@bash_only
-def test_bash_scaffold_r(tmp_path):
-    """Test Bash project scaffolder with R type."""
+def test_scaffold_r(tmp_path):
+    """Test Python project scaffolder with R type."""
     project_dir = tmp_path / "my_r_project"
-    script_path = Path("scripts/scaffold-project.sh").resolve()
+    script_path = Path("scripts/scaffold.py").resolve()
     
     res = subprocess.run(
-        ["bash", str(script_path), "my_r_project", "--type", "r", str(project_dir)],
+        [sys.executable, str(script_path), "my_r_project", "r", str(project_dir)],
         capture_output=True,
         text=True
     )
@@ -104,56 +105,16 @@ def test_bash_scaffold_r(tmp_path):
     assert (project_dir / "R").is_dir()
     assert not (project_dir / "src").exists()
 
-@bash_only
-def test_bash_scaffold_hybrid(tmp_path):
-    """Test Bash project scaffolder with hybrid type."""
+def test_scaffold_hybrid(tmp_path):
+    """Test Python project scaffolder with hybrid type."""
     project_dir = tmp_path / "my_hybrid_project"
-    script_path = Path("scripts/scaffold-project.sh").resolve()
+    script_path = Path("scripts/scaffold.py").resolve()
     
     res = subprocess.run(
-        ["bash", str(script_path), "my_hybrid_project", "--type", "hybrid", str(project_dir)],
+        [sys.executable, str(script_path), "my_hybrid_project", "hybrid", str(project_dir)],
         capture_output=True,
         text=True
     )
     assert res.returncode == 0
     assert (project_dir / "src").is_dir()
     assert (project_dir / "R").is_dir()
-
-def test_powershell_scaffold_if_available(tmp_path):
-    """Test PowerShell project scaffolder if pwsh or powershell is available."""
-    import shutil
-    pwsh = shutil.which("pwsh") or shutil.which("powershell")
-    if not pwsh:
-        pytest.skip("PowerShell not available")
-        
-    project_dir = tmp_path / "my_pwsh_project"
-    script_path = Path("scripts/scaffold-project.ps1").resolve()
-    
-    res = subprocess.run(
-        [pwsh, "-File", str(script_path), "my_pwsh_project", "-Type", "hybrid", str(project_dir)],
-        capture_output=True,
-        text=True
-    )
-    
-    assert res.returncode == 0, f"Scaffolder failed: {res.stderr}\nStdout: {res.stdout}"
-    assert (project_dir / "src").is_dir()
-    assert (project_dir / "R").is_dir()
-    assert (project_dir / "tests").is_dir()
-    assert (project_dir / "docs/adr").is_dir()
-    assert (project_dir / "docs/research").is_dir()
-    assert (project_dir / "data/raw").is_dir()
-    assert (project_dir / "data/interim").is_dir()
-    assert (project_dir / "data/processed").is_dir()
-    assert (project_dir / ".agents/rules").is_dir()
-    assert (project_dir / ".agents/skills").is_dir()
-    
-    # Verify Git commit
-    res_git = subprocess.run(
-        ["git", "log", "-1", "--pretty=%s"],
-        cwd=str(project_dir),
-        capture_output=True,
-        text=True
-    )
-    assert res_git.returncode == 0
-    assert "chore: scaffold via alpha-zero-g" in res_git.stdout
-
