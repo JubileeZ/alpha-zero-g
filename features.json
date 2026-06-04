@@ -154,6 +154,60 @@
     "feature": "Default Configs Template (Safety Guardrails)",
     "description": "Deploy default templates and hooks to ensure safety protocols, like secret scanning and safe defaults.",
     "passes": true
+  },
+  {
+    "id": "F-29",
+    "feature": "Complete Scaffold Template Deployment",
+    "description": "Wire scaffold.py to deploy all templates (pyproject.toml, Makefile, .pre-commit-config.yaml, progress.md, CONTEXT.md, features.json, .env.example, DEVELOPER_WORKFLOW.md, hooks.json, R templates) to downstream projects.",
+    "passes": false
+  },
+  {
+    "id": "F-30",
+    "feature": "Full Placeholder Resolution (PACKAGE_NAME, PROJECT_GOAL_SUMMARY)",
+    "description": "Add {{PACKAGE_NAME}} and {{PROJECT_GOAL_SUMMARY}} resolution to scaffold.py so pyproject.toml, conftest.py, and progress.md render correctly in downstream projects.",
+    "passes": false
+  },
+  {
+    "id": "F-31",
+    "feature": "Create config.py Template",
+    "description": "Create a Pydantic Settings config.py template under templates/python/src/{{project_name}}/ that conftest.py can import, with typed fields for RANDOM_SEED, TEST_SIZE, DATA_DIR, etc.",
+    "passes": false
+  },
+  {
+    "id": "F-32",
+    "feature": "Deploy hooks.json to Downstream Projects",
+    "description": "Copy a canonical .agents/hooks.json (credential blocking, force-push prevention, destructive op gates) into scaffolded and upgraded projects.",
+    "passes": false
+  },
+  {
+    "id": "F-33",
+    "feature": "ADR Format Template & Research README",
+    "description": "Create a reusable ADR format template (docs/adr/ADR-TEMPLATE.md) and a docs/research/README.md explaining the expected spike format.",
+    "passes": false
+  },
+  {
+    "id": "F-34",
+    "feature": "Reconcile Deleted Docs with Progress Claims",
+    "description": "Audit and resolve stale progress.md milestone references to docs/architecture.md, docs/quality.md, docs/beliefs.md, docs/DATA_DICT.md, docs/MODEL_NOTES.md. Either recreate or mark as deprecated.",
+    "passes": false
+  },
+  {
+    "id": "F-35",
+    "feature": "CI/CD Workflow Template",
+    "description": "Create a .github/workflows/ci.yml template that runs uv sync, uv run pytest, ruff check, and mypy on push/PR for downstream projects.",
+    "passes": false
+  },
+  {
+    "id": "F-36",
+    "feature": "Pandera Schema Template",
+    "description": "Create a src/schemas.py template with example Pandera DataFrameSchema contracts to make the pandera dependency meaningful out of the box.",
+    "passes": false
+  },
+  {
+    "id": "F-37",
+    "feature": "Full Scaffold Round-Trip Integration Test",
+    "description": "Add an integration test that scaffolds a project, resolves all placeholders, runs uv sync + uv run pytest, and verifies the downstream project boots green.",
+    "passes": false
   }
 ]
 

@@ -7,11 +7,7 @@ import sys
 from pathlib import Path
 
 def test_scaffold_python(tmp_path):
-<<<<<<< HEAD
     """Test project scaffolder with Python type."""
-=======
-    """Test Python project scaffolder with Python type."""
->>>>>>> subagent-TDD-Developer--Issue-11--self-2e4348f9
     project_dir = tmp_path / "my_python_project"
     script_path = Path("scripts/scaffold.py").resolve()
     
@@ -22,10 +18,6 @@ def test_scaffold_python(tmp_path):
         text=True
     )
     
-<<<<<<< HEAD
-=======
-    # Assert successful execution
->>>>>>> subagent-TDD-Developer--Issue-11--self-2e4348f9
     assert res.returncode == 0, f"Scaffolder failed: {res.stderr}\nStdout: {res.stdout}"
     
     # Verify directories

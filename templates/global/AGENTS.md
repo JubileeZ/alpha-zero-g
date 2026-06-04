@@ -17,7 +17,7 @@ Universal rules for AI agents across all workspaces and tools.
 
 ## Session Discipline
 - Always read `progress.md` at the start of a session to orient.
-- Write a `docs/handoff.md` before ending a session to preserve context.
+- Update `progress.md` before ending a session to preserve context.
 
 ## Language Defaults
 - **Python**: Python 3. Strict type hints, run tests and scripts via `uv run`.
