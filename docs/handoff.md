@@ -57,7 +57,7 @@ Completed all requirements for Issue #9 using Test-Driven Development (TDD) and 
 
 1. **Archival System (/compact-memory skill)**:
    - Created the new skill `templates/skills/compact-memory/SKILL.md` following `/write-a-skill` layout guidelines with correct description and triggers.
-   - Developed `templates/skills/compact-memory/scripts/compact.py` to parse `progress.md`, extract completed milestones, and write them to `docs/archive/progress-YYYYMMDD.md` while updating `progress.md` in place to keep only the latest 5 completed milestones.
+   - Developed `templates/skills/compact-memory/scripts/compact.py` to parse `progress.md`, extract completed milestones, and write them to `docs/archive/progress-YYYYMMDD.md` while updating `progress.md` in place to keep the latest 5 completed milestones.
    - Modified project scaffolding `scripts/scaffold.py` to copy custom skills from `templates/skills/` recursively to the project's local `.agents/skills/` folder dynamically.
    - Created `tests/test_compaction.py` to test the compaction/archiving parser logic using TDD.
 
@@ -71,3 +71,22 @@ Completed all requirements for Issue #9 using Test-Driven Development (TDD) and 
    - Refactored `test_scaffold.py`, `test_setup.py`, and `test_upgrade.py` to run unified Python scripts via `sys.executable` (using `subprocess`), eliminating platform-dependent `.sh`/`.ps1` dependencies and achieving 100% platform-agnostic green coverage on Windows and Unix systems alike.
    - Marked features F-27 (Context Compaction) and F-28 (Default Configs Template) as fully passing (`true`) in `features.json`.
    - Updated `progress.md` with active milestones and next priorities.
+
+---
+
+## Issue #13 (Deploy hooks.json to downstream projects)
+
+All objectives for Issue #13 have been fully achieved on the feature branch `issue-13`.
+
+### Status
+- **Branch**: `issue-13`
+- **Progress**: 100% Complete
+- **Unit Tests**: 27/27 green
+
+### Delivered Components
+1. **Downstream hooks.json Template**: Seeded at templates/project/.agents/hooks.json incorporating all standard agent tools validation and gate constraints.
+2. **Wiring in scaffold.py**: Configured copy of `hooks.json` during scaffolding. Fixed crash in Windows console output encoding by replacing the ✔ checkmark character.
+3. **Wiring in upgrade-project.py**: Added `.agents/hooks.json` copy logic to the upgrades registry.
+4. **Test Suite Adaptation**: Updated all platform tests to call python scripts via `sys.executable` directly (fixing failing tests due to obsolete shell files refactoring) and added TDD checks verifying correct `hooks.json` copy-propagation.
+
+All modifications have been committed to the local repository. The harness is ready for integration merging.

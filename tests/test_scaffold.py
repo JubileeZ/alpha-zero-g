@@ -10,7 +10,7 @@ def test_scaffold_python(tmp_path):
     project_dir = tmp_path / "my_python_project"
     script_path = Path("scripts/scaffold.py").resolve()
     
-    # Run scaffolder
+    # Run scaffolder: scaffold.py <name> <type> [dest]
     res = subprocess.run(
         [sys.executable, str(script_path), "my_python_project", "python", str(project_dir)],
         capture_output=True,
@@ -60,7 +60,7 @@ def test_scaffold_python(tmp_path):
     assert (project_dir / ".agents/hooks.json").is_file()
     
     # Verify local custom skills are physically copied
-    for skill in ["compact-memory", "to-dfp", "execute-dfp"]:
+    for skill in ["archive-progress", "compact-memory", "to-dfp", "execute-dfp"]:
         assert (project_dir / ".agents/skills" / skill / "SKILL.md").is_file()
         
     # Verify newly required deployed templates
@@ -185,3 +185,19 @@ def test_scaffold_python_structure_and_slugification(tmp_path):
         conftest_content = f.read()
     assert "from my_awesome_project.config import Settings, settings" in conftest_content
     assert "{{PACKAGE_NAME}}" not in conftest_content
+
+def test_scaffold_deploys_hooks_json(tmp_path):
+    """Test project scaffolder deploys hooks.json to .agents/hooks.json."""
+    project_dir = tmp_path / "my_hooks_project"
+    script_path = Path("scripts/scaffold.py").resolve()
+    
+    res = subprocess.run(
+        [sys.executable, str(script_path), "my_hooks_project", "python", str(project_dir)],
+        capture_output=True,
+        text=True
+    )
+    assert res.returncode == 0
+    
+    # Assert hooks.json exists
+    hooks_file = project_dir / ".agents" / "hooks.json"
+    assert hooks_file.is_file(), ".agents/hooks.json was not deployed during scaffolding"

@@ -30,11 +30,9 @@ def main() -> None:
     if len(sys.argv) < 3:
         print("Usage: scaffold.py <name> <type> [dest]")
         sys.exit(1)
-
-    name = sys.argv[1]
-    ptype = sys.argv[2]
-    dest = sys.argv[3] if len(sys.argv) > 3 else f"./{name}"
-
+    name: str = sys.argv[1]
+    ptype: str = sys.argv[2]
+    dest: str = sys.argv[3] if len(sys.argv) > 3 else f"./{name}"
     if ptype not in ("python", "r", "hybrid"):
         print("Error: Invalid project type. Must be 'python', 'r', or 'hybrid'.")
         sys.exit(1)
@@ -44,7 +42,7 @@ def main() -> None:
     os.makedirs(dest, exist_ok=True)
 
     # Generate canonical folder structure
-    dirs = [
+    dirs: list[str] = [
         "tests",
         "docs/adr",
         "docs/research",
@@ -63,11 +61,10 @@ def main() -> None:
         os.makedirs(os.path.join(dest, d), exist_ok=True)
 
     # Write project rules from templates/project/
-    root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    ptemp = os.path.join(root, "templates/project")
-
+    root: str = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    ptemp: str = os.path.join(root, "templates/project")
     for f in ["AGENTS.md", "GEMINI.md", "CLAUDE.md", "README.md"]:
-        src = os.path.join(ptemp, f)
+        src: str = os.path.join(ptemp, f)
         if os.path.exists(src):
             shutil.copy(src, os.path.join(dest, f))
     # Copy hooks.json if it exists
@@ -76,23 +73,23 @@ def main() -> None:
         shutil.copy(hooks_src, os.path.join(dest, ".agents/hooks.json"))
 
     # Copy project rules sub-documents
-    rules_src = os.path.join(ptemp, ".agents/rules")
+    rules_src: str = os.path.join(ptemp, ".agents/rules")
     if os.path.exists(rules_src):
         for f in os.listdir(rules_src):
             shutil.copy(os.path.join(rules_src, f), os.path.join(dest, ".agents/rules", f))
             
     # Copy local custom skills to .agents/skills
-    skills_src = os.path.join(root, "templates/skills")
+    skills_src: str = os.path.join(root, "templates/skills")
     if os.path.exists(skills_src):
         for item in os.listdir(skills_src):
-            src_skill = os.path.join(skills_src, item)
+            src_skill: str = os.path.join(skills_src, item)
             if os.path.isdir(src_skill):
                 shutil.copytree(src_skill, os.path.join(dest, ".agents/skills", item))
     # Generate docs/adr/ADR-001-project-init.md
-    adr_temp = os.path.join(ptemp, "docs/adr/adr-init.template")
+    adr_temp: str = os.path.join(ptemp, "docs/adr/adr-init.template")
     if os.path.exists(adr_temp):
         with open(adr_temp, "r", encoding="utf-8") as f_in:
-            c = f_in.read().replace("{{DATE}}", datetime.date.today().isoformat())
+            c: str = f_in.read().replace("{{DATE}}", datetime.date.today().isoformat())
         with open(
             os.path.join(dest, "docs/adr/ADR-001-project-init.md"),
             "w",
@@ -186,16 +183,16 @@ def main() -> None:
     # Replace {{PROJECT_NAME}}, {{PACKAGE_NAME}}, {{PROJECT_DESCRIPTION}} and {{PROJECT_GOAL_SUMMARY}} placeholders
     for r, ds, fs in os.walk(dest):
         for f in fs:
-            ext = os.path.splitext(f)[1]
+            ext: str = os.path.splitext(f)[1]
             if (
                 ext in (".md", ".template", ".py", ".toml", ".yaml", ".yml", ".json")
                 or f in (".skillsrc", ".gitignore", "Makefile", ".env.example", "DESCRIPTION")
             ):
-                p = os.path.join(r, f)
+                p: str = os.path.join(r, f)
                 try:
                     with open(p, "r", encoding="utf-8", errors="ignore") as file:
-                        content = file.read()
-                    new_content = (
+                        content: str = file.read()
+                    new_content: str = (
                         content.replace("{{PROJECT_NAME}}", name)
                         .replace("{{PACKAGE_NAME}}", package_name)
                         .replace("{{PROJECT_DESCRIPTION}}", f"Scaffolded {name} project.")

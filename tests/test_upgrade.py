@@ -93,5 +93,16 @@ def test_upgrade_does_not_duplicate_agents_block(temp_project, upgrade_cmd):
     with open(agents_path, "r", encoding="utf-8") as f:
         content = f.read()
     
-    # Ensure block only appears once
     assert content.count("## Alpha-Zero-G") == 1
+
+def test_upgrade_deploys_hooks_json(temp_project, upgrade_cmd):
+    """Ensure the upgrade script deploys .agents/hooks.json if it is missing."""
+    agents_path = os.path.join(temp_project, "AGENTS.md")
+    with open(agents_path, "w", encoding="utf-8") as f:
+        f.write("# Project: TestProj\n\nExisting content.\n")
+        
+    res = subprocess.run(upgrade_cmd + ["--yes"], cwd=temp_project, capture_output=True, text=True)
+    assert res.returncode == 0
+    
+    hooks_file = os.path.join(temp_project, ".agents", "hooks.json")
+    assert os.path.isfile(hooks_file), ".agents/hooks.json was not deployed during upgrade"
