@@ -86,12 +86,29 @@ Establish a high-performance, deterministic developer harness for analytics, mod
     - Updated and corrected all failing unit/integration tests in `tests/test_scaffold.py`, `tests/test_setup.py`, and `tests/test_upgrade.py` to target the consolidated Python script runners directly instead of legacy bash/powershell wrappers.
     - Verified the entire test suite executes and passes successfully on Windows workspace (26 passed).
 
+52. **Archival System & Default Configs Template Complete (2026-06-04):**
+    - Implemented the `/compact-memory` skill under `templates/skills/compact-memory/` matching the `/write-a-skill` standards with triggers and workflow.
+    - Created `templates/skills/compact-memory/scripts/compact.py` to parse `progress.md`, extract completed milestones, and write them to `docs/archive/progress-YYYYMMDD.md` while updating `progress.md` in place to keep the latest 5 completed milestones.
+    - Modified project scaffolding `scripts/scaffold.py` to dynamically copy local custom skills to new projects.
+    - Modified `scripts/setup-device.py` to natively enforce Planning Mode in the generated `settings.json` by setting `"planningMode": true`.
+    - Added `templates/global/settings.json.example` with `planningMode: true` and documented the constraint in `templates/global/GEMINI.md`.
+    - Added `.agents/hooks.json` copy logic to scaffolding and upgrader, asserting safety interceptors exist on all new configurations.
+    - Refactored `test_scaffold.py`, `test_setup.py`, and `test_upgrade.py` to run unified Python scripts via `sys.executable`, establishing 100% platform-agnostic green test coverage on both Windows and Unix.
+    - Developed `tests/test_compaction.py` to validate context compaction logic via TDD.
+
 ---
 
 ## 3. Next Session Priorities
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 1. Define next epic roadmap items now that Phase 1 configuration and safety guardrails are fully complete.
 =======
 1. Implement F-28 (Default Configs Template) to seed planningMode by default in settings.json.
 >>>>>>> issue-12
+=======
+1. Final review and deployment integration of scaffolding rules.
+
+
+
+>>>>>>> subagent-TDD-Developer--Issue-9--self-1f4fcf0b

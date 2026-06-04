@@ -70,15 +70,36 @@ def main() -> None:
         src = os.path.join(ptemp, f)
         if os.path.exists(src):
             shutil.copy(src, os.path.join(dest, f))
+<<<<<<< HEAD
+=======
+            
+    # Copy hooks.json if it exists
+    hooks_src = os.path.join(ptemp, ".agents/hooks.json")
+    if os.path.exists(hooks_src):
+        shutil.copy(hooks_src, os.path.join(dest, ".agents/hooks.json"))
+>>>>>>> subagent-TDD-Developer--Issue-9--self-1f4fcf0b
 
     # Copy project rules sub-documents
     rules_src = os.path.join(ptemp, ".agents/rules")
     if os.path.exists(rules_src):
         for f in os.listdir(rules_src):
+<<<<<<< HEAD
             shutil.copy(
                 os.path.join(rules_src, f), os.path.join(dest, ".agents/rules", f)
             )
 
+=======
+            shutil.copy(os.path.join(rules_src, f), os.path.join(dest, ".agents/rules", f))
+            
+    # Copy local custom skills to .agents/skills
+    skills_src = os.path.join(root, "templates/skills")
+    if os.path.exists(skills_src):
+        for item in os.listdir(skills_src):
+            src_skill = os.path.join(skills_src, item)
+            if os.path.isdir(src_skill):
+                shutil.copytree(src_skill, os.path.join(dest, ".agents/skills", item))
+            
+>>>>>>> subagent-TDD-Developer--Issue-9--self-1f4fcf0b
     # Generate docs/adr/ADR-001-project-init.md
     adr_temp = os.path.join(ptemp, "docs/adr/adr-init.template")
     if os.path.exists(adr_temp):
@@ -216,11 +237,17 @@ def main() -> None:
     )
     print("git add .")
     subprocess.run(["git", "add", "."], cwd=dest)
+<<<<<<< HEAD
     print('git commit -m "chore: scaffold via alpha-zero-g"')
     subprocess.run(
         ["git", "commit", "-m", "chore: scaffold via alpha-zero-g", "-q"], cwd=dest
     )
 
+=======
+    print("git commit -m \"chore: scaffold via alpha-zero-g\"")
+    subprocess.run(["git", "commit", "-m", "chore: scaffold via alpha-zero-g", "-q"], cwd=dest)
+    
+>>>>>>> subagent-TDD-Developer--Issue-9--self-1f4fcf0b
     print(f"[OK] Project '{name}' successfully scaffolded.")
 
 if __name__ == "__main__":

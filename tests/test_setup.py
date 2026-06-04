@@ -53,7 +53,7 @@ def test_setup_device(tmp_path, monkeypatch, capsys):
     assert data["existing_key"] == "existing_val"
     assert data["statusLine"]["type"] == "custom"
     assert data["statusLine"]["enabled"] is True
-    assert data["planningMode"]["enabled"] is True
+    assert data["planningMode"] is True
     
     assert os.path.exists(mock_home / ".agent-config" / "statusline.py")
     assert os.path.exists(mock_home / ".gemini" / "AGENTS.md")
@@ -71,7 +71,7 @@ def test_setup_second_run_skip(tmp_path, monkeypatch, capsys):
         (skills_dir / s).mkdir()
         
     gemini_dir = mock_home / ".gemini"
-    gemini_dir.mkdir(parents=True)
+    gemini_dir.mkdir(parents=True, exist_ok=True)
     for f in ["AGENTS.md", "GEMINI.md", "CLAUDE.md"]:
         (gemini_dir / f).write_text("existing content", encoding="utf-8")
         

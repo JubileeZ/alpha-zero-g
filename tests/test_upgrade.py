@@ -4,6 +4,7 @@ import shutil
 import subprocess
 import tempfile
 import pytest
+
 # Paths
 UPGRADE_PY = os.path.abspath(os.path.join(os.path.dirname(__file__), "../scripts/upgrade-project.py"))
 TEMPLATES_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "../templates/project"))
@@ -34,7 +35,7 @@ def test_upgrade_dry_run(temp_project, upgrade_cmd):
     
     res = subprocess.run(upgrade_cmd + ["--dry-run"], cwd=temp_project, capture_output=True, text=True)
     assert res.returncode == 0
-    assert "missing" in res.stdout.lower() or "present" in res.stdout.lower()
+    assert "missing" in res.stdout.lower() or "exists" in res.stdout.lower()
     
     contents = os.listdir(temp_project)
     assert contents == ["AGENTS.md"]
@@ -62,6 +63,7 @@ def test_upgrade_real_run_and_adr_generation(temp_project, upgrade_cmd):
     assert os.path.isfile(os.path.join(temp_project, ".agents", "rules", "code-style.md"))
     assert os.path.isfile(os.path.join(temp_project, ".agents", "rules", "safety.md"))
     assert os.path.isfile(os.path.join(temp_project, ".gitignore"))
+    assert os.path.isfile(os.path.join(temp_project, ".agents", "hooks.json"))
     assert os.path.isfile(os.path.join(temp_project, ".skillsrc"))
     assert os.path.isfile(os.path.join(temp_project, "README.md"))
     
@@ -81,7 +83,7 @@ def test_upgrade_real_run_and_adr_generation(temp_project, upgrade_cmd):
 def test_upgrade_does_not_duplicate_agents_block(temp_project, upgrade_cmd):
     """Ensure we do not append the block again if it already exists."""
     agents_path = os.path.join(temp_project, "AGENTS.md")
-    block = "\n## Alpha-Zero-G\n- **Deterministic Python**"
+    block = "\n\n## Alpha-Zero-G\n- **Deterministic Python**: Always execute via `uv run` (`uv run pytest`, `uv run python`).\n- **No Symlink Portability**: All project rules are physical copies and use relative links.\n- **Explicit Typings**: Require strict type hints in Python."
     with open(agents_path, "w", encoding="utf-8") as f:
         f.write("# Project: TestProj\n" + block)
         
@@ -91,4 +93,5 @@ def test_upgrade_does_not_duplicate_agents_block(temp_project, upgrade_cmd):
     with open(agents_path, "r", encoding="utf-8") as f:
         content = f.read()
     
+    # Ensure block only appears once
     assert content.count("## Alpha-Zero-G") == 1

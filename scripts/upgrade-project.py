@@ -30,7 +30,7 @@ def main():
     ]
     files = [
         "AGENTS.md", "GEMINI.md", "CLAUDE.md", ".agents/rules/code-style.md",
-        ".agents/rules/safety.md", ".gitignore", ".skillsrc", "README.md"
+        ".agents/rules/safety.md", ".agents/hooks.json", ".gitignore", ".skillsrc", "README.md"
     ]
     
     print("--- Alpha-Zero-G Project Upgrade Audit ---")
@@ -84,6 +84,8 @@ def main():
             shutil.copy2(tdir / ".agents/rules/code-style.md", path)
         elif path_str == ".agents/rules/safety.md":
             shutil.copy2(tdir / ".agents/rules/safety.md", path)
+        elif path_str == ".agents/hooks.json":
+            shutil.copy2(tdir / ".agents/hooks.json", path)
         elif path_str == ".gitignore":
             shutil.copy2(tdir / "gitignore.template", path)
         elif path_str == ".skillsrc":

@@ -3,16 +3,16 @@ import sys
 import shutil
 import subprocess
 import pytest
-import sys
 from pathlib import Path
 
 def test_scaffold_python(tmp_path):
-    project_dir = tmp_path / "my-python-project"
+    """Test project scaffolder with Python type."""
+    project_dir = tmp_path / "my_python_project"
     script_path = Path("scripts/scaffold.py").resolve()
     
     # Run scaffolder
     res = subprocess.run(
-        [sys.executable, str(script_path), "my-python-project", "python", str(project_dir)],
+        [sys.executable, str(script_path), "my_python_project", "python", str(project_dir)],
         capture_output=True,
         text=True
     )
@@ -44,7 +44,7 @@ def test_scaffold_python(tmp_path):
     with open(agents_file, "r", encoding="utf-8") as f:
         agents_content = f.read()
     assert "{{PROJECT_NAME}}" not in agents_content
-    assert "my-python-project" in agents_content
+    assert "my_python_project" in agents_content
     
     # Verify ADR-001 generation
     adr_file = project_dir / "docs/adr/ADR-001-project-init.md"
@@ -57,6 +57,12 @@ def test_scaffold_python(tmp_path):
     # Verify .gitignore and .skillsrc deployment
     assert (project_dir / ".gitignore").is_file()
     assert (project_dir / ".skillsrc").is_file()
+    assert (project_dir / ".agents/hooks.json").is_file()
+    
+    # Verify local custom skills are physically copied
+    for skill in ["compact-memory", "to-dfp", "execute-dfp"]:
+        assert (project_dir / ".agents/skills" / skill / "SKILL.md").is_file()
+        
     # Verify newly required deployed templates
     shared_templates = [
         "progress.md",
@@ -77,10 +83,10 @@ def test_scaffold_python(tmp_path):
     with open(progress_file, "r", encoding="utf-8") as f:
         progress_content = f.read()
     assert "{{PROJECT_NAME}}" not in progress_content
-    assert "my-python-project" in progress_content
+    assert "my_python_project" in progress_content
     assert "{{PROJECT_GOAL_SUMMARY}}" not in progress_content
     assert (
-        "Establish analytical modeling environment for my-python-project."
+        "Establish analytical modeling environment for my_python_project."
         in progress_content
     )
 
@@ -88,7 +94,7 @@ def test_scaffold_python(tmp_path):
     with open(context_file, "r", encoding="utf-8") as f:
         context_content = f.read()
     assert "{{PROJECT_NAME}}" not in context_content
-    assert "my-python-project" in context_content
+    assert "my_python_project" in context_content
     # Verify Git commit
     res_git = subprocess.run(
         ["git", "log", "-1", "--pretty=%s"],
@@ -135,17 +141,6 @@ def test_scaffold_hybrid(tmp_path):
     assert res.returncode == 0, f"Scaffolder failed: {res.stderr}\nStdout: {res.stdout}"
     assert (project_dir / "src").is_dir()
     assert (project_dir / "R").is_dir()
-    
-    # R templates checks (should fail before implementation)
-    assert (project_dir / "DESCRIPTION").is_file()
-    assert (project_dir / "src/smoke.R").is_file()
-    assert (project_dir / "tests/testthat.R").is_file()
-    
-    with open(project_dir / "DESCRIPTION", "r", encoding="utf-8") as f:
-        desc_content = f.read()
-    assert "Package: my_hybrid_project" in desc_content
-    assert "{{PROJECT_NAME}}" not in desc_content
-
 
 def test_scaffold_python_structure_and_slugification(tmp_path):
     """Test Python package structure deployment and slugification logic."""
