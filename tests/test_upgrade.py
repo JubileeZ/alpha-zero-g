@@ -1,28 +1,15 @@
-import os
+﻿import os
+import sys
 import shutil
 import subprocess
 import tempfile
 import pytest
 
-# Paths
-UPGRADE_SH = os.path.abspath(os.path.join(os.path.dirname(__file__), "../scripts/upgrade-project.sh"))
-UPGRADE_PS1 = os.path.abspath(os.path.join(os.path.dirname(__file__), "../scripts/upgrade-project.ps1"))
-TEMPLATES_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "../templates/project"))
+UPGRADE_PY = os.path.abspath(os.path.join(os.path.dirname(__file__), "../scripts/upgrade-project.py"))
 
-# Detect interpreters
-has_bash = shutil.which("bash") is not None
-pwsh = shutil.which("pwsh") or shutil.which("powershell")
-has_powershell = pwsh is not None
-
-run_configs = []
-if has_bash:
-    run_configs.append(("bash", ["bash", UPGRADE_SH]))
-if has_powershell:
-    run_configs.append(("powershell", [pwsh, "-File", UPGRADE_PS1]))
-
-@pytest.fixture(params=run_configs, ids=lambda x: x[0])
-def upgrade_cmd(request):
-    return request.param[1]
+@pytest.fixture
+def upgrade_cmd():
+    return [sys.executable, UPGRADE_PY]
 
 @pytest.fixture
 def temp_project():
@@ -49,7 +36,7 @@ def test_upgrade_dry_run(temp_project, upgrade_cmd):
     # Run with --dry-run
     res = subprocess.run(upgrade_cmd + ["--dry-run"], cwd=temp_project, capture_output=True, text=True)
     assert res.returncode == 0
-    assert "missing" in res.stdout.lower() or "present" in res.stdout.lower()
+    assert "missing" in res.stdout.lower() or "exists" in res.stdout.lower()
     
     # Verify no files/folders were created besides our original AGENTS.md
     contents = os.listdir(temp_project)
@@ -70,7 +57,7 @@ def test_upgrade_real_run_and_adr_generation(temp_project, upgrade_cmd):
         
     # Run upgrade (non-interactive using --yes)
     res = subprocess.run(upgrade_cmd + ["--yes"], cwd=temp_project, capture_output=True, text=True)
-    assert res.returncode == 0
+    assert res.returncode == 0, f"Upgrade failed: {res.stderr}\nStdout: {res.stdout}"
     
     # Check that directories were created
     assert os.path.isdir(os.path.join(temp_project, ".agents", "rules"))
@@ -83,6 +70,7 @@ def test_upgrade_real_run_and_adr_generation(temp_project, upgrade_cmd):
     assert os.path.isfile(os.path.join(temp_project, ".agents", "rules", "code-style.md"))
     assert os.path.isfile(os.path.join(temp_project, ".agents", "rules", "safety.md"))
     assert os.path.isfile(os.path.join(temp_project, ".gitignore"))
+    assert os.path.isfile(os.path.join(temp_project, ".agents", "hooks.json"))
     assert os.path.isfile(os.path.join(temp_project, ".skillsrc"))
     assert os.path.isfile(os.path.join(temp_project, "README.md"))
     
@@ -104,7 +92,7 @@ def test_upgrade_real_run_and_adr_generation(temp_project, upgrade_cmd):
 def test_upgrade_does_not_duplicate_agents_block(temp_project, upgrade_cmd):
     """Ensure we do not append the block again if it already exists."""
     agents_path = os.path.join(temp_project, "AGENTS.md")
-    block = "\n## Alpha-Zero-G\n- **Deterministic Python**"
+    block = "\n\n## Alpha-Zero-G\n- **Deterministic Python**: Always execute via `uv run` (`uv run pytest`, `uv run python`).\n- **No Symlink Portability**: All project rules are physical copies and use relative links.\n- **Explicit Typings**: Require strict type hints in Python."
     with open(agents_path, "w", encoding="utf-8") as f:
         f.write("# Project: TestProj\n" + block)
         

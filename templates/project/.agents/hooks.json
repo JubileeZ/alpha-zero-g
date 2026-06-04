@@ -1,0 +1,100 @@
+{
+  "before_tool_call": [
+    {
+      "match": {
+        "tool": "run_command",
+        "command_pattern": "rm\\s+-rf\\s+([/~]|\\$HOME|\\$USER|/etc|/usr|/bin|/var|/private|/lib|/System)"
+      },
+      "action": "block",
+      "message": "Recursive deletion of critical or root paths is strictly prohibited."
+    },
+    {
+      "match": {
+        "tool": "run_command",
+        "command_pattern": "git\\s+push\\s+.*--force"
+      },
+      "action": "block",
+      "message": "Force pushing is disabled on all branches to preserve commit histories."
+    },
+    {
+      "match": {
+        "tool": "write_file",
+        "path_pattern": "^\\.git/"
+      },
+      "action": "block",
+      "message": "Direct modification of .git/ internals is forbidden."
+    },
+    {
+      "match": {
+        "tool": "write_file",
+        "path_pattern": "^/etc/|^/usr/|^/bin/|^/private/"
+      },
+      "action": "block",
+      "message": "Modifying system files outside the project root is prohibited."
+    },
+    {
+      "match": {
+        "tool": "write_to_file",
+        "path_pattern": "\\.env$"
+      },
+      "action": "require_approval",
+      "message": "Modifying credentials/secrets (.env files) requires direct human approval."
+    },
+    {
+      "match": {
+        "tool": "run_command",
+        "command_pattern": "git\\s+push"
+      },
+      "action": "require_approval",
+      "message": "Any git push operation requires direct confirmation."
+    },
+    {
+      "match": {
+        "tool": "manage_task",
+        "action": "kill"
+      },
+      "action": "require_approval",
+      "message": "Killing active background subagents or processes requires verification."
+    },
+    {
+      "match": {
+        "tool": "write_file",
+        "path_pattern": "^config/|^\\.agents/"
+      },
+      "action": "require_approval",
+      "message": "Modifying project configuration or hooks directories requires approval."
+    },
+    {
+      "match": {
+        "tool": "run_command",
+        "command_pattern": "(npm|pip|pip3|uv|gem|brew|cargo)\\s+install\\s+-g"
+      },
+      "action": "require_approval",
+      "message": "Installing software packages globally requires approval. Prefer local environments."
+    },
+    {
+      "match": {
+        "tool": "run_command",
+        "command_pattern": "(curl|wget|ngrok)\\s+"
+      },
+      "action": "require_approval",
+      "message": "Executing external network requests or tunnels requires human approval."
+    },
+    {
+      "match": {
+        "tool": "view_file",
+        "path_pattern": "(\\.aws[\\\\/]credentials|\\.kube[\\\\/]config|\\.npmrc)$"
+      },
+      "action": "block",
+      "message": "Agent access to local developer credentials is fundamentally blocked."
+    },
+    {
+      "match": {
+        "tool": "read_file",
+        "path_pattern": "(\\.aws[\\\\/]credentials|\\.kube[\\\\/]config|\\.npmrc)$"
+      },
+      "action": "block",
+      "message": "Agent access to local developer credentials is fundamentally blocked."
+    }
+  ]
+}
