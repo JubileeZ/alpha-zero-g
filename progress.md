@@ -87,12 +87,18 @@ Establish a high-performance, deterministic developer harness for analytics, mod
     - Wrote `scripts/compact.py` to parse `progress.md` and safely archive older milestones under the Active Focus section to `docs/archive/progress-archive.md`, retaining the 5 most recent items.
     - Executed the script, successfully archiving 46 items and reducing token bloat.
     - Marked F-27 as completed in `features.json`.
+52. **Hooks Configuration & Safety Guardrails (2026-06-04):**
+    - Created the canonical downstream .agents/hooks.json template configuration.
+    - Wired deployment of the hooks file into the scaffold.py project bootstrap utility and upgrade-project.py project upgrade utility.
+    - Standardized test suites (test_scaffold.py, test_upgrade.py, test_setup.py) to execute python scripts directly using sys.executable, correcting errors caused by obsolete wrapper scripts.
+    - Extended tests with automated assertions checking for correct hooks.json copy during both scaffolding and upgrade phases.
+    - Completed Phase 1 / F-28 requirement with all 27 unit tests executing successfully (100% green status).
 
 
 ---
 
 ## 3. Next Session Priorities
 
-1. Implement F-28 (Default Configs Template) to seed planningMode by default in settings.json.
+1. Verify Phase 1 integration and hook intercept behaviors in downstream workspaces.
 
 

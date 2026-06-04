@@ -9,9 +9,9 @@ def main() -> None:
         print("Usage: scaffold.py <name> <type> [dest]")
         sys.exit(1)
         
-    name = sys.argv[1]
-    ptype = sys.argv[2]
-    dest = sys.argv[3] if len(sys.argv) > 3 else f"./{name}"
+    name: str = sys.argv[1]
+    ptype: str = sys.argv[2]
+    dest: str = sys.argv[3] if len(sys.argv) > 3 else f"./{name}"
     
     if ptype not in ("python", "r", "hybrid"):
         print("Error: Invalid project type. Must be 'python', 'r', or 'hybrid'.")
@@ -21,7 +21,7 @@ def main() -> None:
     os.makedirs(dest, exist_ok=True)
     
     # Generate canonical folder structure
-    dirs = ["tests", "docs/adr", "docs/research", "data/raw", "data/interim", "data/processed", ".agents/rules", ".agents/skills"]
+    dirs: list[str] = ["tests", "docs/adr", "docs/research", "data/raw", "data/interim", "data/processed", ".agents/rules", ".agents/skills"]
     if ptype in ("python", "hybrid"):
         dirs.append("src")
     if ptype in ("r", "hybrid"):
@@ -31,25 +31,30 @@ def main() -> None:
         os.makedirs(os.path.join(dest, d), exist_ok=True)
         
     # Write project rules from templates/project/
-    root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    ptemp = os.path.join(root, "templates/project")
+    root: str = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    ptemp: str = os.path.join(root, "templates/project")
     
     for f in ["AGENTS.md", "GEMINI.md", "CLAUDE.md", "README.md"]:
-        src = os.path.join(ptemp, f)
+        src: str = os.path.join(ptemp, f)
         if os.path.exists(src):
             shutil.copy(src, os.path.join(dest, f))
             
     # Copy project rules sub-documents
-    rules_src = os.path.join(ptemp, ".agents/rules")
+    rules_src: str = os.path.join(ptemp, ".agents/rules")
     if os.path.exists(rules_src):
         for f in os.listdir(rules_src):
             shutil.copy(os.path.join(rules_src, f), os.path.join(dest, ".agents/rules", f))
             
+    # Copy hooks.json if it exists
+    hooks_src: str = os.path.join(ptemp, ".agents/hooks.json")
+    if os.path.exists(hooks_src):
+        shutil.copy(hooks_src, os.path.join(dest, ".agents/hooks.json"))
+            
     # Generate docs/adr/ADR-001-project-init.md
-    adr_temp = os.path.join(ptemp, "docs/adr/adr-init.template")
+    adr_temp: str = os.path.join(ptemp, "docs/adr/adr-init.template")
     if os.path.exists(adr_temp):
         with open(adr_temp, 'r', encoding='utf-8') as f_in:
-            c = f_in.read().replace('{{DATE}}', datetime.date.today().isoformat())
+            c: str = f_in.read().replace('{{DATE}}', datetime.date.today().isoformat())
         with open(os.path.join(dest, "docs/adr/ADR-001-project-init.md"), 'w', encoding='utf-8') as f_out:
             f_out.write(c)
             
@@ -63,11 +68,11 @@ def main() -> None:
     for r, ds, fs in os.walk(dest):
         for f in fs:
             if f.endswith('.md') or f.endswith('.template') or f in ('.skillsrc', '.gitignore'):
-                p = os.path.join(r, f)
+                p: str = os.path.join(r, f)
                 try:
                     with open(p, 'r', encoding='utf-8', errors='ignore') as file:
-                        content = file.read()
-                    new_content = content.replace('{{PROJECT_NAME}}', name).replace('{{PROJECT_DESCRIPTION}}', f"Scaffolded {name} project.")
+                        content: str = file.read()
+                    new_content: str = content.replace('{{PROJECT_NAME}}', name).replace('{{PROJECT_DESCRIPTION}}', f"Scaffolded {name} project.")
                     if new_content != content:
                         with open(p, 'w', encoding='utf-8') as file:
                             file.write(new_content)
@@ -88,7 +93,7 @@ def main() -> None:
     print("git commit -m \"chore: scaffold via alpha-zero-g\"")
     subprocess.run(["git", "commit", "-m", "chore: scaffold via alpha-zero-g", "-q"], cwd=dest)
     
-    print(f"✔ Project '{name}' successfully scaffolded.")
+    print(f"Project '{name}' successfully scaffolded.")
 
 if __name__ == "__main__":
     main()
