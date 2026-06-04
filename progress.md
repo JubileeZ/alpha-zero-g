@@ -50,37 +50,6 @@ Establish a high-performance, deterministic developer harness for analytics, mod
 
 ## 2. Active Focus / Current Steps
 
-46. **Full Project Review & Artifact Cleanup (2026-06-03):**
-    - Conducted a comprehensive `/grill-with-docs` session to align the repository state with the Phase 1 architectural revamp.
-    - Synced `features.json` to F-26, accurately reflecting all new cross-platform setup, `scaffold.py`, and statusline scripts.
-    - Updated `CONTEXT.md` inline to correctly document `pytest`, `scaffold.py`, and project utility updates (replacing legacy `init.sh` references).
-    - Executed a physical audit purging `templates/init.sh`, the obsolete `docs/handoff.md`, `scratch/debug_test.py`, and auto-generated `__pycache__` and `.egg-info` directories, ensuring zero technical debt.
-
-47. **Windows PowerShell Robustness & Documentation (2026-06-03):**
-    - Diagnosed and fixed an `InvalidVariableReferenceWithDrive` syntax error in `setup-device.ps1` and `upgrade-project.ps1` caused by unescaped colon characters trailing variable interpolation (e.g. `$StepNum:`). Fixed by wrapping in subexpressions `$($StepNum):`.
-    - Parameterized the pytest suite (`tests/test_upgrade.py`) to dynamically test the `.ps1` script when executing on Windows instead of failing on the `.sh` script execution.
-    - Implemented a `@bash_only` decorator in `tests/test_setup.py` and `tests/test_scaffold.py` to seamlessly skip bash execution tests on Windows systems where bash is unavailable.
-    - Verified the test suite executes identically with 100% green coverage on Windows.
-    - Updated `README.md` to split execution commands cleanly into Mac/Linux (bash) and Windows (PowerShell) sections, correcting scaffold arguments.
-
-48. **Statusline Urgency Bar Refinement & Revert (2026-06-03):**
-    - Initially modified the statusline layout to use repeating `[]` blocks.
-    - Reverted to the single bar layout (`[████░░░░░░]`) while retaining the updated deterministic stage triggers, degrading threshold calculations, and state mappings.
-    - Mathematically refined the visual fullness of the single urgency bar to map exactly to the `proximity_percentage` (progress towards the degrading threshold), capped at 100%. Clarified that the `X% to Degrading` metric refers strictly to the percentage of the budget consumed towards the threshold, not the remaining buffer.
-    - Deployed the updated clean python script directly to `~/.agent-config/statusline.py` for immediate execution in `agy` TUI.
-    - Verified all 11 unit tests pass cleanly.
-
-49. **Dynamic Skills Fetching & Manifest Removal (2026-06-03):**
-    - Deprecated the hardcoded `templates/skills_manifest.txt` allowlist to enable automatic integration of upstream community skills.
-    - Deleted `templates/skills_manifest.txt` and removed the dependent tests from `tests/test_skills.py`.
-    - Rewrote `scripts/setup-device.py` to dynamically pull the latest `mattpocock/skills` repository (using `git pull` if it already exists, instead of skipping).
-    - Configured the installer to automatically copy all folders recursively from the `skills/engineering/` and `skills/productivity/` categories, ensuring all future skills in those categories are inherently supported.
-    - Maintained correct deployment for local custom skills located in `templates/skills/` (like `execute-dfp` and `to-dfp`).
-
-50. **Roadmap PRD & Memory Compaction Alignment (2026-06-04):**
-    - Finalized and published a comprehensive PRD for F-27 (Context Compaction / Archival System) and F-28 (Default Configs Template / Safety Guardrails) to the GitHub issue tracker under issue #9 with the `ready-for-agent` label.
-    - Updated Implementation Decisions to enforce the `/write-a-skill` layout and structure guidelines for the new `/archive-progress` skill.
-
 51. **Context Compaction Implemented & Renamed (2026-06-04):**
     - Developed the `/archive-progress` skill under `templates/skills/archive-progress/` matching the `/write-a-skill` standards (renamed from compact-memory for clarity).
     - Created `SKILL.md` with trigger instructions and workflow.
@@ -88,11 +57,15 @@ Establish a high-performance, deterministic developer harness for analytics, mod
     - Executed the script, successfully archiving 46 items and reducing token bloat.
     - Marked F-27 as completed in `features.json`.
 
+52. **R Template Deployment Wired (2026-06-04):**
+    - Wired `DESCRIPTION`, `smoke.R`, and `testthat.R` into the project scaffolder (`scripts/scaffold.py`) for `r` and `hybrid` project types.
+    - Added placeholder replacement support for `DESCRIPTION` files (substituting `{{PROJECT_NAME}}`).
+    - Fixed a Unicode print error in `scaffold.py` on Windows console stdout redirect by reconfiguring stdout encoding.
+    - Refactored `tests/test_scaffold.py`, `tests/test_setup.py`, and `tests/test_upgrade.py` to run Python scripts directly using `sys.executable` (platform-agnostic) rather than obsolete Bash/PowerShell wrapper scripts.
+    - Verified all 24 pytest suites are passing with green status.
 
 ---
 
 ## 3. Next Session Priorities
 
 1. Implement F-28 (Default Configs Template) to seed planningMode by default in settings.json.
-
-

@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import sys
 import os
 import shutil
@@ -5,6 +6,12 @@ import datetime
 import subprocess
 
 def main() -> None:
+    # reconfigure stdout for utf-8 if possible to avoid Windows UnicodeEncodeError
+    try:
+        sys.stdout.reconfigure(encoding='utf-8')
+    except Exception:
+        pass
+
     if len(sys.argv) < 3:
         print("Usage: scaffold.py <name> <type> [dest]")
         sys.exit(1)
@@ -58,11 +65,32 @@ def main() -> None:
         src = os.path.join(ptemp, s)
         if os.path.exists(src):
             shutil.copy(src, os.path.join(dest, d))
+
+    # Wire R templates if applicable
+    if ptype in ("r", "hybrid"):
+        r_temp = os.path.join(root, "templates/r")
+        if os.path.exists(r_temp):
+            # Copy DESCRIPTION to root
+            desc_src = os.path.join(r_temp, "DESCRIPTION")
+            if os.path.exists(desc_src):
+                shutil.copy(desc_src, os.path.join(dest, "DESCRIPTION"))
+            
+            # Copy src/smoke.R to src/smoke.R
+            smoke_src = os.path.join(r_temp, "src/smoke.R")
+            if os.path.exists(smoke_src):
+                os.makedirs(os.path.join(dest, "src"), exist_ok=True)
+                shutil.copy(smoke_src, os.path.join(dest, "src/smoke.R"))
+                
+            # Copy tests/testthat.R to tests/testthat.R
+            test_src = os.path.join(r_temp, "tests/testthat.R")
+            if os.path.exists(test_src):
+                os.makedirs(os.path.join(dest, "tests"), exist_ok=True)
+                shutil.copy(test_src, os.path.join(dest, "tests/testthat.R"))
             
     # Replace {{PROJECT_NAME}} and description placeholders
     for r, ds, fs in os.walk(dest):
         for f in fs:
-            if f.endswith('.md') or f.endswith('.template') or f in ('.skillsrc', '.gitignore'):
+            if f.endswith('.md') or f.endswith('.template') or f in ('.skillsrc', '.gitignore') or f == 'DESCRIPTION':
                 p = os.path.join(r, f)
                 try:
                     with open(p, 'r', encoding='utf-8', errors='ignore') as file:
