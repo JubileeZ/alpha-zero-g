@@ -2,7 +2,21 @@ import sys
 import os
 import shutil
 import datetime
+import re
 import subprocess
+
+def slugify_package_name(name: str) -> str:
+    # Lowercase, replace spaces, dashes, dots, and underscores with a single underscore
+    s = name.lower()
+    s = re.sub(r'[\s\-._]+', '_', s)
+    # Strip any characters that are not lowercase alphanumeric or underscore
+    s = re.sub(r'[^a-z0-9_]', '', s)
+    # Ensure it starts with a letter or underscore
+    if s and s[0].isdigit():
+        s = '_' + s
+    if not s:
+        s = "project_package"
+    return s
 
 def main() -> None:
     if len(sys.argv) < 3:
@@ -17,6 +31,7 @@ def main() -> None:
         print("Error: Invalid project type. Must be 'python', 'r', or 'hybrid'.")
         sys.exit(1)
         
+    package_name = slugify_package_name(name)
     dest = os.path.abspath(dest)
     os.makedirs(dest, exist_ok=True)
     
@@ -59,15 +74,48 @@ def main() -> None:
         if os.path.exists(src):
             shutil.copy(src, os.path.join(dest, d))
             
-    # Replace {{PROJECT_NAME}} and description placeholders
+    # Python-specific structure deployment
+    if ptype in ("python", "hybrid"):
+        # Create src/<package_name> directory
+        pkg_dir = os.path.join(dest, "src", package_name)
+        os.makedirs(pkg_dir, exist_ok=True)
+        
+        # Copy config.py from templates
+        config_src = os.path.join(root, "templates/python/src/{{project_name}}/config.py")
+        if os.path.exists(config_src):
+            shutil.copy(config_src, os.path.join(pkg_dir, "config.py"))
+            
+        # Copy __init__.py from templates to src/<package_name>/__init__.py
+        init_src = os.path.join(root, "templates/python/src/__init__.py")
+        if os.path.exists(init_src):
+            shutil.copy(init_src, os.path.join(pkg_dir, "__init__.py"))
+            
+        # Deploy pyproject.toml
+        pyproject_src = os.path.join(root, "templates/python/pyproject.toml")
+        if os.path.exists(pyproject_src):
+            shutil.copy(pyproject_src, os.path.join(dest, "pyproject.toml"))
+            
+        # Deploy conftest.py and test_smoke.py
+        conftest_src = os.path.join(root, "templates/python/tests/conftest.py")
+        if os.path.exists(conftest_src):
+            shutil.copy(conftest_src, os.path.join(dest, "tests", "conftest.py"))
+            
+        smoke_src = os.path.join(root, "templates/python/tests/test_smoke.py")
+        if os.path.exists(smoke_src):
+            shutil.copy(smoke_src, os.path.join(dest, "tests", "test_smoke.py"))
+            
+    # Replace {{PROJECT_NAME}}, {{PACKAGE_NAME}}, and description placeholders
     for r, ds, fs in os.walk(dest):
         for f in fs:
-            if f.endswith('.md') or f.endswith('.template') or f in ('.skillsrc', '.gitignore'):
+            if f.endswith(('.md', '.template', '.py', '.toml')) or f in ('.skillsrc', '.gitignore'):
                 p = os.path.join(r, f)
                 try:
                     with open(p, 'r', encoding='utf-8', errors='ignore') as file:
                         content = file.read()
-                    new_content = content.replace('{{PROJECT_NAME}}', name).replace('{{PROJECT_DESCRIPTION}}', f"Scaffolded {name} project.")
+                    new_content = (content
+                                   .replace('{{PROJECT_NAME}}', name)
+                                   .replace('{{PACKAGE_NAME}}', package_name)
+                                   .replace('{{PROJECT_DESCRIPTION}}', f"Scaffolded {name} project."))
                     if new_content != content:
                         with open(p, 'w', encoding='utf-8') as file:
                             file.write(new_content)
@@ -88,7 +136,7 @@ def main() -> None:
     print("git commit -m \"chore: scaffold via alpha-zero-g\"")
     subprocess.run(["git", "commit", "-m", "chore: scaffold via alpha-zero-g", "-q"], cwd=dest)
     
-    print(f"✔ Project '{name}' successfully scaffolded.")
+    print(f"Project '{name}' successfully scaffolded.")
 
 if __name__ == "__main__":
     main()
