@@ -3,22 +3,13 @@ import shutil
 import subprocess
 import tempfile
 import pytest
+import sys
 
 # Paths
-UPGRADE_SH = os.path.abspath(os.path.join(os.path.dirname(__file__), "../scripts/upgrade-project.sh"))
-UPGRADE_PS1 = os.path.abspath(os.path.join(os.path.dirname(__file__), "../scripts/upgrade-project.ps1"))
+UPGRADE_PY = os.path.abspath(os.path.join(os.path.dirname(__file__), "../scripts/upgrade-project.py"))
 TEMPLATES_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "../templates/project"))
 
-# Detect interpreters
-has_bash = shutil.which("bash") is not None
-pwsh = shutil.which("pwsh") or shutil.which("powershell")
-has_powershell = pwsh is not None
-
-run_configs = []
-if has_bash:
-    run_configs.append(("bash", ["bash", UPGRADE_SH]))
-if has_powershell:
-    run_configs.append(("powershell", [pwsh, "-File", UPGRADE_PS1]))
+run_configs = [("python", [sys.executable, UPGRADE_PY])]
 
 @pytest.fixture(params=run_configs, ids=lambda x: x[0])
 def upgrade_cmd(request):
