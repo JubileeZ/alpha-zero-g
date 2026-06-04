@@ -89,10 +89,16 @@ Establish a high-performance, deterministic developer harness for analytics, mod
     - Marked F-27 as completed in `features.json`.
 
 
+52. **Default Configs Template & Safety Guardrails (2026-06-04):**
+    - Updated `setup-device.py` to seed `planningMode: { enabled: true }` natively.
+    - Added the `gitleaks` pre-commit hook to `.pre-commit-config.yaml` to ensure automated secret scanning.
+    - Added `destructiveHint: true` and `readOnlyHint: true` to custom local skills (`archive-progress`, `execute-dfp`, `to-dfp`) for advanced harness risk management.
+    - Updated `.agents/hooks.json` to explicitly block agents from reading local AWS/Kubernetes/npm credentials.
+    - Added programmatic gate in `.agents/hooks.json` requiring human approval for open-world networking requests (`curl`, `wget`, `ngrok`).
+    - Verified all harness syntax and successfully marked F-28 as completed.
+
 ---
 
 ## 3. Next Session Priorities
 
-1. Implement F-28 (Default Configs Template) to seed planningMode by default in settings.json.
-
-
+1. Define next epic roadmap items now that Phase 1 configuration and safety guardrails are fully complete.
