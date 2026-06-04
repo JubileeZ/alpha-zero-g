@@ -85,6 +85,17 @@ def main() -> None:
             src_skill: str = os.path.join(skills_src, item)
             if os.path.isdir(src_skill):
                 shutil.copytree(src_skill, os.path.join(dest, ".agents/skills", item))
+
+    # Copy ADR-TEMPLATE.md if it exists
+    adr_template_src: str = os.path.join(ptemp, "docs/adr/ADR-TEMPLATE.md")
+    if os.path.exists(adr_template_src):
+        shutil.copy(adr_template_src, os.path.join(dest, "docs/adr/ADR-TEMPLATE.md"))
+
+    # Copy docs/research/README.md if it exists
+    research_readme_src: str = os.path.join(ptemp, "docs/research/README.md")
+    if os.path.exists(research_readme_src):
+        shutil.copy(research_readme_src, os.path.join(dest, "docs/research/README.md"))
+
     # Generate docs/adr/ADR-001-project-init.md
     adr_temp: str = os.path.join(ptemp, "docs/adr/adr-init.template")
     if os.path.exists(adr_temp):

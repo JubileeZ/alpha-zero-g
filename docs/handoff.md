@@ -90,3 +90,16 @@ All objectives for Issue #13 have been fully achieved on the feature branch `iss
 4. **Test Suite Adaptation**: Updated all platform tests to call python scripts via `sys.executable` directly (fixing failing tests due to obsolete shell files refactoring) and added TDD checks verifying correct `hooks.json` copy-propagation.
 
 All modifications have been committed to the local repository. The harness is ready for integration merging.
+
+---
+
+## Issue #14 (ADR Format Template + Research README)
+
+### Summary of Accomplishments
+1. **Templates Deployment:**
+   - Created `templates/project/docs/adr/ADR-TEMPLATE.md` with standard structure.
+   - Created `templates/project/docs/research/README.md` containing `py:percent` format and data isolation rules.
+2. **Scaffolder Wiring:**
+   - Updated `scripts/scaffold.py` to copy both template files into new projects.
+3. **Test Coverage:**
+   - Added `test_scaffold_creates_adr_template_and_research_readme` verifying deployment and `{{PROJECT_NAME}}` resolution.
