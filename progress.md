@@ -109,15 +109,6 @@ Establish a high-performance, deterministic developer harness for analytics, mod
 
 ## 3. Next Session Priorities
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-1. Define next epic roadmap items now that Phase 1 configuration and safety guardrails are fully complete.
-=======
-1. Implement F-28 (Default Configs Template) to seed planningMode by default in settings.json.
->>>>>>> issue-12
-=======
-1. Final review and deployment integration of scaffolding rules.
+## 3. Next Session Priorities
 
-
-
->>>>>>> subagent-TDD-Developer--Issue-9--self-1f4fcf0b
+1. Phase 2 (Scaffold Completeness & Template Integrity) is fully executed. Proceed to Phase 3 roadmap items or feature requests as dictated by `features.json`.
