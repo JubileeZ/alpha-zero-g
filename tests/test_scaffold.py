@@ -257,3 +257,40 @@ def test_scaffold_creates_adr_template_and_research_readme(tmp_path):
         research_content = f.read()
     assert "{{PROJECT_NAME}}" not in research_content
     assert "my_python_scaffold_project" in research_content
+
+
+def test_python_scaffold_capstone_integration(tmp_path):
+    """Capstone integration test: verify no raw placeholders remain and AST is valid."""
+    project_dir = tmp_path / "Capstone-Integration-Project"
+    script_path = Path("scripts/scaffold.py").resolve()
+
+    res = subprocess.run(
+        [sys.executable, str(script_path), "Capstone-Integration-Project", "python", str(project_dir)],
+        capture_output=True,
+        text=True
+    )
+    assert res.returncode == 0, f"Scaffolder failed: {res.stderr}\nStdout: {res.stdout}"
+
+    # Find all text files and verify NO raw placeholders {{...}} remain
+    for root, _, files in os.walk(project_dir):
+        if ".git" in root or ".pytest_cache" in root or "__pycache__" in root:
+            continue
+        for f in files:
+            p = os.path.join(root, f)
+            try:
+                with open(p, "r", encoding="utf-8") as file:
+                    content = file.read()
+                    if "{{" in content or "}}" in content:
+                        pytest.fail(f"Raw placeholder found in {p}")
+            except UnicodeDecodeError:
+                pass  # Skip binary files if any
+
+    # Verify conftest.py AST validity
+    conftest_file = project_dir / "tests" / "conftest.py"
+    assert conftest_file.is_file()
+    with open(conftest_file, "r", encoding="utf-8") as file:
+        conftest_content = file.read()
+    try:
+        ast.parse(conftest_content)
+    except SyntaxError as e:
+        pytest.fail(f"conftest.py contains invalid Python syntax: {e}")
