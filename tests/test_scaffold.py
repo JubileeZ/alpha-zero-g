@@ -4,6 +4,7 @@ import shutil
 import subprocess
 from pathlib import Path
 import pytest
+import ast
 
 SCAFFOLD_PY = os.path.abspath(os.path.join(os.path.dirname(__file__), "../scripts/scaffold.py"))
 
@@ -165,10 +166,21 @@ def test_scaffold_python_structure_and_slugification(tmp_path):
     # PACKAGE_NAME derivation: My-Awesome-Project -> my_awesome_project
     package_name = "my_awesome_project"
 
-    # Verify src/<package_name>/__init__.py and config.py exist
+    # Verify src/<package_name>/__init__.py, config.py, and schemas.py exist
     assert (project_dir / "src" / package_name).is_dir()
     assert (project_dir / "src" / package_name / "__init__.py").is_file()
     assert (project_dir / "src" / package_name / "config.py").is_file()
+    assert (project_dir / "src" / package_name / "schemas.py").is_file()
+    
+    # Verify AST validity of config.py and schemas.py
+    for py_file in ["config.py", "schemas.py"]:
+        file_path = project_dir / "src" / package_name / py_file
+        with open(file_path, "r", encoding="utf-8") as f:
+            content = f.read()
+        try:
+            ast.parse(content)
+        except SyntaxError as e:
+            pytest.fail(f"{py_file} contains invalid Python syntax: {e}")
 
     # Verify templates/python/src/__init__.py didn't just get copied to src/__init__.py
     assert not (project_dir / "src" / "__init__.py").exists()

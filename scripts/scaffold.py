@@ -172,6 +172,11 @@ def main() -> None:
         if os.path.exists(config_src):
             shutil.copy(config_src, os.path.join(pkg_dir, "config.py"))
             
+        # Copy schemas.py from templates
+        schemas_src = os.path.join(root, "templates/python/src/{{project_name}}/schemas.py")
+        if os.path.exists(schemas_src):
+            shutil.copy(schemas_src, os.path.join(pkg_dir, "schemas.py"))
+            
         # Copy __init__.py from templates to src/<package_name>/__init__.py
         init_src = os.path.join(root, "templates/python/src/__init__.py")
         if os.path.exists(init_src):
