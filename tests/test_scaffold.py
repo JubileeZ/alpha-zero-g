@@ -100,6 +100,13 @@ def test_scaffold_python(tmp_path):
     assert "{{PROJECT_NAME}}" not in context_content
     assert "my_python_project" in context_content
 
+    # Explicitly verify all other shared templates land with resolved placeholders
+    for shared_file in ["features.json", "DEVELOPER_WORKFLOW.md", ".env.example", "Makefile", ".pre-commit-config.yaml"]:
+        sf_path = project_dir / shared_file
+        with open(sf_path, "r", encoding="utf-8") as f:
+            sf_content = f.read()
+        assert "{{" not in sf_content and "}}" not in sf_content, f"Unresolved placeholder found in {shared_file}"
+
     # Verify Git commit
     res_git = subprocess.run(
         ["git", "log", "-1", "--pretty=%s"],
