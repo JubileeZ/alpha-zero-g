@@ -168,12 +168,12 @@ def main() -> None:
         os.makedirs(pkg_dir, exist_ok=True)
         
         # Copy config.py from templates
-        config_src = os.path.join(root, "templates/python/src/{{project_name}}/config.py")
+        config_src = os.path.join(root, "templates/python/src/{{PACKAGE_NAME}}/config.py")
         if os.path.exists(config_src):
             shutil.copy(config_src, os.path.join(pkg_dir, "config.py"))
             
         # Copy schemas.py from templates
-        schemas_src = os.path.join(root, "templates/python/src/{{project_name}}/schemas.py")
+        schemas_src = os.path.join(root, "templates/python/src/{{PACKAGE_NAME}}/schemas.py")
         if os.path.exists(schemas_src):
             shutil.copy(schemas_src, os.path.join(pkg_dir, "schemas.py"))
             
@@ -195,6 +195,10 @@ def main() -> None:
         smoke_src = os.path.join(root, "templates/python/tests/test_smoke.py")
         if os.path.exists(smoke_src):
             shutil.copy(smoke_src, os.path.join(dest, "tests", "test_smoke.py"))
+
+        test_schemas_src = os.path.join(root, "templates/python/tests/test_schemas.py")
+        if os.path.exists(test_schemas_src):
+            shutil.copy(test_schemas_src, os.path.join(dest, "tests", "test_schemas.py"))
             
     # Replace {{PROJECT_NAME}}, {{PACKAGE_NAME}}, {{PROJECT_DESCRIPTION}} and {{PROJECT_GOAL_SUMMARY}} placeholders
     for r, ds, fs in os.walk(dest):
