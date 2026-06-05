@@ -168,12 +168,12 @@ def main() -> None:
         os.makedirs(pkg_dir, exist_ok=True)
         
         # Copy config.py from templates
-        config_src = os.path.join(root, "templates/python/src/{{project_name}}/config.py")
+        config_src = os.path.join(root, "templates/python/src/{{PACKAGE_NAME}}/config.py")
         if os.path.exists(config_src):
             shutil.copy(config_src, os.path.join(pkg_dir, "config.py"))
             
         # Copy schemas.py from templates
-        schemas_src = os.path.join(root, "templates/python/src/{{project_name}}/schemas.py")
+        schemas_src = os.path.join(root, "templates/python/src/{{PACKAGE_NAME}}/schemas.py")
         if os.path.exists(schemas_src):
             shutil.copy(schemas_src, os.path.join(pkg_dir, "schemas.py"))
             
