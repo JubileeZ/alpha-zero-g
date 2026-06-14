@@ -1,0 +1,12 @@
+source: https://github.com/mattpocock/skills
+commit: 694fa30311e02c2639942308513555e61ee84a6f
+date_vendored: 2026-06-14
+license: MIT (verify against upstream before publishing)
+included:
+  - skills/engineering
+  - skills/productivity
+excluded:
+  - skills/deprecated
+  - skills/in-progress
+  - skills/misc
+  - skills/personal
