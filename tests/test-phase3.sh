@@ -157,7 +157,7 @@ PRODUCTIVITY_SKILLS=(
 # Build a mock vendor tree with realistic SKILL.md frontmatter for testing
 # apply_overlay in isolation.
 # ---------------------------------------------------------------------------
-TEMP_DIR="$(mktemp -d /tmp/azg-phase3-test-XXXXXX)"
+TEMP_DIR="$(mktemp -d "${PWD}/tmp_azg_phase3-test-XXXXXX")"
 trap 'rm -rf "${TEMP_DIR}" "${TEMP_HOME:-}" "${TEMP_REPO:-}"' EXIT
 
 # We create a mock vendor with realistic frontmatter (tools: + allowed-tools:)
@@ -507,8 +507,8 @@ section "15. azg setup — calls apply_overlay (end-to-end with mock vendor)"
 
 # We need a TEMP_REPO with mock vendor populated so setup can run apply_overlay.
 # Set up TEMP_REPO and TEMP_HOME for full integration.
-TEMP_REPO="$(mktemp -d /tmp/azg-phase3-repo-XXXXXX)"
-TEMP_HOME="$(mktemp -d /tmp/azg-phase3-home-XXXXXX)"
+TEMP_REPO="$(mktemp -d "${PWD}/tmp_azg_phase3-repo-XXXXXX")"
+TEMP_HOME="$(mktemp -d "${PWD}/tmp_azg_phase3-home-XXXXXX")"
 
 cp -R "${REPO_ROOT}/." "${TEMP_REPO}/"
 TEMP_AZG="${TEMP_REPO}/azg"
@@ -600,16 +600,7 @@ fi
 section "20. Regression — Phase 0/1/2 stubs still correct after Phase 3"
 
 # Commands that are still stubs (not yet implemented) must still exit non-zero.
-for cmd in uninstall; do
-  _exit=0
-  HOME="${TEMP_HOME}" AZG_ROOT="${TEMP_REPO}" "${TEMP_AZG}" "${cmd}" \
-    < /dev/null > /dev/null 2>&1 || _exit=$?
-  if [ "${_exit}" -ne 0 ]; then
-    pass "azg ${cmd} still exits non-zero (still a stub)"
-  else
-    fail "azg ${cmd} should still be a stub" "exited 0 unexpectedly"
-  fi
-done
+# All commands implemented!
 
 # ---------------------------------------------------------------------------
 # Summary

@@ -131,7 +131,7 @@ PRODUCTIVITY_SKILLS=(
 # This creates a real git repo with the correct skill directory structure and
 # a SKILL.md in each, so vendor_sync can clone it without network access.
 
-MOCK_UPSTREAM="$(mktemp -d /tmp/azg-mock-upstream-XXXXXX)"
+MOCK_UPSTREAM="$(mktemp -d "${PWD}/tmp_azg_mock-upstream-XXXXXX")"
 trap 'rm -rf "${MOCK_UPSTREAM}" "${TEMP_REPO:-}" "${TEMP_HOME:-}"' EXIT
 
 section "Setup: creating mock upstream git repo"
@@ -169,10 +169,10 @@ printf "  ${_clr_green}✓${_clr_reset} Mock upstream created (SHA: ${MOCK_SHA:0
 # ---------------------------------------------------------------------------
 # Create a TEMP copy of the repo so we don't dirty the real vendor/ dir
 # ---------------------------------------------------------------------------
-TEMP_REPO="$(mktemp -d /tmp/azg-phase2-test-XXXXXX)"
+TEMP_REPO="$(mktemp -d "${PWD}/tmp_azg_phase2-test-XXXXXX")"
 cp -R "${REPO_ROOT}/." "${TEMP_REPO}/"
 TEMP_AZG="${TEMP_REPO}/azg"
-TEMP_HOME="$(mktemp -d /tmp/azg-phase2-home-XXXXXX)"
+TEMP_HOME="$(mktemp -d "${PWD}/tmp_azg_phase2-home-XXXXXX")"
 
 VENDOR_DIR="${TEMP_REPO}/templates/global/skills/vendor/mattpocock-skills"
 
@@ -376,15 +376,7 @@ fi
 
 section "14. Phase 0 + Phase 1 regression — other commands still exit non-zero"
 
-for cmd in uninstall; do
-  _exit=0
-  HOME="${TEMP_HOME}" "${TEMP_AZG}" "${cmd}" < /dev/null > /dev/null 2>&1 || _exit=$?
-  if [ "${_exit}" -ne 0 ]; then
-    pass "azg ${cmd} is still a stub (exits non-zero)"
-  else
-    fail "azg ${cmd} should still be a stub" "exited 0 unexpectedly"
-  fi
-done
+# All commands implemented!
 
 # ---------------------------------------------------------------------------
 # Summary

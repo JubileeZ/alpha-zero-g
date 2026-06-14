@@ -16,8 +16,8 @@
 | Phase 4 | Hook library — 3 hooks + `hooks.json` template | ✅ Done |
 | Phase 5 | `GEMINI.md.tmpl` / `AGENTS.md.tmpl` | ✅ Done |
 | Phase 6 | `azg new` — 8-question scaffold flow | ✅ Done |
-| Phase 7 | `azg apply` — managed-block retrofit | ⬜ Pending |
-| Phase 8 | `azg update [--vendor]`, `azg uninstall` | ⬜ Pending |
+| Phase 7 | `azg apply` — managed-block retrofit | ✅ Done |
+| Phase 8 | `azg update [--vendor]`, `azg uninstall` | ✅ Done |
 | Phase 9 | `tests/test-azg.sh` — temp-HOME integration test | ⬜ Pending |
 | Phase 10 | Cross-device validation — CachyOS + macOS | ⬜ Pending |
 | Phase 11 | `docs/antigravity-agent-architecture.md`, README quickstart | ⬜ Pending |

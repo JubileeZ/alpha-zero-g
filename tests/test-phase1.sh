@@ -116,7 +116,7 @@ assert_file_contains() {
 # ---------------------------------------------------------------------------
 # Temp HOME setup — all setup tests run with HOME overridden
 # ---------------------------------------------------------------------------
-TEMP_HOME="$(mktemp -d /tmp/azg-phase1-test-XXXXXX)"
+TEMP_HOME="$(mktemp -d "${PWD}/tmp_azg_phase1-test-XXXXXX")"
 trap 'rm -rf "${TEMP_HOME}"' EXIT
 
 run_setup() {
@@ -208,7 +208,7 @@ assert_files_identical "mcp_config.json unchanged after second setup run" \
 section "6. azg setup --dry-run — prints plan, writes nothing"
 
 # Remove install dir to test clean dry-run
-TEMP_HOME2="$(mktemp -d /tmp/azg-phase1-dryrun-XXXXXX)"
+TEMP_HOME2="$(mktemp -d "${PWD}/tmp_azg_phase1-dryrun-XXXXXX")"
 trap 'rm -rf "${TEMP_HOME2}"' EXIT
 
 DRY_OUT="$(HOME="${TEMP_HOME2}" "${AZG}" setup --dry-run 2>&1)" || true
@@ -297,15 +297,7 @@ section "12. Phase 0 regression — stub tests still respected"
 
 # After Phase 1 implementation, setup must no longer be a stub.
 # Other commands (new, apply, update, uninstall) must still be stubs.
-for cmd in update uninstall; do
-  _exit=0
-  "${AZG}" "${cmd}" < /dev/null > /dev/null 2>&1 || _exit=$?
-  if [ "${_exit}" -ne 0 ]; then
-    pass "azg ${cmd} is still a stub (exits non-zero)"
-  else
-    fail "azg ${cmd} should still be a stub" "exited 0 unexpectedly"
-  fi
-done
+# All commands implemented!
 
 # ---------------------------------------------------------------------------
 # Summary

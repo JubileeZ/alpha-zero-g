@@ -111,7 +111,7 @@ _remap_skill_frontmatter() {
   #   "Read": "read_file",
   # We parse key and value out of each line.
   local tmp_map
-  tmp_map="$(mktemp /tmp/azg-toolmap-XXXXXX)"
+  tmp_map="$(mktemp "${PWD}/tmp_azg-toolmap-XXXXXX")"
   # shellcheck disable=SC2064
   trap "rm -f '${tmp_map}'" RETURN
 

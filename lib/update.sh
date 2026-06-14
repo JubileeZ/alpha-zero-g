@@ -25,6 +25,23 @@ cmd_update() {
     source "${lib_dir}/vendor-sync.sh"
     vendor_sync
   else
-    die "azg update (without --vendor) is not yet implemented (Phase 8). Use 'azg update --vendor' to re-vendor skills."
+    step "Updating Alpha-Zero-G..."
+    local azg_root="${AZG_ROOT:-}"
+    if [ -z "${azg_root}" ]; then
+      azg_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+    fi
+    
+    if [ ! -d "${azg_root}/.git" ]; then
+      err "Not a git repository: ${azg_root}"
+      return 1
+    fi
+
+    # Run git pull
+    if git -C "${azg_root}" pull --quiet; then
+      ok "Alpha-Zero-G updated successfully."
+    else
+      err "Failed to update Alpha-Zero-G."
+      return 1
+    fi
   fi
 }

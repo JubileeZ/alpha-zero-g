@@ -5,5 +5,14 @@
 # Implemented in Phase 8.
 
 cmd_uninstall() {
-  die "azg uninstall is not yet implemented (Phase 8)."
+  step "Uninstalling Alpha-Zero-G globally managed files..."
+  
+  local target_dir="${HOME}/.gemini/antigravity-cli"
+  
+  if [ -d "${target_dir}" ]; then
+    rm -rf "${target_dir}"
+    ok "Removed: ${target_dir}"
+  else
+    info "Already removed (or not found): ${target_dir}"
+  fi
 }

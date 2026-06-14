@@ -49,7 +49,7 @@ vendor_sync() {
   # Shallow clone into a temp directory
   # -------------------------------------------------------------------------
   local tmp_clone
-  tmp_clone="$(mktemp -d /tmp/azg-vendor-clone-XXXXXX)"
+  tmp_clone="$(mktemp -d "${PWD}/tmp_azg-vendor-clone-XXXXXX")"
   # Always clean up clone dir, even on error
   # shellcheck disable=SC2064
   trap "rm -rf '${tmp_clone}'" RETURN
