@@ -2,8 +2,139 @@
 # lib/setup.sh — azg setup
 # Installs global skills + MCP config to ~/.gemini/antigravity-cli/
 # Sourced by the azg dispatcher; do NOT run directly.
-# Implemented in Phase 1.
+#
+# Usage (via dispatcher):
+#   azg setup              — install/refresh global config
+#   azg setup --dry-run    — print what would be done, write nothing
+#   azg setup --force      — re-install even if files are already present
+
+# shellcheck source=lib/common.sh
+# common.sh is already sourced by the dispatcher before this file is sourced.
 
 cmd_setup() {
-  die "azg setup is not yet implemented (Phase 1)."
+  local dry_run=0
+  local force=0
+
+  # Parse flags
+  for arg in "$@"; do
+    case "${arg}" in
+      --dry-run) dry_run=1 ;;
+      --force)   force=1   ;;
+      *)
+        die "azg setup: unknown option '${arg}'. Usage: azg setup [--dry-run] [--force]"
+        ;;
+    esac
+  done
+
+  # -------------------------------------------------------------------------
+  # Paths (AZG_GLOBAL_DIR, AZG_GLOBAL_SKILLS_DIR, AZG_GLOBAL_MCP_CONFIG
+  # are all defined in common.sh)
+  # -------------------------------------------------------------------------
+  local template_global="${AZG_ROOT}/templates/global"
+  local template_mcp="${template_global}/mcp_config.json"
+  local template_vendor="${template_global}/skills/vendor/mattpocock-skills"
+
+  # -------------------------------------------------------------------------
+  # Dry-run mode: just print what would happen and exit 0
+  # -------------------------------------------------------------------------
+  if [ "${dry_run}" -eq 1 ]; then
+    step "azg setup --dry-run: showing planned actions (no files will be written)"
+    info "  create dir : ${AZG_GLOBAL_DIR}"
+    info "  create dir : ${AZG_GLOBAL_SKILLS_DIR}"
+    info "  copy file  : ${template_mcp} → ${AZG_GLOBAL_MCP_CONFIG}"
+
+    # List vendor skills if any exist
+    if [ -d "${template_vendor}" ]; then
+      for category_dir in "${template_vendor}"/{engineering,productivity}; do
+        [ -d "${category_dir}" ] || continue
+        for skill_dir in "${category_dir}"/*/; do
+          [ -d "${skill_dir}" ] || continue
+          local skill_name
+          skill_name="$(basename "${skill_dir}")"
+          info "  copy skill : ${skill_dir} → ${AZG_GLOBAL_SKILLS_DIR}/${skill_name}/"
+        done
+      done
+    else
+      info "  (no vendor skills found — run azg update --vendor to populate)"
+    fi
+
+    ok "Dry run complete. Run 'azg setup' to apply."
+    return 0
+  fi
+
+  # -------------------------------------------------------------------------
+  # Real install
+  # -------------------------------------------------------------------------
+  step "azg setup v${AZG_VERSION} — installing global config"
+  info "Destination: ${AZG_GLOBAL_DIR}"
+
+  # 1. Create destination directories
+  ensure_dir "${AZG_GLOBAL_DIR}"
+  ensure_dir "${AZG_GLOBAL_SKILLS_DIR}"
+
+  # 2. Install mcp_config.json (atomic copy)
+  if [ ! -f "${template_mcp}" ]; then
+    die "Template mcp_config.json not found: ${template_mcp}"
+  fi
+
+  local _install_mcp=1
+  if [ -f "${AZG_GLOBAL_MCP_CONFIG}" ] && [ "${force}" -eq 0 ]; then
+    # Already installed — check if identical
+    if diff -q "${template_mcp}" "${AZG_GLOBAL_MCP_CONFIG}" > /dev/null 2>&1; then
+      info "mcp_config.json already up-to-date, skipping"
+      _install_mcp=0
+    fi
+  fi
+
+  if [ "${_install_mcp}" -eq 1 ]; then
+    atomic_copy "${template_mcp}" "${AZG_GLOBAL_MCP_CONFIG}"
+    ok "Installed: mcp_config.json"
+  fi
+
+  # 3. Copy vendor skills (if any exist — Phase 2 will populate vendor/)
+  local skills_copied=0
+  local skills_skipped=0
+
+  if [ -d "${template_vendor}" ]; then
+    for category_dir in "${template_vendor}"/{engineering,productivity}; do
+      [ -d "${category_dir}" ] || continue
+      for skill_dir in "${category_dir}"/*/; do
+        [ -d "${skill_dir}" ] || continue
+        local skill_name
+        skill_name="$(basename "${skill_dir}")"
+        local dest="${AZG_GLOBAL_SKILLS_DIR}/${skill_name}"
+
+        if [ -d "${dest}" ] && [ "${force}" -eq 0 ]; then
+          info "skill '${skill_name}' already installed, skipping (use --force to re-install)"
+          skills_skipped=$((skills_skipped + 1))
+        else
+          # Remove old copy then copy fresh (apply-overlay.sh contract: rm -rf then cp -R)
+          rm -rf "${dest}"
+          cp -R "${skill_dir}" "${dest}"
+          ok "Installed skill: ${skill_name}"
+          skills_copied=$((skills_copied + 1))
+        fi
+      done
+    done
+  else
+    info "No vendor skills found at ${template_vendor}"
+    info "Tip: run 'azg update --vendor' to vendor mattpocock/skills (Phase 2)"
+  fi
+
+  # -------------------------------------------------------------------------
+  # Summary
+  # -------------------------------------------------------------------------
+  local _sum_skills=""
+  if [ "${skills_copied}" -gt 0 ] && [ "${skills_skipped}" -gt 0 ]; then
+    _sum_skills="${skills_copied} skill(s) installed, ${skills_skipped} skipped"
+  elif [ "${skills_copied}" -gt 0 ]; then
+    _sum_skills="${skills_copied} skill(s) installed"
+  elif [ "${skills_skipped}" -gt 0 ]; then
+    _sum_skills="all ${skills_skipped} skill(s) already up-to-date"
+  else
+    _sum_skills="no skills to install (run 'azg update --vendor' to vendor skills)"
+  fi
+
+  ok "Setup complete. ${_sum_skills}."
+  info "Global config: ${AZG_GLOBAL_DIR}"
 }
