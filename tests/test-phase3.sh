@@ -603,7 +603,7 @@ section "20. Regression — Phase 0/1/2 stubs still correct after Phase 3"
 for cmd in new apply uninstall; do
   _exit=0
   HOME="${TEMP_HOME}" AZG_ROOT="${TEMP_REPO}" "${TEMP_AZG}" "${cmd}" \
-    > /dev/null 2>&1 || _exit=$?
+    < /dev/null > /dev/null 2>&1 || _exit=$?
   if [ "${_exit}" -ne 0 ]; then
     pass "azg ${cmd} still exits non-zero (still a stub)"
   else

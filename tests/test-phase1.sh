@@ -299,7 +299,7 @@ section "12. Phase 0 regression — stub tests still respected"
 # Other commands (new, apply, update, uninstall) must still be stubs.
 for cmd in new apply update uninstall; do
   _exit=0
-  "${AZG}" "${cmd}" > /dev/null 2>&1 || _exit=$?
+  "${AZG}" "${cmd}" < /dev/null > /dev/null 2>&1 || _exit=$?
   if [ "${_exit}" -ne 0 ]; then
     pass "azg ${cmd} is still a stub (exits non-zero)"
   else

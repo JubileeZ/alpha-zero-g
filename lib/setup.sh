@@ -91,6 +91,9 @@ cmd_setup() {
     ok "Installed: mcp_config.json"
   fi
 
+  # Source apply-overlay
+  source "${AZG_ROOT}/lib/apply-overlay.sh"
+
   # 3. Copy vendor skills (if any exist — Phase 2 will populate vendor/)
   local skills_copied=0
   local skills_skipped=0
@@ -108,10 +111,7 @@ cmd_setup() {
           info "skill '${skill_name}' already installed, skipping (use --force to re-install)"
           skills_skipped=$((skills_skipped + 1))
         else
-          # Remove old copy then copy fresh (apply-overlay.sh contract: rm -rf then cp -R)
-          rm -rf "${dest}"
-          cp -R "${skill_dir}" "${dest}"
-          ok "Installed skill: ${skill_name}"
+          apply_overlay "${skill_name}" "${category_dir}" "${template_global}/skills/overlay/mattpocock-skills" "${AZG_GLOBAL_SKILLS_DIR}"
           skills_copied=$((skills_copied + 1))
         fi
       done
