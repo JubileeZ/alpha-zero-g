@@ -1,0 +1,8 @@
+{
+  "Read": "read_file",
+  "Write": "write_file",
+  "Edit": "edit_file",
+  "Bash": "run_command",
+  "Grep": "grep",
+  "Glob": "glob"
+}

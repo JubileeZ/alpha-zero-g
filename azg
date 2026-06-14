@@ -1,0 +1,118 @@
+#!/usr/bin/env bash
+# azg — Alpha-Zero-G CLI dispatcher
+# Usage: azg <command> [args...]
+#
+# Commands:
+#   setup              Install global skills + MCP config to ~/.gemini/antigravity-cli/
+#   new [DIR]          Scaffold a new Antigravity project
+#   apply [DIR]        Retrofit an existing project with the azg harness
+#   update             Pull latest Alpha-Zero-G repo
+#   update --vendor    Pull latest Alpha-Zero-G + re-vendor mattpocock/skills
+#   uninstall          Remove everything azg setup installed globally
+#   version            Print azg version
+#   help               Print this help message
+
+set -euo pipefail
+
+# Resolve the real directory of this script (follow symlinks)
+_resolve_dir() {
+  local src="${BASH_SOURCE[0]}"
+  while [ -L "${src}" ]; do
+    local dir
+    dir="$(cd -P "$(dirname "${src}")" && pwd)"
+    src="$(readlink "${src}")"
+    # If relative symlink, resolve relative to symlink's directory
+    [[ "${src}" != /* ]] && src="${dir}/${src}"
+  done
+  cd -P "$(dirname "${src}")" && pwd
+}
+
+AZG_ROOT="$(_resolve_dir)"
+LIB_DIR="${AZG_ROOT}/lib"
+
+# Source common helpers (OS detection, colors, logging)
+# shellcheck source=lib/common.sh
+source "${LIB_DIR}/common.sh"
+
+# ---------------------------------------------------------------------------
+# Usage
+# ---------------------------------------------------------------------------
+usage() {
+  cat <<EOF
+${CLR_BOLD}azg${CLR_RESET} — Alpha-Zero-G v${AZG_VERSION}
+
+${CLR_BOLD}USAGE${CLR_RESET}
+  azg <command> [options]
+
+${CLR_BOLD}COMMANDS${CLR_RESET}
+  setup                Install global skills + MCP config to ~/.gemini/antigravity-cli/
+  new [DIR]            Scaffold a new Antigravity project interactively
+  apply [DIR]          Retrofit an existing repo with the azg harness
+  update               Pull the latest Alpha-Zero-G repo
+  update --vendor      Also re-vendor mattpocock/skills from upstream
+  uninstall            Remove all files azg setup installed globally
+  version              Print version and exit
+  help                 Print this help message
+
+${CLR_BOLD}EXAMPLES${CLR_RESET}
+  azg setup
+  azg new my-project
+  azg apply .
+  azg update --vendor
+  azg uninstall
+
+${CLR_BOLD}CROSS-PLATFORM NOTES${CLR_RESET}
+  Supported on CachyOS Linux and macOS. Requires bash >= 4, jq, and agy.
+  See: https://antigravity.google/docs/cli-install
+EOF
+}
+
+# ---------------------------------------------------------------------------
+# Dispatcher
+# ---------------------------------------------------------------------------
+COMMAND="${1:-help}"
+shift || true   # remaining args passed to subcommand
+
+case "${COMMAND}" in
+
+  version|--version|-v)
+    echo "azg version ${AZG_VERSION}"
+    ;;
+
+  help|--help|-h)
+    usage
+    ;;
+
+  setup)
+    source "${LIB_DIR}/setup.sh"
+    cmd_setup "$@"
+    ;;
+
+  new)
+    source "${LIB_DIR}/scaffold.sh"
+    cmd_new "$@"
+    ;;
+
+  apply)
+    source "${LIB_DIR}/apply.sh"
+    cmd_apply "$@"
+    ;;
+
+  update)
+    source "${LIB_DIR}/update.sh"
+    cmd_update "$@"
+    ;;
+
+  uninstall)
+    source "${LIB_DIR}/uninstall.sh"
+    cmd_uninstall "$@"
+    ;;
+
+  *)
+    err "Unknown command: '${COMMAND}'"
+    echo ""
+    usage
+    exit 1
+    ;;
+
+esac
