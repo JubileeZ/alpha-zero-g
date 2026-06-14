@@ -205,14 +205,7 @@ section "8. azg dispatcher — unknown command exits non-zero"
 assert_exit             "azg badcmd exits 1"          1  "${AZG}" badcmd
 assert_output_contains  "azg badcmd prints error"     "Unknown command"   "${AZG}" badcmd
 
-section "9. azg dispatcher — stub commands exit non-zero with 'not yet implemented'"
 
-# Note: 'setup' is implemented in Phase 1 and is no longer a stub.
-for cmd in update uninstall; do
-  assert_exit             "azg ${cmd} exits non-zero (stub)"    1  "${AZG}" "${cmd}"
-  assert_output_contains  "azg ${cmd} prints 'not yet implemented'" \
-                          "not yet implemented"   "${AZG}" "${cmd}"
-done
 
 section "10. Template directory structure"
 

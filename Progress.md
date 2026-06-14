@@ -18,9 +18,9 @@
 | Phase 6 | `azg new` — 8-question scaffold flow | ✅ Done |
 | Phase 7 | `azg apply` — managed-block retrofit | ✅ Done |
 | Phase 8 | `azg update [--vendor]`, `azg uninstall` | ✅ Done |
-| Phase 9 | `tests/test-azg.sh` — temp-HOME integration test | ⬜ Pending |
-| Phase 10 | Cross-device validation — CachyOS + macOS | ⬜ Pending |
-| Phase 11 | `docs/antigravity-agent-architecture.md`, README quickstart | ⬜ Pending |
+| Phase 9 | `tests/test-azg.sh` — temp-HOME integration test | ✅ Done |
+| Phase 10 | Cross-device validation — CachyOS + macOS | ✅ Done |
+| Phase 11 | `docs/antigravity-agent-architecture.md`, README quickstart | ✅ Done |
 
 ---
 
@@ -142,4 +142,36 @@
 - [ ] `azg setup` is idempotent
 - [ ] `azg uninstall` leaves no orphaned files
 - [ ] `VENDOR.lock` present and accurate after first vendor pull
-- [ ] `tests/test-azg.sh` passes for setup, new, and apply
+- [x] `tests/test-azg.sh` passes for setup, new, and apply
+
+---
+
+## Phase 9 Detail — COMPLETE ✅
+
+### Deliverables
+- ✅ `tests/test-azg.sh` integration test implemented
+- ✅ Regression tests pass
+- ✅ Removed old stub checks in `test-phase0.sh`
+
+### Test Results
+
+| Suite | Result |
+|-------|--------|
+| `test-azg.sh` | ✅ 9/9 passed |
+
+---
+
+## Phase 10 Detail — COMPLETE ✅
+
+### Deliverables
+- ✅ macOS validation passed (native run of `test-azg.sh`)
+- ✅ CachyOS validation explicitly skipped via user request (no local container engine available)
+
+---
+
+## Phase 11 Detail — COMPLETE ✅
+
+### Deliverables
+- ✅ `docs/antigravity-agent-architecture.md` confirmed present
+- ✅ `README.md` updated with quickstart, installation, usage, retrofitting, and updating instructions
+- ✅ `README.md` contains link to `docs/antigravity-agent-architecture.md`
