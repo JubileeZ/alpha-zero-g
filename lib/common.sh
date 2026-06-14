@@ -137,10 +137,13 @@ AZG_GLOBAL_MCP_CONFIG="${AZG_GLOBAL_DIR}/mcp_config.json"
 # Writes CONTENT to a temp file then moves it into place (same-filesystem mv).
 atomic_write() {
   local dest="${1}"
-  local content="${2}"
   local tmp
   tmp="${dest}.azg.tmp"
-  printf '%s' "${content}" > "${tmp}"
+  if [ $# -ge 2 ]; then
+    printf '%s' "${2}" > "${tmp}"
+  else
+    cat > "${tmp}"
+  fi
   mv "${tmp}" "${dest}"
 }
 

@@ -63,7 +63,9 @@ render_template() {
         local val="$2"
         shift 2
         # Use awk for portable multi-line-safe substitution
-        content="$(printf '%s' "$content" | awk -v k="{{${key}}}" -v v="$val" '{ gsub(k, v); print }')"
+        export TEMPLATE_VAL="$val"
+        content="$(printf '%s' "$content" | awk -v k="{{${key}}}" '{ gsub(k, ENVIRON["TEMPLATE_VAL"]); print }')"
+        unset TEMPLATE_VAL
     done
 
     local dst_dir
@@ -139,7 +141,7 @@ done_steps_for_stack() {
 
 # ── main scaffold flow ────────────────────────────────────────────────────────
 
-main() {
+cmd_new() {
     local target_dir="${1:-}"
 
     printf '\nAlpha-Zero-G — New Project Scaffold\n' >&2
@@ -299,7 +301,7 @@ main() {
         "PROJECT_NAME" "$project_name" \
         "AZG_VERSION" "$AZG_VERSION" \
         "DATE" "$TODAY" \
-        "BUILD_COMMANDS_TABLE" "$build_cmds_table" \
+        "BUILD_COMMANDS" "$build_cmds_table" \
         "DEFINITION_OF_DONE" "$done_steps"
 
     # Render AGENTS.md
@@ -310,7 +312,7 @@ main() {
             "PROJECT_NAME" "$project_name" \
             "AZG_VERSION" "$AZG_VERSION" \
             "DATE" "$TODAY" \
-            "BUILD_COMMANDS_TABLE" "$build_cmds_table"
+            "BUILD_COMMANDS" "$build_cmds_table"
     fi
 
     # Git init
@@ -336,5 +338,3 @@ main() {
     fi
     printf '\n' >&2
 }
-
-main "$@"

@@ -13,9 +13,9 @@
 | Phase 1 | `azg setup` — copy global skills, `mcp_config`, idempotent | ✅ Done |
 | Phase 2 | `vendor-sync.sh` — pin mattpocock/skills commit, populate `vendor/` | ✅ Done |
 | Phase 3 | `apply-overlay.sh` — tool-map remap + ANTIGRAVITY-NOTE injection | ✅ Done |
-| Phase 4 | Hook library — 3 hooks + `hooks.json` template | ⬜ Pending |
-| Phase 5 | `GEMINI.md.tmpl` / `AGENTS.md.tmpl` | ⬜ Pending |
-| Phase 6 | `azg new` — 8-question scaffold flow | ⬜ Pending |
+| Phase 4 | Hook library — 3 hooks + `hooks.json` template | ✅ Done |
+| Phase 5 | `GEMINI.md.tmpl` / `AGENTS.md.tmpl` | ✅ Done |
+| Phase 6 | `azg new` — 8-question scaffold flow | ✅ Done |
 | Phase 7 | `azg apply` — managed-block retrofit | ⬜ Pending |
 | Phase 8 | `azg update [--vendor]`, `azg uninstall` | ⬜ Pending |
 | Phase 9 | `tests/test-azg.sh` — temp-HOME integration test | ⬜ Pending |
@@ -42,6 +42,55 @@
 | `test-phase1.sh` | ✅ 22/23 passed, 1 skipped (resolves via Phase 2/3 regression tests) |
 | `test-phase2.sh` | ✅ 45/45 passed |
 | `test-phase3.sh` | ✅ 79/79 passed |
+
+---
+
+## Phase 4 Detail — COMPLETE ✅
+
+### Deliverables
+- ✅ `templates/project/.agents/hooks/block-destructive-ops.sh` implemented
+- ✅ `templates/project/.agents/hooks/quality-gate.sh` implemented
+- ✅ `templates/project/.agents/hooks/auto-lint.sh` implemented
+- ✅ `templates/project/.agents/hooks.json` template implemented
+- ✅ `tests/test-phase4.sh` TDD suite written and passing
+
+### Test Results
+
+| Suite | Result |
+|-------|--------|
+| `test-phase4.sh` | ✅ 25/25 passed |
+
+---
+
+## Phase 5 Detail — COMPLETE ✅
+
+### Deliverables
+- ✅ `templates/project/GEMINI.md.tmpl` implemented
+- ✅ `templates/project/AGENTS.md.tmpl` implemented
+- ✅ `tests/test-phase5.sh` TDD suite written and passing
+
+### Test Results
+
+| Suite | Result |
+|-------|--------|
+| `test-phase5.sh` | ✅ 4/4 passed |
+
+---
+
+## Phase 6 Detail — COMPLETE ✅
+
+### Deliverables
+- ✅ `azg new` implemented in `lib/scaffold.sh`
+- ✅ Interactive CLI questions working properly
+- ✅ `atomic_write` fixed to correctly handle stdin
+- ✅ Multiline template substitution correctly handled via `ENVIRON`
+- ✅ `tests/test-phase6.sh` TDD suite written and passing
+
+### Test Results
+
+| Suite | Result |
+|-------|--------|
+| `test-phase6.sh` | ✅ 13/13 passed |
 
 ---
 
