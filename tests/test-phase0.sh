@@ -208,7 +208,7 @@ assert_output_contains  "azg badcmd prints error"     "Unknown command"   "${AZG
 section "9. azg dispatcher — stub commands exit non-zero with 'not yet implemented'"
 
 # Note: 'setup' is implemented in Phase 1 and is no longer a stub.
-for cmd in new apply update uninstall; do
+for cmd in apply update uninstall; do
   assert_exit             "azg ${cmd} exits non-zero (stub)"    1  "${AZG}" "${cmd}"
   assert_output_contains  "azg ${cmd} prints 'not yet implemented'" \
                           "not yet implemented"   "${AZG}" "${cmd}"

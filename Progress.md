@@ -24,6 +24,50 @@
 
 ---
 
+## Phase 0 Detail — COMPLETE ✅
+
+### Deliverables
+- ✅ Repo skeleton created (`azg` dispatcher, `VERSION`)
+- ✅ `lib/common.sh` created (OS detection, shared helpers)
+- ✅ `tests/test-phase0.sh` TDD suite written and passing
+
+### Test Results
+
+| Suite | Result |
+|-------|--------|
+| `test-phase0.sh` | ✅ Passing |
+
+---
+
+## Phase 1 Detail — COMPLETE ✅
+
+### Deliverables
+- ✅ `lib/setup.sh` implementation (`azg setup` — copy global skills, `mcp_config`, idempotent checks)
+- ✅ `tests/test-phase1.sh` TDD suite written and passing
+
+### Test Results
+
+| Suite | Result |
+|-------|--------|
+| `test-phase1.sh` | ✅ 22/23 passed, 1 skipped (resolves via Phase 2/3 regression tests) |
+
+---
+
+## Phase 2 Detail — COMPLETE ✅
+
+### Deliverables
+- ✅ `lib/vendor-sync.sh` implementation (`azg update --vendor`)
+- ✅ Pin `mattpocock/skills` commit and populate `vendor/`
+- ✅ `tests/test-phase2.sh` TDD suite written and passing
+
+### Test Results
+
+| Suite | Result |
+|-------|--------|
+| `test-phase2.sh` | ✅ 45/45 passed |
+
+---
+
 ## Phase 3 Detail — COMPLETE ✅
 
 ### Deliverables
@@ -32,15 +76,12 @@
   - Render `ANTIGRAVITY-NOTE.md`
   - Copy overlay contents
 - ✅ Update `lib/setup.sh` to invoke `apply-overlay.sh`
-- ✅ Pass all Phase 3 tests
+- ✅ `tests/test-phase3.sh` TDD suite written and passing
 
 ### Test Results
 
 | Suite | Result |
 |-------|--------|
-| `test-phase0.sh` | ✅ Passing |
-| `test-phase1.sh` | ✅ 22/23 passed, 1 skipped (resolves via Phase 2/3 regression tests) |
-| `test-phase2.sh` | ✅ 45/45 passed |
 | `test-phase3.sh` | ✅ 79/79 passed |
 
 ---

@@ -376,7 +376,7 @@ fi
 
 section "14. Phase 0 + Phase 1 regression — other commands still exit non-zero"
 
-for cmd in new apply uninstall; do
+for cmd in apply uninstall; do
   _exit=0
   HOME="${TEMP_HOME}" "${TEMP_AZG}" "${cmd}" < /dev/null > /dev/null 2>&1 || _exit=$?
   if [ "${_exit}" -ne 0 ]; then

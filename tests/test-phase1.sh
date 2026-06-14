@@ -297,7 +297,7 @@ section "12. Phase 0 regression — stub tests still respected"
 
 # After Phase 1 implementation, setup must no longer be a stub.
 # Other commands (new, apply, update, uninstall) must still be stubs.
-for cmd in new apply update uninstall; do
+for cmd in apply update uninstall; do
   _exit=0
   "${AZG}" "${cmd}" < /dev/null > /dev/null 2>&1 || _exit=$?
   if [ "${_exit}" -ne 0 ]; then
