@@ -63,6 +63,18 @@ else
   fail "Skills directory not created globally"
 fi
 
+if [ -f "${TEMP_HOME}/.gemini/antigravity-cli/statusline.sh" ]; then
+  pass "statusline.sh created globally"
+else
+  fail "statusline.sh not created globally"
+fi
+
+if [ -f "${TEMP_HOME}/.gemini/antigravity-cli/settings.json" ]; then
+  pass "settings.json created globally"
+else
+  fail "settings.json not created globally"
+fi
+
 section "2. azg new in workspace"
 
 cd "${TEMP_WORKSPACE}"

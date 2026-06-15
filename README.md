@@ -8,14 +8,26 @@ The complete system for building production AI agent harnesses for Antigravity C
 
 ## Installation
 
-Install the global skill library and MCP configuration for Antigravity CLI. This provisions the `~/.gemini/antigravity-cli/` directory.
+Install the global skill library, MCP configuration, and statusline script for Antigravity CLI. This provisions the `~/.gemini/antigravity-cli/` directory.
 
 ```bash
-# Set up global configs and skills
+# Set up global configs, skills, and statusline
 ./azg setup
 ```
 
 *(Note: Alpha-Zero-G does not install `agy` itself. Ensure you have the Antigravity CLI installed first.)*
+
+### Global Statusline Syncing
+
+During `azg setup`, a premium global statusline script is provisioned at `~/.gemini/antigravity-cli/statusline.sh` and automatically registered in your `settings.json`.
+
+This shared statusline displays:
+- **Active Model & Provider** (e.g., `Gemini 3.5 Flash`)
+- **Agent Cycle State** (Idle `●`, Thinking `◈`, Working `⚙`, Waiting `⏸`)
+- **Context Window Usage** (color-coded percentage)
+- **Sprint/Weekly Quotas & API Reset Cooldown Countdown** (using `antigravity-usage`)
+- **Remaining Account Credits**
+- **VCS Info** (Git branch name and dirty status)
 
 ## Usage
 

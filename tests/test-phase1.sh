@@ -127,10 +127,13 @@ run_setup() {
 INSTALL_DIR="${TEMP_HOME}/.gemini/antigravity-cli"
 INSTALL_SKILLS_DIR="${INSTALL_DIR}/skills"
 INSTALL_MCP="${INSTALL_DIR}/mcp_config.json"
+INSTALL_STATUSLINE="${INSTALL_DIR}/statusline.sh"
+INSTALL_SETTINGS="${INSTALL_DIR}/settings.json"
 
 TEMPLATE_GLOBAL="${REPO_ROOT}/templates/global"
 TEMPLATE_VENDOR="${TEMPLATE_GLOBAL}/skills/vendor/mattpocock-skills"
 TEMPLATE_MCP="${TEMPLATE_GLOBAL}/mcp_config.json"
+TEMPLATE_STATUSLINE="${TEMPLATE_GLOBAL}/statusline.sh"
 
 # ---------------------------------------------------------------------------
 # T E S T S
@@ -147,11 +150,24 @@ section "2. azg setup — destination directories created"
 assert_dir_exists  "~/.gemini/antigravity-cli/ created"         "${INSTALL_DIR}"
 assert_dir_exists  "~/.gemini/antigravity-cli/skills/ created"  "${INSTALL_SKILLS_DIR}"
 
-section "3. azg setup — mcp_config.json installed"
+section "3. azg setup — configuration and statusline installed"
 
 assert_file_exists     "mcp_config.json installed"                    "${INSTALL_MCP}"
 assert_files_identical "mcp_config.json is identical to template"     \
                        "${INSTALL_MCP}" "${TEMPLATE_MCP}"
+
+assert_file_exists     "statusline.sh installed"                      "${INSTALL_STATUSLINE}"
+assert_files_identical "statusline.sh is identical to template"       \
+                       "${INSTALL_STATUSLINE}" "${TEMPLATE_STATUSLINE}"
+if [ -x "${INSTALL_STATUSLINE}" ]; then
+  pass "statusline.sh is executable"
+else
+  fail "statusline.sh is NOT executable"
+fi
+
+assert_file_exists     "settings.json created"                        "${INSTALL_SETTINGS}"
+assert_file_contains   "settings.json has statusLine command config"  "${INSTALL_SETTINGS}" "\"command\": \"${INSTALL_STATUSLINE}\""
+assert_file_contains   "settings.json has statusLine type config"     "${INSTALL_SETTINGS}" "\"type\": \"command\""
 
 section "4. azg setup — vendor skills copied (if any exist in vendor/)"
 
@@ -242,6 +258,18 @@ printf '{}' > "${INSTALL_MCP}"
 run_setup --force > /dev/null 2>&1
 assert_files_identical "azg setup --force restores mcp_config.json" \
                        "${INSTALL_MCP}" "${TEMPLATE_MCP}"
+
+section "7.1. azg setup — merges settings.json correctly"
+
+# Write a dummy settings.json with a custom policy
+printf '{\n  "artifactReviewPolicy": "agent-decides",\n  "toolPermission": "always-proceed"\n}\n' > "${INSTALL_SETTINGS}"
+
+# Run setup to trigger merge
+run_setup > /dev/null 2>&1
+
+# Check if both existing and new keys are present
+assert_file_contains "settings.json preserves existing keys" "${INSTALL_SETTINGS}" "\"artifactReviewPolicy\": \"agent-decides\""
+assert_file_contains "settings.json merges statusline config" "${INSTALL_SETTINGS}" "\"command\": \"${INSTALL_STATUSLINE}\""
 
 section "8. azg setup — output is informative"
 

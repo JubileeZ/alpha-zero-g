@@ -91,6 +91,48 @@ cmd_setup() {
     ok "Installed: mcp_config.json"
   fi
 
+  # 2.1. Install statusline.sh (atomic copy)
+  local template_statusline="${AZG_ROOT}/templates/global/statusline.sh"
+  local statusline_path="${AZG_GLOBAL_DIR}/statusline.sh"
+  local _install_statusline=1
+
+  if [ ! -f "${template_statusline}" ]; then
+    die "Template statusline.sh not found: ${template_statusline}"
+  fi
+
+  if [ -f "${statusline_path}" ] && [ "${force}" -eq 0 ]; then
+    if diff -q "${template_statusline}" "${statusline_path}" > /dev/null 2>&1; then
+      info "statusline.sh already up-to-date, skipping"
+      _install_statusline=0
+    fi
+  fi
+
+  if [ "${_install_statusline}" -eq 1 ]; then
+    atomic_copy "${template_statusline}" "${statusline_path}"
+    chmod +x "${statusline_path}"
+    ok "Installed: statusline.sh"
+  fi
+
+  # 2.2. Configure/merge settings.json
+  local settings_file="${AZG_GLOBAL_DIR}/settings.json"
+  if [ -f "${settings_file}" ]; then
+    # Merge using jq to preserve other user settings
+    info "Merging statusline configuration into settings.json"
+    local tmp_settings="${settings_file}.azg.tmp"
+    jq --arg path "${statusline_path}" '
+      .statusLine = {
+        type: "command",
+        command: $path,
+        enabled: true
+      }
+    ' "${settings_file}" > "${tmp_settings}" && mv "${tmp_settings}" "${settings_file}"
+  else
+    # Create new settings.json with statusline configuration
+    info "Creating new settings.json with statusline configuration"
+    printf '{\n  "statusLine": {\n    "type": "command",\n    "command": "%s",\n    "enabled": true\n  }\n}\n' "${statusline_path}" > "${settings_file}"
+  fi
+  ok "Configured: settings.json"
+
   # Source apply-overlay
   source "${AZG_ROOT}/lib/apply-overlay.sh"
 
