@@ -11,3 +11,4 @@ The triage skill maps roles to GitHub labels: `needs-triage`, `needs-info`, `rea
 ### Domain docs
 
 Single-context layout with one `CONTEXT.md` and `docs/adr/` at the root. See `docs/agents/domain.md`.
+
