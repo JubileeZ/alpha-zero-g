@@ -139,6 +139,7 @@ cmd_setup() {
   # 3. Copy vendor skills (if any exist — Phase 2 will populate vendor/)
   local skills_copied=0
   local skills_skipped=0
+  local skills_pruned=0
 
   if [ -d "${template_vendor}" ]; then
     for category_dir in "${template_vendor}"/{engineering,productivity}; do
@@ -158,6 +159,16 @@ cmd_setup() {
         fi
       done
     done
+
+    # -------------------------------------------------------------------------
+    # Prune: remove installed vendor skills that no longer exist in vendor tree.
+    # A skill is vendor-managed iff it has an ANTIGRAVITY-NOTE.md sentinel file.
+    # Custom skills (no sentinel) are never touched.
+    # -------------------------------------------------------------------------
+    _prune_vendor_skills \
+      "${AZG_GLOBAL_SKILLS_DIR}" \
+      "${template_vendor}" \
+      skills_pruned
   else
     info "No vendor skills found at ${template_vendor}"
     info "Tip: run 'azg update --vendor' to vendor mattpocock/skills (Phase 2)"
@@ -176,6 +187,7 @@ cmd_setup() {
   else
     _sum_skills="no skills to install (run 'azg update --vendor' to vendor skills)"
   fi
+  [ "${skills_pruned}" -gt 0 ] && _sum_skills="${_sum_skills}, ${skills_pruned} removed (deleted upstream)"
 
   ok "Setup complete. ${_sum_skills}."
   info "Global config: ${AZG_GLOBAL_DIR}"

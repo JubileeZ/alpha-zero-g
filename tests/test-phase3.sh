@@ -35,22 +35,33 @@ set -uo pipefail
 source "$(dirname "${BASH_SOURCE[0]}")/harness.sh"
 
 # ---------------------------------------------------------------------------
-# The 11 expected skills
+# Skills vendored from mattpocock/skills (engineering/ + productivity/)
+# Source of truth: templates/global/skills/vendor/VENDOR.lock
+# These must exactly match what vendor-sync.sh fetches from upstream.
+# DO NOT add custom/non-Matt skills here.
 # ---------------------------------------------------------------------------
 ENGINEERING_SKILLS=(
+  "ask-matt"
+  "codebase-design"
+  "diagnosing-bugs"
+  "domain-modeling"
+  "grill-with-docs"
+  "implement"
+  "improve-codebase-architecture"
+  "prototype"
+  "resolving-merge-conflicts"
   "setup-matt-pocock-skills"
   "tdd"
   "to-issues"
   "to-prd"
   "triage"
-  "diagnose"
-  "improve-codebase-architecture"
-  "zoom-out"
 )
 PRODUCTIVITY_SKILLS=(
-  "caveman"
+  "grill-me"
+  "grilling"
+  "handoff"
   "teach"
-  "write-a-skill"
+  "writing-great-skills"
 )
 
 # ---------------------------------------------------------------------------
@@ -484,7 +495,7 @@ else
 fi
 
 # Spot-check: SKILL.md still has remap after second run
-for skill in "tdd" "caveman"; do
+for skill in "tdd" "grill-me"; do
   assert_file_contains "idempotent: ${skill}/SKILL.md still has 'read_file'" \
     "${GLOBAL_SKILLS}/${skill}/SKILL.md" "read_file"
 done

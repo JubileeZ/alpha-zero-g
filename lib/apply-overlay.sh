@@ -226,3 +226,49 @@ _render_antigravity_note() {
   sed "s/{{SKILL_NAME}}/${skill_name}/g" "${tmpl}" > "${tmp}"
   mv "${tmp}" "${dest}"
 }
+
+# ---------------------------------------------------------------------------
+# _prune_vendor_skills SKILLS_DIR VENDOR_DIR COUNT_VAR
+#
+# Removes installed skills that are vendor-managed (have ANTIGRAVITY-NOTE.md)
+# but no longer exist in the vendor tree (deleted or renamed upstream).
+# Custom skills (no ANTIGRAVITY-NOTE.md) are NEVER touched.
+#
+# Arguments:
+#   SKILLS_DIR  — installed skills root (e.g. ~/.gemini/antigravity-cli/skills)
+#   VENDOR_DIR  — vendor tree root (e.g. templates/.../vendor/mattpocock-skills)
+#   COUNT_VAR   — name of caller variable to increment for each pruned skill
+# ---------------------------------------------------------------------------
+_prune_vendor_skills() {
+  local skills_dir="${1}"
+  local vendor_dir="${2}"
+  local count_var="${3}"
+
+  [ -d "${skills_dir}" ] || return 0
+
+  for installed_dir in "${skills_dir}"/*/; do
+    [ -d "${installed_dir}" ] || continue
+    local skill_name
+    skill_name="$(basename "${installed_dir}")"
+
+    # Not vendor-managed: no sentinel → skip (never prune custom skills)
+    [ -f "${installed_dir}/ANTIGRAVITY-NOTE.md" ] || continue
+
+    # Still present in vendor tree? Check all included categories.
+    local found=0
+    for category_dir in "${vendor_dir}"/*/; do
+      [ -d "${category_dir}" ] || continue
+      if [ -d "${category_dir}/${skill_name}" ]; then
+        found=1
+        break
+      fi
+    done
+
+    if [ "${found}" -eq 0 ]; then
+      warn "skill '${skill_name}' no longer in vendor — removing (deleted upstream)"
+      rm -rf "${installed_dir}"
+      # ponytail: indirect variable increment via printf+eval (no ((VAR++)) with set -e)
+      eval "${count_var}=\$(( \${${count_var}} + 1 ))"
+    fi
+  done
+}
