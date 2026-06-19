@@ -3,37 +3,7 @@
 
 set -uo pipefail
 
-REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-AZG="${REPO_ROOT}/azg"
-
-PASS=0
-FAIL=0
-SKIP=0
-
-_clr_reset="\033[0m"
-_clr_green="\033[0;32m"
-_clr_red="\033[0;31m"
-_clr_yellow="\033[0;33m"
-_clr_bold="\033[1m"
-_clr_dim="\033[2m"
-_clr_cyan="\033[0;36m"
-
-pass() { PASS=$((PASS + 1)); printf "  ${_clr_green}✓${_clr_reset} %s\n" "$1"; }
-fail() { FAIL=$((FAIL + 1)); printf "  ${_clr_red}✗${_clr_reset} %s\n" "$1"; [ -n "${2:-}" ] && printf "    ${_clr_dim}%s${_clr_reset}\n" "$2"; }
-skip() { SKIP=$((SKIP + 1)); printf "  ${_clr_yellow}–${_clr_reset} %s ${_clr_dim}(skipped)${_clr_reset}\n" "$1"; }
-
-section() { printf "\n${_clr_bold}${_clr_cyan}▶ %s${_clr_reset}\n" "$1"; }
-
-assert_exit() {
-  local desc="$1" expected_exit="$2"; shift 2
-  local actual_exit=0
-  "$@" || actual_exit=$?
-  if [ "${actual_exit}" -eq "${expected_exit}" ]; then
-    pass "${desc}"
-  else
-    fail "${desc}" "expected exit ${expected_exit}, got ${actual_exit}  (cmd: $*)"
-  fi
-}
+source "$(dirname "${BASH_SOURCE[0]}")/harness.sh"
 
 TEMP_HOME="$(mktemp -d "${PWD}/tmp_azg_integration-home-XXXXXX")"
 TEMP_WORKSPACE="$(mktemp -d "${PWD}/tmp_azg_integration-workspace-XXXXXX")"
@@ -131,12 +101,4 @@ else
   fail "Apply failed to inject GEMINI.md managed block"
 fi
 
-TOTAL=$((PASS + FAIL + SKIP))
-printf "\n${_clr_bold}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${_clr_reset}\n"
-printf "  Results  ${_clr_green}%d passed${_clr_reset}  " "${PASS}"
-[ "${FAIL}" -gt 0 ] && printf "${_clr_red}%d failed${_clr_reset}  " "${FAIL}"
-[ "${SKIP}" -gt 0 ] && printf "${_clr_yellow}%d skipped${_clr_reset}  " "${SKIP}"
-printf "/ %d total\n" "${TOTAL}"
-printf "${_clr_bold}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${_clr_reset}\n\n"
-
-[ "${FAIL}" -eq 0 ]
+test_summary

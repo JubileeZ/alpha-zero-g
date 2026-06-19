@@ -8,59 +8,9 @@
 
 set -uo pipefail
 
-REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+source "$(dirname "${BASH_SOURCE[0]}")/harness.sh"
 HOOKS_DIR="${REPO_ROOT}/templates/project/.agents/hooks"
 HOOKS_JSON="${REPO_ROOT}/templates/project/.agents/hooks.json"
-
-# ---------------------------------------------------------------------------
-# Tiny test harness
-# ---------------------------------------------------------------------------
-PASS=0
-FAIL=0
-SKIP=0
-
-_clr_reset="\033[0m"
-_clr_green="\033[0;32m"
-_clr_red="\033[0;31m"
-_clr_yellow="\033[0;33m"
-_clr_bold="\033[1m"
-_clr_dim="\033[2m"
-_clr_cyan="\033[0;36m"
-
-pass() { PASS=$((PASS + 1)); printf "  ${_clr_green}✓${_clr_reset} %s\n" "$1"; }
-fail() { FAIL=$((FAIL + 1)); printf "  ${_clr_red}✗${_clr_reset} %s\n" "$1"; [ -n "${2:-}" ] && printf "    ${_clr_dim}%s${_clr_reset}\n" "$2"; }
-skip() { SKIP=$((SKIP + 1)); printf "  ${_clr_yellow}–${_clr_reset} %s ${_clr_dim}(skipped)${_clr_reset}\n" "$1"; }
-
-section() { printf "\n${_clr_bold}${_clr_cyan}▶ %s${_clr_reset}\n" "$1"; }
-
-assert_file_exists() {
-  local desc="$1" file="$2"
-  if [ -f "${file}" ]; then
-    pass "${desc}"
-  else
-    fail "${desc}" "file not found: ${file}"
-  fi
-}
-
-assert_executable() {
-  local desc="$1" file="$2"
-  if [ -x "${file}" ]; then
-    pass "${desc}"
-  else
-    fail "${desc}" "file not executable: ${file}"
-  fi
-}
-
-assert_output() {
-  local desc="$1" expected="$2"; shift 2
-  local out
-  out="$("$@" 2>&1)" || true
-  if [ "${out}" = "${expected}" ]; then
-    pass "${desc}"
-  else
-    fail "${desc}" "expected '${expected}', got '${out}'"
-  fi
-}
 
 # ---------------------------------------------------------------------------
 # Setup Mock Environment
@@ -189,11 +139,4 @@ fi
 # ---------------------------------------------------------------------------
 # Reporting
 # ---------------------------------------------------------------------------
-printf "\n"
-if [ "${FAIL}" -eq 0 ]; then
-  printf "${_clr_bold}${_clr_green}PASS${_clr_reset}  %d tests passed\n" "${PASS}"
-  exit 0
-else
-  printf "${_clr_bold}${_clr_red}FAIL${_clr_reset}  %d failed, %d passed\n" "${FAIL}" "${PASS}"
-  exit 1
-fi
+test_summary

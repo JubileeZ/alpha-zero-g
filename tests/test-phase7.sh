@@ -1,23 +1,17 @@
 #!/usr/bin/env bash
 set -e
 
-REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
+source "$(dirname "${BASH_SOURCE[0]}")/harness.sh"
 TEST_DIR=$(mktemp -d)
 trap 'rm -rf "$TEST_DIR"' EXIT
-
-echo "--- Phase 7: Apply Engine Tests ---"
-TESTS_PASSED=0
-TESTS_FAILED=0
 
 run_test() {
   local name="$1"
   local cmd="$2"
   if eval "$cmd"; then
-    echo "✅ PASS: $name"
-    ((TESTS_PASSED++)) || true
+    pass "$name"
   else
-    echo "❌ FAIL: $name"
-    ((TESTS_FAILED++)) || true
+    fail "$name"
   fi
 }
 
@@ -70,11 +64,4 @@ run_test "Old Managed Content replaced" "! grep -q 'Old Managed Content' GEMINI.
 run_test "New Managed Content inserted" "grep -q '## Build and Test Commands' GEMINI.md"
 run_test "Footer preserved" "grep -q 'Footer' GEMINI.md"
 
-echo "----------------------------------------"
-if [ "$TESTS_FAILED" -eq 0 ]; then
-  echo "✅ All $TESTS_PASSED Phase 7 tests passed!"
-  exit 0
-else
-  echo "❌ $TESTS_FAILED Phase 7 tests failed."
-  exit 1
-fi
+test_summary

@@ -23,95 +23,7 @@
 
 set -uo pipefail
 
-REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-AZG="${REPO_ROOT}/azg"
-
-# ---------------------------------------------------------------------------
-# Tiny test harness (same as test-phase0.sh)
-# ---------------------------------------------------------------------------
-PASS=0
-FAIL=0
-SKIP=0
-
-_clr_reset="\033[0m"
-_clr_green="\033[0;32m"
-_clr_red="\033[0;31m"
-_clr_yellow="\033[0;33m"
-_clr_bold="\033[1m"
-_clr_dim="\033[2m"
-_clr_cyan="\033[0;36m"
-
-pass() { PASS=$((PASS + 1)); printf "  ${_clr_green}✓${_clr_reset} %s\n" "$1"; }
-fail() { FAIL=$((FAIL + 1)); printf "  ${_clr_red}✗${_clr_reset} %s\n" "$1"; [ -n "${2:-}" ] && printf "    ${_clr_dim}%s${_clr_reset}\n" "$2"; }
-skip() { SKIP=$((SKIP + 1)); printf "  ${_clr_yellow}–${_clr_reset} %s ${_clr_dim}(skipped)${_clr_reset}\n" "$1"; }
-
-section() { printf "\n${_clr_bold}${_clr_cyan}▶ %s${_clr_reset}\n" "$1"; }
-
-assert_exit() {
-  local desc="$1" expected_exit="$2"; shift 2
-  local actual_exit=0
-  "$@" > /dev/null 2>&1 || actual_exit=$?
-  if [ "${actual_exit}" -eq "${expected_exit}" ]; then
-    pass "${desc}"
-  else
-    fail "${desc}" "expected exit ${expected_exit}, got ${actual_exit}  (cmd: $*)"
-  fi
-}
-
-assert_output_contains() {
-  local desc="$1" pattern="$2"; shift 2
-  local out
-  out="$("$@" 2>&1)" || true
-  if echo "${out}" | grep -qF "${pattern}"; then
-    pass "${desc}"
-  else
-    fail "${desc}" "pattern not found: '${pattern}'"
-  fi
-}
-
-assert_output_not_contains() {
-  local desc="$1" pattern="$2"; shift 2
-  local out
-  out="$("$@" 2>&1)" || true
-  if echo "${out}" | grep -qF "${pattern}"; then
-    fail "${desc}" "pattern should NOT be present: '${pattern}'"
-  else
-    pass "${desc}"
-  fi
-}
-
-assert_file_exists() {
-  local desc="$1" path="$2"
-  if [ -e "${path}" ]; then pass "${desc}"; else fail "${desc}" "missing: ${path}"; fi
-}
-
-assert_file_not_exists() {
-  local desc="$1" path="$2"
-  if [ -e "${path}" ]; then fail "${desc}" "should not exist: ${path}"; else pass "${desc}"; fi
-}
-
-assert_dir_exists() {
-  local desc="$1" path="$2"
-  if [ -d "${path}" ]; then pass "${desc}"; else fail "${desc}" "directory missing: ${path}"; fi
-}
-
-assert_files_identical() {
-  local desc="$1" file_a="$2" file_b="$3"
-  if diff -q "${file_a}" "${file_b}" > /dev/null 2>&1; then
-    pass "${desc}"
-  else
-    fail "${desc}" "'${file_a}' and '${file_b}' differ"
-  fi
-}
-
-assert_file_contains() {
-  local desc="$1" path="$2" pattern="$3"
-  if [ -f "${path}" ] && grep -qF "${pattern}" "${path}"; then
-    pass "${desc}"
-  else
-    fail "${desc}" "pattern '${pattern}' not found in ${path}"
-  fi
-}
+source "$(dirname "${BASH_SOURCE[0]}")/harness.sh"
 
 # ---------------------------------------------------------------------------
 # Temp HOME setup — all setup tests run with HOME overridden
@@ -330,12 +242,4 @@ section "12. Phase 0 regression — stub tests still respected"
 # ---------------------------------------------------------------------------
 # Summary
 # ---------------------------------------------------------------------------
-TOTAL=$((PASS + FAIL + SKIP))
-printf "\n${_clr_bold}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${_clr_reset}\n"
-printf "  Results  ${_clr_green}%d passed${_clr_reset}  " "${PASS}"
-[ "${FAIL}" -gt 0 ] && printf "${_clr_red}%d failed${_clr_reset}  " "${FAIL}"
-[ "${SKIP}" -gt 0 ] && printf "${_clr_yellow}%d skipped${_clr_reset}  " "${SKIP}"
-printf "/ %d total\n" "${TOTAL}"
-printf "${_clr_bold}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${_clr_reset}\n\n"
-
-[ "${FAIL}" -eq 0 ]
+test_summary
