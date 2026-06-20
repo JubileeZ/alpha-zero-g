@@ -201,6 +201,26 @@ if [ -z "$QUOTA_JSON" ] || [ "$QUOTA_JSON" = "null" ]; then
   QUOTA_JSON="{}"
 fi
 
+ELAPSED_SEC=0
+if [ "$QUOTA_JSON" != "{}" ]; then
+  CACHE_FILE="${HOME}/.gemini/antigravity-cli/quota_cache.json"
+  NOW=$(date +%s)
+  CURRENT_HASH=$(echo "$QUOTA_JSON" | md5sum | awk '{print $1}')
+  if [ -f "$CACHE_FILE" ]; then
+    CACHED_HASH=$(jq -r '.hash // empty' "$CACHE_FILE" 2>/dev/null)
+    if [ "$CURRENT_HASH" != "$CACHED_HASH" ]; then
+      jq -n --arg h "$CURRENT_HASH" --arg t "$NOW" '{hash: $h, time: $t}' > "$CACHE_FILE" 2>/dev/null
+    else
+      CACHED_TIME=$(jq -r '.time // 0' "$CACHE_FILE" 2>/dev/null)
+      if [ -n "$CACHED_TIME" ] && [ "$CACHED_TIME" != "null" ] && [ "$CACHED_TIME" -gt 0 ] 2>/dev/null; then
+        ELAPSED_SEC=$(( NOW - CACHED_TIME ))
+      fi
+    fi
+  else
+    jq -n --arg h "$CURRENT_HASH" --arg t "$NOW" '{hash: $h, time: $t}' > "$CACHE_FILE" 2>/dev/null
+  fi
+fi
+
 # Extract active elapsed time if present
 ACTIVE_MS=$(echo "$input" | jq -r '.active_duration_ms // .elapsed_ms // empty')
 ELAPSED_TXT=""
@@ -316,35 +336,51 @@ CLW_EXH_VAL=""
 CLW_RESET_VAL=""
 
 if [ -n "$QUOTA_JSON" ] && [ "$QUOTA_JSON" != "{}" ]; then
-  CLAUDE_INFO=$(echo "$QUOTA_JSON" | jq -r '
+  CLAUDE_INFO=$(echo "$QUOTA_JSON" | jq -r --arg elapsed "$ELAPSED_SEC" '
+    ($elapsed | tonumber) as $e |
     if .models then
-      .models[]? | select(.label | ascii_downcase | contains("claude")) | "\(.remainingPercentage) \(.isExhausted) \(.timeUntilResetMs)"
+      .models[]? | select(.label | ascii_downcase | contains("claude")) | 
+      ((.timeUntilResetMs / 1000) - $e) as $rem |
+      if $rem <= 0 then "100 false 0" else "\(.remainingPercentage) \(.isExhausted) \(($rem * 1000) | floor)" end
     elif ."3p-5h" then
-      ."3p-5h" | "\(.remaining_fraction) \(.remaining_fraction <= 0) \(.reset_in_seconds * 1000)"
+      ."3p-5h" | 
+      (.reset_in_seconds - $e) as $rem |
+      if $rem <= 0 then "1 false 0" else "\(.remaining_fraction) \(.remaining_fraction <= 0) \(($rem * 1000) | floor)" end
     else
       empty
     end
   ' 2>/dev/null | head -n 1 || true)
 
-  GEMINI_INFO=$(echo "$QUOTA_JSON" | jq -r '
+  GEMINI_INFO=$(echo "$QUOTA_JSON" | jq -r --arg elapsed "$ELAPSED_SEC" '
+    ($elapsed | tonumber) as $e |
     if .models then
-      .models[]? | select(.label | ascii_downcase | contains("gemini")) | "\(.remainingPercentage) \(.isExhausted) \(.timeUntilResetMs)"
+      .models[]? | select(.label | ascii_downcase | contains("gemini")) | 
+      ((.timeUntilResetMs / 1000) - $e) as $rem |
+      if $rem <= 0 then "100 false 0" else "\(.remainingPercentage) \(.isExhausted) \(($rem * 1000) | floor)" end
     elif ."gemini-5h" then
-      ."gemini-5h" | "\(.remaining_fraction) \(.remaining_fraction <= 0) \(.reset_in_seconds * 1000)"
+      ."gemini-5h" | 
+      (.reset_in_seconds - $e) as $rem |
+      if $rem <= 0 then "1 false 0" else "\(.remaining_fraction) \(.remaining_fraction <= 0) \(($rem * 1000) | floor)" end
     else
       empty
     end
   ' 2>/dev/null | head -n 1 || true)
 
-  CLAUDE_WEEKLY=$(echo "$QUOTA_JSON" | jq -r '
+  CLAUDE_WEEKLY=$(echo "$QUOTA_JSON" | jq -r --arg elapsed "$ELAPSED_SEC" '
+    ($elapsed | tonumber) as $e |
     if ."3p-weekly" then
-      ."3p-weekly" | "\(.remaining_fraction) \(.remaining_fraction <= 0) \(.reset_in_seconds * 1000)"
+      ."3p-weekly" | 
+      (.reset_in_seconds - $e) as $rem |
+      if $rem <= 0 then "1 false 0" else "\(.remaining_fraction) \(.remaining_fraction <= 0) \(($rem * 1000) | floor)" end
     else empty end
   ' 2>/dev/null | head -n 1 || true)
 
-  GEMINI_WEEKLY=$(echo "$QUOTA_JSON" | jq -r '
+  GEMINI_WEEKLY=$(echo "$QUOTA_JSON" | jq -r --arg elapsed "$ELAPSED_SEC" '
+    ($elapsed | tonumber) as $e |
     if ."gemini-weekly" then
-      ."gemini-weekly" | "\(.remaining_fraction) \(.remaining_fraction <= 0) \(.reset_in_seconds * 1000)"
+      ."gemini-weekly" | 
+      (.reset_in_seconds - $e) as $rem |
+      if $rem <= 0 then "1 false 0" else "\(.remaining_fraction) \(.remaining_fraction <= 0) \(($rem * 1000) | floor)" end
     else empty end
   ' 2>/dev/null | head -n 1 || true)
 
