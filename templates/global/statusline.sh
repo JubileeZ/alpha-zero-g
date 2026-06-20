@@ -16,6 +16,11 @@ WIDTH=$(echo "$input" | jq -r '.terminal_width // 100')
 # Extract VCS fields
 VCS_BRANCH=$(echo "$input" | jq -r '.vcs.branch // empty')
 VCS_DIRTY=$(echo "$input" | jq -r '.vcs.dirty // false')
+PROJECT_DIR=$(echo "$input" | jq -r '.workspace.project_dir // empty')
+PROJECT_NAME=""
+if [ -n "$PROJECT_DIR" ] && [ "$PROJECT_DIR" != "null" ]; then
+  PROJECT_NAME=$(basename "$PROJECT_DIR")
+fi
 
 # ---------------------------------------------------------------------------
 # 1. Preset Resolution
@@ -58,7 +63,7 @@ if [ -z "${NO_COLOR:-}" ]; then
   GREEN="\033[38;5;71m"
   YELLOW="\033[38;5;179m"
   ORANGE="\033[38;5;166m"
-  RED="\033[38;5;124m"
+  RED="\033[38;5;196m"
   BLUE="\033[38;5;67m"
   PURPLE="\033[38;5;97m"
   CYAN="\033[38;5;37m"
@@ -101,7 +106,7 @@ elif [ "$PRESET" = "unicode" ]; then
   WARN_CRITICAL="🔥"
   SEP_LEFT=""
   SEP_RIGHT=""
-  SEP_CHAR="│"
+  SEP_CHAR="|"
 else # ascii
   STATE_IDLE_TXT="IDLE"
   STATE_THINKING_TXT="THINKING"
@@ -166,62 +171,46 @@ INPUT_TOKENS=$(echo "$input" | jq -r '.context_window.total_input_tokens // 0')
 OUTPUT_TOKENS=$(echo "$input" | jq -r '.context_window.total_output_tokens // 0')
 USED_TOKENS=$((INPUT_TOKENS + OUTPUT_TOKENS))
 
-# Determine task type (Reasoning vs. Agentic/Tool)
-IS_REASONING=0
-MODEL_LOWER=$(echo "$MODEL_NAME" | tr '[:upper:]' '[:lower:]')
-if [[ "$MODEL_LOWER" =~ (thinking|opus|sonnet) ]]; then
-  IS_REASONING=1
-fi
-
 # Convert percentage to integer
 INT_PCT="${CONTEXT_PCT%%.*}"
 if ! [[ "$INT_PCT" =~ ^[0-9]+$ ]]; then
   INT_PCT=0
 fi
 
-# Severity: 0 = Safe, 1 = Caution, 2 = Degrading, 3 = Critical
-SEV_TOKENS=0
-if [ "$IS_REASONING" -eq 1 ]; then
-  if [ "$USED_TOKENS" -ge 50000 ]; then
-    SEV_TOKENS=3
-  elif [ "$USED_TOKENS" -ge 35000 ]; then
-    SEV_TOKENS=2
-  elif [ "$USED_TOKENS" -ge 20000 ]; then
-    SEV_TOKENS=1
-  fi
-else
-  if [ "$USED_TOKENS" -ge 120000 ]; then
-    SEV_TOKENS=3
-  elif [ "$USED_TOKENS" -ge 90000 ]; then
-    SEV_TOKENS=2
-  elif [ "$USED_TOKENS" -ge 60000 ]; then
-    SEV_TOKENS=1
-  fi
+# Severity based on percentage: 0 = Safe, 1 = Caution (>=50%), 2 = Degrading (>=70%), 3 = Critical (>=85%)
+FINAL_SEV=0
+if [ "$INT_PCT" -ge 85 ]; then
+  FINAL_SEV=3
+elif [ "$INT_PCT" -ge 70 ]; then
+  FINAL_SEV=2
+elif [ "$INT_PCT" -ge 50 ]; then
+  FINAL_SEV=1
 fi
 
-SEV_PCT=0
-if [ "$INT_PCT" -ge 75 ]; then
-  SEV_PCT=3
-elif [ "$INT_PCT" -ge 60 ]; then
-  SEV_PCT=2
-elif [ "$INT_PCT" -ge 40 ]; then
-  SEV_PCT=1
-fi
-
-# Higher severity wins
-FINAL_SEV=$SEV_TOKENS
-if [ "$SEV_PCT" -gt "$FINAL_SEV" ]; then
-  FINAL_SEV=$SEV_PCT
-fi
-
-TKN_DISPLAY=$(format_tokens "$INPUT_TOKENS")
+TKN_DISPLAY=$(format_tokens "$USED_TOKENS")
 IN_DISPLAY=$(format_tokens "$INPUT_TOKENS")
 OUT_DISPLAY=$(format_tokens "$OUTPUT_TOKENS")
 
 # ---------------------------------------------------------------------------
 # 4. Fetch Quota Usage & State Specs
 # ---------------------------------------------------------------------------
-QUOTA_JSON=$(antigravity-usage quota --json 2>/dev/null || echo "{}")
+# Try stdin JSON first; fall back to external binary if available
+# ponytail: single jq call for stdin, command -v guard avoids fork when binary missing
+QUOTA_JSON=$(echo "$input" | jq -r '.quota // empty' 2>/dev/null)
+if [ -z "$QUOTA_JSON" ] || [ "$QUOTA_JSON" = "null" ]; then
+  if command -v antigravity-usage >/dev/null 2>&1; then
+    QUOTA_JSON=$(antigravity-usage quota --json 2>/dev/null || echo "{}")
+  else
+    QUOTA_JSON="{}"
+  fi
+fi
+
+# Extract active elapsed time if present
+ACTIVE_MS=$(echo "$input" | jq -r '.active_duration_ms // .elapsed_ms // empty')
+ELAPSED_TXT=""
+if [ -n "$ACTIVE_MS" ] && [ "$ACTIVE_MS" != "null" ]; then
+  ELAPSED_TXT=" $(format_time "$ACTIVE_MS")"
+fi
 
 # State parsing
 STATE_TXT=""
@@ -237,13 +226,13 @@ case "${STATE}" in
     STATE_CLR="${BLUE}"
     ;;
   thinking)
-    STATE_TXT="${STATE_THINKING_TXT}"
+    STATE_TXT="${STATE_THINKING_TXT}${ELAPSED_TXT}"
     STATE_BG=97
     STATE_FG=255
     STATE_CLR="${PURPLE}"
     ;;
   working|executing)
-    STATE_TXT="${STATE_WORKING_TXT}"
+    STATE_TXT="${STATE_WORKING_TXT}${ELAPSED_TXT}"
     STATE_BG=172
     STATE_FG=232
     STATE_CLR="${YELLOW}"
@@ -255,37 +244,59 @@ case "${STATE}" in
     STATE_CLR="${CYAN}"
     ;;
   *)
-    STATE_TXT="${STATE}"
+    STATE_TXT="${STATE}${ELAPSED_TXT}"
     STATE_BG=236
     STATE_FG=250
     STATE_CLR="${GRAY}"
     ;;
 esac
 
-# Context parsing
+# Context parsing - Responsive layout
 CONTEXT_TXT=""
 CONTEXT_BG=""
 CONTEXT_FG=255
 CONTEXT_CLR=""
 
+# Choose labels / symbols based on width tier
+# Wide (>=100): "Context: 48.3k (45.2k↓/3.1k↑) · 52% ⚠"
+# Medium (65-99): "Ctx: 52% ⚠"
+# Narrow (<65): "52% ⚠"
+if [ "$WIDTH" -ge 100 ]; then
+  CTX_PREFIX="Context: ${TKN_DISPLAY} (${IN_DISPLAY}↓/${OUT_DISPLAY}↑) | "
+elif [ "$WIDTH" -ge 65 ]; then
+  CTX_PREFIX="Ctx: "
+else
+  CTX_PREFIX=""
+fi
+
+CONTEXT_BAR=""
+if [ "$WIDTH" -ge 100 ]; then
+  FULL_BAR="██████████"
+  EMPTY_BAR="░░░░░░░░░░"
+  num_filled=$(( (INT_PCT + 5) / 10 ))
+  [ "$num_filled" -gt 10 ] && num_filled=10
+  num_empty=$(( 10 - num_filled ))
+  CONTEXT_BAR=" [${FULL_BAR:0:num_filled}${EMPTY_BAR:0:num_empty}]"
+fi
+
 case "$FINAL_SEV" in
   3)
-    CONTEXT_TXT="Context: ${TKN_DISPLAY} (${IN_DISPLAY}/${OUT_DISPLAY}) (${INT_PCT}%) ${WARN_CRITICAL}"
+    CONTEXT_TXT="${CTX_PREFIX}${INT_PCT}%${CONTEXT_BAR} ${WARN_CRITICAL}"
     CONTEXT_BG=124
     CONTEXT_CLR="${RED}"
     ;;
   2)
-    CONTEXT_TXT="Context: ${TKN_DISPLAY} (${IN_DISPLAY}/${OUT_DISPLAY}) (${INT_PCT}%) ${WARN_DEGRADING}"
+    CONTEXT_TXT="${CTX_PREFIX}${INT_PCT}%${CONTEXT_BAR} ${WARN_DEGRADING}"
     CONTEXT_BG=166
     CONTEXT_CLR="${ORANGE}"
     ;;
   1)
-    CONTEXT_TXT="Context: ${TKN_DISPLAY} (${IN_DISPLAY}/${OUT_DISPLAY}) (${INT_PCT}%) ${WARN_CAUTION}"
+    CONTEXT_TXT="${CTX_PREFIX}${INT_PCT}%${CONTEXT_BAR} ${WARN_CAUTION}"
     CONTEXT_BG=136
     CONTEXT_CLR="${YELLOW}"
     ;;
   *)
-    CONTEXT_TXT="Context: ${TKN_DISPLAY} (${IN_DISPLAY}/${OUT_DISPLAY}) (${INT_PCT}%)"
+    CONTEXT_TXT="${CTX_PREFIX}${INT_PCT}%${CONTEXT_BAR}"
     CONTEXT_BG=65
     CONTEXT_CLR="${GREEN}"
     ;;
@@ -304,13 +315,35 @@ CREDITS_MON=""
 
 if [ -n "$QUOTA_JSON" ] && [ "$QUOTA_JSON" != "{}" ]; then
   CLAUDE_INFO=$(echo "$QUOTA_JSON" | jq -r '
-    .models[]? | select(.label | ascii_downcase | contains("claude")) |
-    "\(.remainingPercentage) \(.isExhausted) \(.timeUntilResetMs)"
+    if .models then
+      .models[]? | select(.label | ascii_downcase | contains("claude")) | "\(.remainingPercentage) \(.isExhausted) \(.timeUntilResetMs)"
+    elif ."3p-5h" then
+      ."3p-5h" | "\(.remaining_fraction) \(.remaining_fraction <= 0) \(.reset_in_seconds * 1000)"
+    else
+      empty
+    end
   ' 2>/dev/null | head -n 1 || true)
 
   GEMINI_INFO=$(echo "$QUOTA_JSON" | jq -r '
-    .models[]? | select(.label | ascii_downcase | contains("gemini")) |
-    "\(.remainingPercentage) \(.isExhausted) \(.timeUntilResetMs)"
+    if .models then
+      .models[]? | select(.label | ascii_downcase | contains("gemini")) | "\(.remainingPercentage) \(.isExhausted) \(.timeUntilResetMs)"
+    elif ."gemini-5h" then
+      ."gemini-5h" | "\(.remaining_fraction) \(.remaining_fraction <= 0) \(.reset_in_seconds * 1000)"
+    else
+      empty
+    end
+  ' 2>/dev/null | head -n 1 || true)
+
+  CLAUDE_WEEKLY=$(echo "$QUOTA_JSON" | jq -r '
+    if ."3p-weekly" then
+      ."3p-weekly" | "\(.remaining_fraction) \(.remaining_fraction <= 0) \(.reset_in_seconds * 1000)"
+    else empty end
+  ' 2>/dev/null | head -n 1 || true)
+
+  GEMINI_WEEKLY=$(echo "$QUOTA_JSON" | jq -r '
+    if ."gemini-weekly" then
+      ."gemini-weekly" | "\(.remaining_fraction) \(.remaining_fraction <= 0) \(.reset_in_seconds * 1000)"
+    else empty end
   ' 2>/dev/null | head -n 1 || true)
 
   if [ -n "${CLAUDE_INFO}" ]; then
@@ -320,6 +353,16 @@ if [ -n "$QUOTA_JSON" ] && [ "$QUOTA_JSON" != "{}" ]; then
       CL_EXH_VAL="$CL_EXH"
       if [ -n "$CL_RESET" ] && [ "$CL_RESET" != "null" ] && [ "$CL_RESET" -gt 0 ] 2>/dev/null; then
         CL_RESET_VAL=$(format_time "$CL_RESET")
+      fi
+      if [ -n "${CLAUDE_WEEKLY}" ]; then
+        read -r CLW_PCT CLW_EXH CLW_RESET <<< "${CLAUDE_WEEKLY}"
+        if [ -n "$CLW_PCT" ] && [ "$CLW_PCT" != "null" ]; then
+          CLW_PCT_VAL=$(echo "$CLW_PCT" | awk '{print int($1 * 100)}')
+          CLW_EXH_VAL="$CLW_EXH"
+          if [ -n "$CLW_RESET" ] && [ "$CLW_RESET" != "null" ] && [ "$CLW_RESET" -gt 0 ] 2>/dev/null; then
+            CLW_RESET_VAL=$(format_time "$CLW_RESET")
+          fi
+        fi
       fi
     fi
   fi
@@ -332,6 +375,16 @@ if [ -n "$QUOTA_JSON" ] && [ "$QUOTA_JSON" != "{}" ]; then
       if [ -n "$GEM_RESET" ] && [ "$GEM_RESET" != "null" ] && [ "$GEM_RESET" -gt 0 ] 2>/dev/null; then
         GEM_RESET_VAL=$(format_time "$GEM_RESET")
       fi
+      if [ -n "${GEMINI_WEEKLY}" ]; then
+        read -r GMW_PCT GMW_EXH GMW_RESET <<< "${GEMINI_WEEKLY}"
+        if [ -n "$GMW_PCT" ] && [ "$GMW_PCT" != "null" ]; then
+          GMW_PCT_VAL=$(echo "$GMW_PCT" | awk '{print int($1 * 100)}')
+          GMW_EXH_VAL="$GMW_EXH"
+          if [ -n "$GMW_RESET" ] && [ "$GMW_RESET" != "null" ] && [ "$GMW_RESET" -gt 0 ] 2>/dev/null; then
+            GMW_RESET_VAL=$(format_time "$GMW_RESET")
+          fi
+        fi
+      fi
     fi
   fi
 
@@ -343,12 +396,10 @@ fi
 CR_PCT_VAL=""
 CR_AV_VAL=""
 CR_MON_VAL=""
-if [ -n "$CREDITS_REM" ] && [ "$CREDITS_REM" != "null" ] && [ "$CREDITS_REM" != "1" ] && [ "$CREDITS_REM" != "1.0" ] && [ "$CREDITS_REM" != "" ]; then
-  if [ "$CREDITS_AV" != "500" ] || [ "$CREDITS_MON" != "50000" ]; then
-    CR_PCT_VAL=$(echo "$CREDITS_REM" | awk '{print int($1 * 100)}')
-    CR_AV_VAL="$CREDITS_AV"
-    CR_MON_VAL="$CREDITS_MON"
-  fi
+if [ -n "$CREDITS_REM" ] && [ "$CREDITS_REM" != "null" ] && [ "$CREDITS_REM" != "" ]; then
+  CR_PCT_VAL=$(echo "$CREDITS_REM" | awk '{print int($1 * 100)}')
+  CR_AV_VAL="$CREDITS_AV"
+  CR_MON_VAL="$CREDITS_MON"
 fi
 
 # ---------------------------------------------------------------------------
@@ -372,22 +423,67 @@ declare -a R_BG
 declare -a R_FG
 declare -a R_CLR
 
+
+ABBREV_QUOTAS="false"
+ABBREV_CTX="false"
+ABBREV_NAMES="false"
+
 populate_segments() {
   L_TXT=() L_BG=() L_FG=() L_CLR=()
   R_TXT=() R_BG=() R_FG=() R_CLR=()
 
-  # Left segments
+  # 1. PROJECT & GIT (VCS)
+  if [ "$SHOW_VCS" = "true" ]; then
+    local txt=""
+    if [ -n "$PROJECT_NAME" ]; then
+      if [ "$ABBREV_NAMES" = "true" ] && [ ${#PROJECT_NAME} -gt 10 ]; then
+        txt="${PROJECT_NAME:0:7}.."
+      else
+        txt="${PROJECT_NAME}"
+      fi
+    fi
+    
+    if [ -n "$VCS_BRANCH" ] && [ "$VCS_BRANCH" != "null" ]; then
+      local vcs_txt=""
+      local branch_name="$VCS_BRANCH"
+      if [ "$ABBREV_NAMES" = "true" ] && [ ${#branch_name} -gt 10 ]; then
+        branch_name="${branch_name:0:7}.."
+      fi
+      if [ "$VCS_DIRTY" = "true" ]; then
+        vcs_txt="${VCS_ICON} ${branch_name}*"
+      else
+        vcs_txt="${VCS_ICON} ${branch_name}"
+      fi
+      if [ -n "$txt" ]; then txt="${txt} ${vcs_txt}"
+      else txt="${vcs_txt}"; fi
+    fi
+    
+    if [ -n "$txt" ]; then
+      L_TXT+=("${txt}")
+      L_BG+=(239)
+      L_FG+=(248)
+      L_CLR+=("${GRAY}")
+    fi
+  fi
+
+  # 2. STATE
   if [ "$SHOW_STATE" = "true" ] && [ -n "${STATE_TXT}" ]; then
-    L_TXT+=("${STATE_TXT}")
+    local st_txt="${STATE_TXT}"
+    if [ "$ABBREV_NAMES" = "true" ]; then
+      # Remove elapsed time if abbreviated heavily
+      st_txt=$(echo "$st_txt" | sed -r 's/ [0-9]+[a-z]+//g')
+    fi
+    L_TXT+=("${st_txt}")
     L_BG+=("${STATE_BG}")
     L_FG+=("${STATE_FG}")
     L_CLR+=("${STATE_CLR}")
   fi
 
-  if [ -n "${MODEL_NAME}" ]; then
+  # 3. MODEL
+  if [ -n "${MODEL_NAME}" ] && [ "$SHOW_MODEL" != "false" ]; then
     local display_model="${MODEL_NAME}"
-    if [ "$WIDTH" -lt 65 ] && [ "${#display_model}" -gt 12 ]; then
-      display_model="${display_model:0:9}..."
+    if [ "$ABBREV_NAMES" = "true" ]; then
+      display_model="${display_model:0:9}.."
     fi
     L_TXT+=("Model: ${display_model}")
     L_BG+=(236)
@@ -395,92 +491,117 @@ populate_segments() {
     L_CLR+=("${BOLD}${CYAN}")
   fi
 
-  if [ -n "${CONTEXT_TXT}" ]; then
-    L_TXT+=("${CONTEXT_TXT}")
+  # 4. CONTEXT
+  if [ "$SHOW_CONTEXT" != "false" ] && [ -n "${CONTEXT_PCT}" ]; then
+    local ctx_prefix=""
+    if [ "$ABBREV_CTX" = "false" ] && [ "$WIDTH" -ge 100 ]; then
+      ctx_prefix="Context: ${TKN_DISPLAY} (${IN_DISPLAY}↓/${OUT_DISPLAY}↑) "
+    else
+      ctx_prefix="Ctx: "
+    fi
+    
+    local txt="${ctx_prefix}${INT_PCT}%"
+    
+    if [ "$ABBREV_CTX" = "false" ] && [ "$WIDTH" -ge 100 ]; then
+      FULL_BAR="██████████"
+      EMPTY_BAR="░░░░░░░░░░"
+      local num_filled=$(( (INT_PCT + 5) / 10 ))
+      [ "$num_filled" -gt 10 ] && num_filled=10
+      local num_empty=$(( 10 - num_filled ))
+      txt="${txt} [${FULL_BAR:0:num_filled}${EMPTY_BAR:0:num_empty}]"
+    fi
+    
+    case "$FINAL_SEV" in
+      3) txt="${txt} ${WARN_CRITICAL}"; CONTEXT_BG=124; CONTEXT_CLR="${RED}" ;;
+      2) txt="${txt} ${WARN_DEGRADING}"; CONTEXT_BG=166; CONTEXT_CLR="${ORANGE}" ;;
+      1) txt="${txt} ${WARN_CAUTION}"; CONTEXT_BG=136; CONTEXT_CLR="${YELLOW}" ;;
+      *) CONTEXT_BG=65; CONTEXT_CLR="${GREEN}" ;;
+    esac
+
+    L_TXT+=("${txt}")
     L_BG+=("${CONTEXT_BG}")
-    L_FG+=("${CONTEXT_FG}")
+    L_FG+=("${CONTEXT_FG:-255}")
     L_CLR+=("${CONTEXT_CLR}")
   fi
 
-  # Right segments
-  if [ "$SHOW_CLAUDE" = "true" ] && [ -n "$CL_PCT_VAL" ]; then
-    local txt=""
-    local bg=""
-    local clr=""
-    if [ "$CL_EXH_VAL" = "true" ]; then
-      txt="Claude: Exh"
-      bg=124
-      clr="${RED}"
-    else
-      txt="Claude: ${CL_PCT_VAL}%"
-      [ -n "$CL_RESET_VAL" ] && txt="${txt} (${CL_RESET_VAL})"
-      if [ "$CL_PCT_VAL" -lt 20 ]; then
-        bg=124; clr="${RED}"
-      elif [ "$CL_PCT_VAL" -lt 50 ]; then
-        bg=136; clr="${YELLOW}"
-      else
-        bg=65; clr="${GREEN}"
-      fi
-    fi
-    R_TXT+=("${txt}")
-    R_BG+=("${bg}")
-    R_FG+=(255)
-    R_CLR+=("${clr}")
-  fi
-
+  # 5. GEMINI
   if [ "$SHOW_GEMINI" = "true" ] && [ -n "$GEM_PCT_VAL" ]; then
     local txt=""
     local bg=""
     local clr=""
+    local lbl="Gemini"
+    [ "$ABBREV_NAMES" = "true" ] && lbl="Gem"
+
     if [ "$GEM_EXH_VAL" = "true" ]; then
-      txt="Gemini: Exh"
-      bg=124
-      clr="${RED}"
+      txt="${lbl}: Exh"
+      bg=124; clr="${RED}"
     else
-      txt="Gemini: ${GEM_PCT_VAL}%"
+      txt="${lbl}: ${GEM_PCT_VAL}%"
+      if [ "$GEM_PCT_VAL" -lt 20 ]; then bg=124; clr="${RED}"
+      elif [ "$GEM_PCT_VAL" -lt 50 ]; then bg=136; clr="${YELLOW}"
+      else bg=65; clr="${GREEN}"; fi
+    fi
+
+    if [ "$ABBREV_QUOTAS" = "false" ]; then
       [ -n "$GEM_RESET_VAL" ] && txt="${txt} (${GEM_RESET_VAL})"
-      if [ "$GEM_PCT_VAL" -lt 20 ]; then
-        bg=124; clr="${RED}"
-      elif [ "$GEM_PCT_VAL" -lt 50 ]; then
-        bg=136; clr="${YELLOW}"
+    fi
+
+    if [ -n "$GMW_PCT_VAL" ]; then
+      txt="${txt} / "
+      if [ "$GMW_EXH_VAL" = "true" ]; then
+        txt="${txt}Exh"
       else
-        bg=65; clr="${GREEN}"
+        txt="${txt}${GMW_PCT_VAL}%"
+      fi
+      if [ "$ABBREV_QUOTAS" = "false" ]; then
+        [ -n "$GMW_RESET_VAL" ] && txt="${txt} (${GMW_RESET_VAL})"
       fi
     fi
-    R_TXT+=("${txt}")
-    R_BG+=("${bg}")
-    R_FG+=(255)
-    R_CLR+=("${clr}")
+
+    L_TXT+=("${txt}")
+    L_BG+=("${bg}")
+    L_FG+=(255)
+    L_CLR+=("${clr}")
   fi
 
-  if [ "$SHOW_CREDITS" = "true" ] && [ -n "$CR_PCT_VAL" ]; then
-    local txt="Credits: ${CR_PCT_VAL}% (${CR_AV_VAL}/${CR_MON_VAL})"
+  # 6. 3RD PARTY
+  if [ "$SHOW_CLAUDE" = "true" ] && [ -n "$CL_PCT_VAL" ]; then
+    local txt=""
     local bg=""
     local clr=""
-    if [ "$CR_PCT_VAL" -lt 10 ]; then
-      bg=124; clr="${RED}"
-    elif [ "$CR_PCT_VAL" -lt 30 ]; then
-      bg=136; clr="${YELLOW}"
-    else
-      bg=236; clr="${GREEN}"
-    fi
-    R_TXT+=("${txt}")
-    R_BG+=("${bg}")
-    R_FG+=(250)
-    R_CLR+=("${clr}")
-  fi
+    local lbl="3rd Party"
+    [ "$ABBREV_NAMES" = "true" ] && lbl="3P"
 
-  if [ "$SHOW_VCS" = "true" ] && [ -n "$VCS_BRANCH" ] && [ "$VCS_BRANCH" != "null" ]; then
-    local txt=""
-    if [ "$VCS_DIRTY" = "true" ]; then
-      txt="${VCS_ICON} ${VCS_BRANCH}*"
+    if [ "$CL_EXH_VAL" = "true" ]; then
+      txt="${lbl}: Exh"
+      bg=124; clr="${RED}"
     else
-      txt="${VCS_ICON} ${VCS_BRANCH}"
+      txt="${lbl}: ${CL_PCT_VAL}%"
+      if [ "$CL_PCT_VAL" -lt 20 ]; then bg=124; clr="${RED}"
+      elif [ "$CL_PCT_VAL" -lt 50 ]; then bg=136; clr="${YELLOW}"
+      else bg=65; clr="${GREEN}"; fi
     fi
-    R_TXT+=("${txt}")
-    R_BG+=(239)
-    R_FG+=(248)
-    R_CLR+=("${GRAY}")
+
+    if [ "$ABBREV_QUOTAS" = "false" ]; then
+      [ -n "$CL_RESET_VAL" ] && txt="${txt} (${CL_RESET_VAL})"
+    fi
+
+    if [ -n "$CLW_PCT_VAL" ]; then
+      txt="${txt} / "
+      if [ "$CLW_EXH_VAL" = "true" ]; then
+        txt="${txt}Exh"
+      else
+        txt="${txt}${CLW_PCT_VAL}%"
+      fi
+      if [ "$ABBREV_QUOTAS" = "false" ]; then
+        [ -n "$CLW_RESET_VAL" ] && txt="${txt} (${CLW_RESET_VAL})"
+      fi
+    fi
+
+    L_TXT+=("${txt}")
+    L_BG+=("${bg}")
+    L_FG+=(255)
+    L_CLR+=("${clr}")
   fi
 }
 
@@ -489,70 +610,53 @@ calculate_visible_length() {
   for txt in "${L_TXT[@]}"; do
     l_len=$((l_len + ${#txt}))
   done
-
-  local r_len=0
-  for txt in "${R_TXT[@]}"; do
-    r_len=$((r_len + ${#txt}))
-  done
-
   local n=${#L_TXT[@]}
-  local m=${#R_TXT[@]}
-
   local total_l=0
-  local total_r=0
-
   if [ "$PRESET" = "nerd-font" ]; then
     [ $n -gt 0 ] && total_l=$((l_len + 3 * n))
-    [ $m -gt 0 ] && total_r=$((r_len + 3 * m))
   else
     [ $n -gt 0 ] && total_l=$((l_len + 3 * (n - 1)))
-    [ $m -gt 0 ] && total_r=$((r_len + 3 * (m - 1)))
   fi
-
-  local gap=0
-  [ $n -gt 0 ] && [ $m -gt 0 ] && gap=4
-
-  echo $((total_l + gap + total_r))
+  echo $((total_l))
 }
 
-# Run first populate
+# Initial population
+SHOW_MODEL="true"
+SHOW_CONTEXT="true"
 populate_segments
 LEN=$(calculate_visible_length)
 
-# Prioritized drop order: Credits -> VCS -> Claude -> Gemini -> State
-if [ "$LEN" -gt "$WIDTH" ] && [ "$SHOW_CREDITS" = "true" ]; then
-  SHOW_CREDITS="false"
-  populate_segments
-  LEN=$(calculate_visible_length)
+# Responsive adaptation drops
+if [ "$LEN" -gt "$WIDTH" ]; then
+  ABBREV_QUOTAS="true"; populate_segments; LEN=$(calculate_visible_length)
 fi
 
-if [ "$LEN" -gt "$WIDTH" ] && [ "$SHOW_VCS" = "true" ]; then
-  SHOW_VCS="false"
-  populate_segments
-  LEN=$(calculate_visible_length)
+if [ "$LEN" -gt "$WIDTH" ]; then
+  ABBREV_CTX="true"; populate_segments; LEN=$(calculate_visible_length)
 fi
 
+if [ "$LEN" -gt "$WIDTH" ]; then
+  ABBREV_NAMES="true"; populate_segments; LEN=$(calculate_visible_length)
+fi
+
+# Hard drops
 if [ "$LEN" -gt "$WIDTH" ] && [ "$SHOW_CLAUDE" = "true" ]; then
-  SHOW_CLAUDE="false"
-  populate_segments
-  LEN=$(calculate_visible_length)
+  SHOW_CLAUDE="false"; populate_segments; LEN=$(calculate_visible_length)
 fi
 
 if [ "$LEN" -gt "$WIDTH" ] && [ "$SHOW_GEMINI" = "true" ]; then
-  SHOW_GEMINI="false"
-  populate_segments
-  LEN=$(calculate_visible_length)
+  SHOW_GEMINI="false"; populate_segments; LEN=$(calculate_visible_length)
 fi
 
-if [ "$LEN" -gt "$WIDTH" ] && [ "$SHOW_STATE" = "true" ]; then
-  SHOW_STATE="false"
-  populate_segments
-  LEN=$(calculate_visible_length)
+if [ "$LEN" -gt "$WIDTH" ] && [ "$SHOW_VCS" = "true" ]; then
+  SHOW_VCS="false"; populate_segments; LEN=$(calculate_visible_length)
 fi
 
-# ---------------------------------------------------------------------------
-# 6. Render Output
-# ---------------------------------------------------------------------------
+if [ "$LEN" -gt "$WIDTH" ] && [ "$SHOW_CONTEXT" = "true" ]; then
+  SHOW_CONTEXT="false"; populate_segments; LEN=$(calculate_visible_length)
+fi
+
+
 L_LEN=0
 for txt in "${L_TXT[@]}"; do
   L_LEN=$((L_LEN + ${#txt}))
@@ -576,15 +680,14 @@ fi
 
 # Fixed 4-space gap if both groups are present
 GAP_LEN=0
-[ $N -gt 0 ] && [ $M -gt 0 ] && GAP_LEN=4
 
 # Clear the rest of the line to prevent rendering glitches in TUI status bars
 TOTAL_TEXT_LEN=$((L_LEN + GAP_LEN + R_LEN))
 TRAILING_LEN=$((WIDTH - TOTAL_TEXT_LEN))
-[ $TRAILING_LEN -lt 0 ] && TRILING_LEN=0
+[ $TRAILING_LEN -lt 0 ] && TRAILING_LEN=0
 
 gap_spaces=""
-[ $GAP_LEN -gt 0 ] && gap_spaces="    "
+[ $GAP_LEN -gt 0 ] && gap_spaces=""
 
 trailing_spaces=""
 if [ $TRAILING_LEN -gt 0 ]; then
