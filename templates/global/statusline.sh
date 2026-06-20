@@ -312,6 +312,12 @@ GEM_EXH_VAL=""
 CREDITS_REM=""
 CREDITS_AV=""
 CREDITS_MON=""
+GMW_PCT_VAL=""
+GMW_EXH_VAL=""
+GMW_RESET_VAL=""
+CLW_PCT_VAL=""
+CLW_EXH_VAL=""
+CLW_RESET_VAL=""
 
 if [ -n "$QUOTA_JSON" ] && [ "$QUOTA_JSON" != "{}" ]; then
   CLAUDE_INFO=$(echo "$QUOTA_JSON" | jq -r '
@@ -546,15 +552,15 @@ populate_segments() {
       [ -n "$GEM_RESET_VAL" ] && txt="${txt} (${GEM_RESET_VAL})"
     fi
 
-    if [ -n "$GMW_PCT_VAL" ]; then
+    if [ -n "${GMW_PCT_VAL:-}" ]; then
       txt="${txt} / "
-      if [ "$GMW_EXH_VAL" = "true" ]; then
+      if [ "${GMW_EXH_VAL:-}" = "true" ]; then
         txt="${txt}Exh"
       else
         txt="${txt}${GMW_PCT_VAL}%"
       fi
       if [ "$ABBREV_QUOTAS" = "false" ]; then
-        [ -n "$GMW_RESET_VAL" ] && txt="${txt} (${GMW_RESET_VAL})"
+        [ -n "${GMW_RESET_VAL:-}" ] && txt="${txt} (${GMW_RESET_VAL})"
       fi
     fi
 
@@ -586,15 +592,15 @@ populate_segments() {
       [ -n "$CL_RESET_VAL" ] && txt="${txt} (${CL_RESET_VAL})"
     fi
 
-    if [ -n "$CLW_PCT_VAL" ]; then
+    if [ -n "${CLW_PCT_VAL:-}" ]; then
       txt="${txt} / "
-      if [ "$CLW_EXH_VAL" = "true" ]; then
+      if [ "${CLW_EXH_VAL:-}" = "true" ]; then
         txt="${txt}Exh"
       else
         txt="${txt}${CLW_PCT_VAL}%"
       fi
       if [ "$ABBREV_QUOTAS" = "false" ]; then
-        [ -n "$CLW_RESET_VAL" ] && txt="${txt} (${CLW_RESET_VAL})"
+        [ -n "${CLW_RESET_VAL:-}" ] && txt="${txt} (${CLW_RESET_VAL})"
       fi
     fi
 
@@ -607,7 +613,7 @@ populate_segments() {
 
 calculate_visible_length() {
   local l_len=0
-  for txt in "${L_TXT[@]}"; do
+  for txt in "${L_TXT[@]+"${L_TXT[@]}"}"; do
     l_len=$((l_len + ${#txt}))
   done
   local n=${#L_TXT[@]}
@@ -658,12 +664,12 @@ fi
 
 
 L_LEN=0
-for txt in "${L_TXT[@]}"; do
+for txt in "${L_TXT[@]+"${L_TXT[@]}"}"; do
   L_LEN=$((L_LEN + ${#txt}))
 done
 
 R_LEN=0
-for txt in "${R_TXT[@]}"; do
+for txt in "${R_TXT[@]+"${R_TXT[@]}"}"; do
   R_LEN=$((R_LEN + ${#txt}))
 done
 
