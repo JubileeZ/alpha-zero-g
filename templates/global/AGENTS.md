@@ -27,8 +27,9 @@ If you read the project-level `AGENTS.md` and see placeholders to be filled (e.g
 1. Ask the user if they want to fill them in first.
 2. The user can skip this. If skipped, leave the `<!-- AGENT: ... -->` placeholders exactly as they are.
 3. If the user agrees to fill them:
-   - Interview the user for the information to fill them in.
-   - Proactively suggest recommended values based on your findings in the codebase (e.g., stack, build commands, project name, repo structure).
+   - Interview the user one section at a time (never the whole file at once).
+   - For each section, suggest up to 3 options with the highest recommended option listed first. State that sections/placeholders can be removed if they do not apply.
+   - Writing style for AGENTS.md content: Drop pleasantries (sure, certainly, of course, happy to), filler words (just, really, basically, actually, simply), and hedging. Keep definitions and instructions extremely concise (sentence fragments are OK).
    - If a placeholder or section does not apply to this project, and the user confirms it does not apply, remove that section/placeholder.
    - Do not leave placeholder comments in the final file.
 
