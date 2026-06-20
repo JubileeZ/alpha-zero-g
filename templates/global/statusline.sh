@@ -198,11 +198,7 @@ OUT_DISPLAY=$(format_tokens "$OUTPUT_TOKENS")
 # ponytail: single jq call for stdin, command -v guard avoids fork when binary missing
 QUOTA_JSON=$(echo "$input" | jq -r '.quota // empty' 2>/dev/null)
 if [ -z "$QUOTA_JSON" ] || [ "$QUOTA_JSON" = "null" ]; then
-  if command -v antigravity-usage >/dev/null 2>&1; then
-    QUOTA_JSON=$(antigravity-usage quota --json 2>/dev/null || echo "{}")
-  else
-    QUOTA_JSON="{}"
-  fi
+  QUOTA_JSON="{}"
 fi
 
 # Extract active elapsed time if present
