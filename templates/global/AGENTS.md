@@ -31,7 +31,7 @@ If you read the project-level `AGENTS.md` and see placeholders to be filled (e.g
    - For each section, suggest up to 3 options with the highest recommended option listed first. State that sections/placeholders can be removed if they do not apply.
    - Writing style for AGENTS.md content: Drop pleasantries (sure, certainly, of course, happy to), filler words (just, really, basically, actually, simply), and hedging. Keep definitions and instructions extremely concise (sentence fragments are OK).
    - If a placeholder or section does not apply to this project, and the user confirms it does not apply, remove that section/placeholder.
-   - Do not leave placeholder comments in the final file.
+   - Remove placeholder comments from sections that are filled in; preserve them in skipped sections.
 
 # AGENT INSTRUCTIONS: Temporary File Cleanup
 
