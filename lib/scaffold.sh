@@ -207,21 +207,14 @@ cmd_new() {
         done
     fi
 
-    # Q4: Hooks to enable
-    printf '\nQ4. Hooks (safety-gate is always enabled):\n' >&2
-    local enable_quality_gate
-    enable_quality_gate="$(ask_yn '  Enable quality-gate (blocks commits if lint fails)?' 'n')"
-    local enable_auto_lint
-    enable_auto_lint="$(ask_yn '  Enable auto-lint (auto-formats files on write)?' 'n')"
-
-    # Q5: mattpocock skills
-    printf '\nQ5. The "setup-matt-pocock-skills" global skill will be available after azg setup.\n' >&2
+    # Q4: mattpocock skills
+    printf '\nQ4. The "setup-matt-pocock-skills" global skill will be available after azg setup.\n' >&2
     printf '    After scaffolding, run it inside your first agy session to set up issue tracking.\n' >&2
     local remind_skills
     remind_skills="yes"
 
-    # Q6: MCP servers
-    printf '\nQ6. MCP servers to include in .agents/mcp_config.json:\n' >&2
+    # Q5: MCP servers
+    printf '\nQ5. MCP servers to include in .agents/mcp_config.json:\n' >&2
     printf '  1) None\n' >&2
     printf '  2) GitHub MCP\n' >&2
     printf '  3) Browser (headless Chrome)\n' >&2
@@ -229,13 +222,13 @@ cmd_new() {
     local mcp_choice
     mcp_choice="$(ask 'Choose [1/2/3/4]' '1')"
 
-    # Q7: AGENTS.md
+    # Q6: AGENTS.md
     local write_agents_md
-    write_agents_md="$(ask_yn 'Q7. Write AGENTS.md alongside GEMINI.md?' 'y')"
+    write_agents_md="$(ask_yn 'Q6. Write AGENTS.md alongside GEMINI.md?' 'y')"
 
-    # Q8: Git init
+    # Q7: Git init
     local git_init
-    git_init="$(ask_yn 'Q8. Run git init and create initial commit?' 'y')"
+    git_init="$(ask_yn 'Q7. Run git init and create initial commit?' 'y')"
 
     # ── scaffold the project ──────────────────────────────────────────────────
 
@@ -244,27 +237,14 @@ cmd_new() {
 
     local tmpl_proj="$REPO_ROOT/templates/project"
 
-    # Copy .agents/ skeleton
-    for hook_file in block-destructive-ops.sh quality-gate.sh auto-lint.sh; do
-        copy_template \
-            "$tmpl_proj/.agents/hooks/$hook_file" \
-            "$target_dir/.agents/hooks/$hook_file"
-        chmod +x "$target_dir/.agents/hooks/$hook_file"
-    done
+    # Copy .agents/ skeleton — safety-gate hook only
+    copy_template \
+        "$tmpl_proj/.agents/hooks/block-destructive-ops.sh" \
+        "$target_dir/.agents/hooks/block-destructive-ops.sh"
+    chmod +x "$target_dir/.agents/hooks/block-destructive-ops.sh"
 
-    # Adjust hooks.json based on Q4
-    local hooks_json
-    hooks_json="$(cat "$tmpl_proj/.agents/hooks.json")"
-
-    if [ "$enable_quality_gate" = "yes" ]; then
-        hooks_json="$(printf '%s' "$hooks_json" | \
-            awk '/"quality-gate"/{found=1} found && /"enabled": false/{sub(/"enabled": false/, "\"enabled\": true"); found=0} {print}')"
-    fi
-    if [ "$enable_auto_lint" = "yes" ]; then
-        hooks_json="$(printf '%s' "$hooks_json" | \
-            awk '/"auto-lint"/{found=1} found && /"enabled": false/{sub(/"enabled": false/, "\"enabled\": true"); found=0} {print}')"
-    fi
-    printf '%s\n' "$hooks_json" | atomic_write "$target_dir/.agents/hooks.json"
+    # Copy hooks.json (safety-gate only)
+    copy_template "$tmpl_proj/.agents/hooks.json" "$target_dir/.agents/hooks.json"
 
     # Copy skills placeholder
     copy_template "$tmpl_proj/.agents/skills/.gitkeep" "$target_dir/.agents/skills/.gitkeep"

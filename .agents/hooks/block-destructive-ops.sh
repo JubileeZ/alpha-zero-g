@@ -12,13 +12,18 @@ fi
 haystack="$cmd $input"
 
 patterns=(
-  'rm[[:space:]]+-r?f?[[:space:]]+/[[:space:]]*(\{| |$)'
+  'rm[[:space:]]+(-[a-zA-Z]*[rRfF][a-zA-Z]*|--recursive|--force)[[:space:]]+.*(/[[:space:]]*(\{| |$)|~|\$HOME|\./)'
   'git[[:space:]]+push([[:space:]].*)?--force'
   'git[[:space:]]+push([[:space:]].*)?[[:space:]]-f([[:space:]]|$)'
   'git[[:space:]]+reset[[:space:]]+--hard'
   'git[[:space:]]+branch[[:space:]]+-D'
+  'git[[:space:]]+clean[[:space:]]+.*-f'
   'chmod[[:space:]]+-?R?[[:space:]]*777'
-  'curl[^|]+\|[[:space:]]*(bash|sh)([[:space:]]|$)'
+  '(curl|wget)[^|]+\|[[:space:]]*(bash|sh)([[:space:]]|$)'
+  'dd[[:space:]]+.*of=/dev/'
+  'mkfs(\.[a-zA-Z0-9]+)?([[:space:]]|$)'
+  'shred[[:space:]]'
+  ':[[:space:]]*\([[:space:]]*\)[[:space:]]*\{[[:space:]]*:[[:space:]]*\|[[:space:]]*:[[:space:]]*&[[:space:]]*\}[[:space:]]*;[[:space:]]*:'
 )
 
 for p in "${patterns[@]}"; do
