@@ -146,7 +146,7 @@ printf -- "---\nname: tdd\ntools: [read_file]\n---\n# tdd\n" \
   > "${TEMP_VENDOR}/engineering/tdd/SKILL.md"
 
 TEMP_OVERLAY="${TEMP_REPO}/templates/global/skills/overlay/mattpocock-skills"
-TEMP_SKILLS="${TEMP_HOME}/.gemini/antigravity-cli/skills"
+TEMP_SKILLS="${TEMP_HOME}/.gemini/config/skills"
 mkdir -p "${TEMP_SKILLS}"
 
 # Pre-install diagnose with sentinel (simulates old install)

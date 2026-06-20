@@ -450,7 +450,7 @@ else
   fail "azg setup exited ${SETUP_EXIT} (expected 0)"
 fi
 
-GLOBAL_SKILLS="${TEMP_HOME}/.gemini/antigravity-cli/skills"
+GLOBAL_SKILLS="${TEMP_HOME}/.gemini/config/skills"
 
 section "16. azg setup — installed skills have remapped SKILL.md"
 

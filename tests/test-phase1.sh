@@ -37,8 +37,8 @@ run_setup() {
 }
 
 INSTALL_DIR="${TEMP_HOME}/.gemini/antigravity-cli"
-INSTALL_SKILLS_DIR="${INSTALL_DIR}/skills"
-INSTALL_MCP="${INSTALL_DIR}/mcp_config.json"
+INSTALL_SKILLS_DIR="${TEMP_HOME}/.gemini/config/skills"
+INSTALL_MCP="${TEMP_HOME}/.gemini/config/mcp_config.json"
 INSTALL_STATUSLINE="${INSTALL_DIR}/statusline.sh"
 INSTALL_SETTINGS="${INSTALL_DIR}/settings.json"
 
@@ -60,7 +60,7 @@ assert_output_not_contains "azg setup does not say 'not yet implemented'" \
 section "2. azg setup — destination directories created"
 
 assert_dir_exists  "~/.gemini/antigravity-cli/ created"         "${INSTALL_DIR}"
-assert_dir_exists  "~/.gemini/antigravity-cli/skills/ created"  "${INSTALL_SKILLS_DIR}"
+assert_dir_exists  "~/.gemini/config/skills/ created"  "${INSTALL_SKILLS_DIR}"
 
 section "3. azg setup — configuration and statusline installed"
 

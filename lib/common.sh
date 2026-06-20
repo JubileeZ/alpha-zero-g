@@ -127,8 +127,8 @@ require_agy() {
 # Path constants (set after detect_os runs)
 # ---------------------------------------------------------------------------
 AZG_GLOBAL_DIR="${HOME}/.gemini/antigravity-cli"
-AZG_GLOBAL_SKILLS_DIR="${AZG_GLOBAL_DIR}/skills"
-AZG_GLOBAL_MCP_CONFIG="${AZG_GLOBAL_DIR}/mcp_config.json"
+AZG_GLOBAL_SKILLS_DIR="${HOME}/.gemini/config/skills"
+AZG_GLOBAL_MCP_CONFIG="${HOME}/.gemini/config/mcp_config.json"
 
 # ---------------------------------------------------------------------------
 # Atomic file write helpers

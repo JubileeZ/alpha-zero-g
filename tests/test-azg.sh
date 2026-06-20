@@ -21,13 +21,13 @@ section "1. azg setup in clean HOME"
 
 assert_exit "azg setup exits 0" 0 "${AZG}" setup >/dev/null
 
-if [ -f "${TEMP_HOME}/.gemini/antigravity-cli/mcp_config.json" ]; then
+if [ -f "${TEMP_HOME}/.gemini/config/mcp_config.json" ]; then
   pass "mcp_config.json created globally"
 else
   fail "mcp_config.json not created globally"
 fi
 
-if [ -d "${TEMP_HOME}/.gemini/antigravity-cli/skills" ]; then
+if [ -d "${TEMP_HOME}/.gemini/config/skills" ]; then
   pass "Skills directory created globally"
 else
   fail "Skills directory not created globally"

@@ -54,6 +54,8 @@ fi
 assert_exit "azg uninstall exits 0" 0 env HOME="${TEMP_HOME}" AZG_ROOT="${TEMP_REPO}" "${TEMP_AZG}" uninstall
 
 assert_dir_not_exists "uninstall removes ~/.gemini/antigravity-cli/" "${TEMP_HOME}/.gemini/antigravity-cli"
+assert_dir_not_exists "uninstall removes ~/.gemini/config/skills/" "${TEMP_HOME}/.gemini/config/skills"
+assert_file_not_exists "uninstall removes ~/.gemini/config/mcp_config.json" "${TEMP_HOME}/.gemini/config/mcp_config.json"
 if [ -d "${TEMP_HOME}/.gemini" ]; then
   pass "uninstall leaves ~/.gemini untouched"
 else
