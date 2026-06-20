@@ -67,7 +67,7 @@ cmd_apply() {
         info "Merged hooks.json"
     fi
 
-    # 4. Handle GEMINI.md and AGENTS.md
+    # 4. Handle AGENTS.md
     local project_name
     project_name="$(basename "$(cd "$target_dir" && pwd)")"
     local azg_version
@@ -80,63 +80,56 @@ cmd_apply() {
 |---------|-------------|
 | (add your lint command here) | Lint |
 | (add your test command here) | Test |'
-    local done_steps
-    done_steps='1. Lint passes
-2. Tests pass with no failures
-3. Changes committed with conventional format: `type(scope): description`'
 
-    for doc in GEMINI.md AGENTS.md; do
-        local tmpl="$tmpl_proj/$doc.tmpl"
-        local dst="$target_dir/$doc"
+    local doc="AGENTS.md"
+    local tmpl="$tmpl_proj/$doc.tmpl"
+    local dst="$target_dir/$doc"
+    
+    if [ ! -f "$dst" ]; then
+        render_template "$tmpl" "$dst" \
+            "PROJECT_NAME" "$project_name" \
+            "AZG_VERSION" "$azg_version" \
+            "DATE" "$today" \
+            "BUILD_COMMANDS" "$build_cmds_table"
+        info "Created $doc"
+    else
+        local rendered_tmpl
+        rendered_tmpl="$(mktemp)"
+        render_template "$tmpl" "$rendered_tmpl" \
+            "PROJECT_NAME" "$project_name" \
+            "AZG_VERSION" "$azg_version" \
+            "DATE" "$today" \
+            "BUILD_COMMANDS" "$build_cmds_table"
         
-        if [ ! -f "$dst" ]; then
-            render_template "$tmpl" "$dst" \
-                "PROJECT_NAME" "$project_name" \
-                "AZG_VERSION" "$azg_version" \
-                "DATE" "$today" \
-                "BUILD_COMMANDS" "$build_cmds_table" \
-                "DEFINITION_OF_DONE" "$done_steps"
-            info "Created $doc"
+        if grep -q '<!-- AZG:MANAGED:START -->' "$dst"; then
+            export MANAGED_CONTENT="$(cat "$rendered_tmpl")"
+            awk '
+            BEGIN { in_block = 0 }
+            /<!-- AZG:MANAGED:START -->/ {
+                print "<!-- AZG:MANAGED:START -->"
+                print ENVIRON["MANAGED_CONTENT"]
+                print "<!-- AZG:MANAGED:END -->"
+                in_block = 1
+                next
+            }
+            /<!-- AZG:MANAGED:END -->/ {
+                in_block = 0
+                next
+            }
+            !in_block { print }
+            ' "$dst" | atomic_write "$dst"
+            info "Updated managed block in $doc"
         else
-            local rendered_tmpl
-            rendered_tmpl="$(mktemp)"
-            render_template "$tmpl" "$rendered_tmpl" \
-                "PROJECT_NAME" "$project_name" \
-                "AZG_VERSION" "$azg_version" \
-                "DATE" "$today" \
-                "BUILD_COMMANDS" "$build_cmds_table" \
-                "DEFINITION_OF_DONE" "$done_steps"
-            
-            if grep -q '<!-- AZG:MANAGED:START -->' "$dst"; then
-                export MANAGED_CONTENT="$(cat "$rendered_tmpl")"
-                awk '
-                BEGIN { in_block = 0 }
-                /<!-- AZG:MANAGED:START -->/ {
-                    print "<!-- AZG:MANAGED:START -->"
-                    print ENVIRON["MANAGED_CONTENT"]
-                    print "<!-- AZG:MANAGED:END -->"
-                    in_block = 1
-                    next
-                }
-                /<!-- AZG:MANAGED:END -->/ {
-                    in_block = 0
-                    next
-                }
-                !in_block { print }
-                ' "$dst" | atomic_write "$dst"
-                info "Updated managed block in $doc"
-            else
-                {
-                    echo ""
-                    echo "<!-- AZG:MANAGED:START -->"
-                    cat "$rendered_tmpl"
-                    echo "<!-- AZG:MANAGED:END -->"
-                } >> "$dst"
-                info "Appended managed block to $doc"
-            fi
-            rm -f "$rendered_tmpl"
+            {
+                echo ""
+                echo "<!-- AZG:MANAGED:START -->"
+                cat "$rendered_tmpl"
+                echo "<!-- AZG:MANAGED:END -->"
+            } >> "$dst"
+            info "Appended managed block to $doc"
         fi
-    done
+        rm -f "$rendered_tmpl"
+    fi
 
     ok "Retrofit complete."
 }

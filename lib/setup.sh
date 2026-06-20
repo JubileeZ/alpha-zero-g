@@ -32,6 +32,7 @@ cmd_setup() {
   # -------------------------------------------------------------------------
   local template_global="${AZG_ROOT}/templates/global"
   local template_mcp="${template_global}/mcp_config.json"
+  local template_agents="${template_global}/AGENTS.md"
   local template_vendor="${template_global}/skills/vendor/mattpocock-skills"
 
   # -------------------------------------------------------------------------
@@ -42,6 +43,7 @@ cmd_setup() {
     info "  create dir : ${AZG_GLOBAL_DIR}"
     info "  create dir : ${AZG_GLOBAL_SKILLS_DIR}"
     info "  copy file  : ${template_mcp} → ${AZG_GLOBAL_MCP_CONFIG}"
+    info "  copy file  : ${template_agents} → ${AZG_GLOBAL_AGENTS}"
 
     # List vendor skills if any exist
     if [ -d "${template_vendor}" ]; then
@@ -91,6 +93,25 @@ cmd_setup() {
     ok "Installed: mcp_config.json"
   fi
 
+  # 2.0. Install global AGENTS.md (atomic copy)
+  if [ ! -f "${template_agents}" ]; then
+    die "Template AGENTS.md not found: ${template_agents}"
+  fi
+
+  local _install_agents=1
+  if [ -f "${AZG_GLOBAL_AGENTS}" ] && [ "${force}" -eq 0 ]; then
+    # Already installed — check if identical
+    if diff -q "${template_agents}" "${AZG_GLOBAL_AGENTS}" > /dev/null 2>&1; then
+      info "AGENTS.md already up-to-date, skipping"
+      _install_agents=0
+    fi
+  fi
+
+  if [ "${_install_agents}" -eq 1 ]; then
+    atomic_copy "${template_agents}" "${AZG_GLOBAL_AGENTS}"
+    ok "Installed: AGENTS.md (global)"
+  fi
+
   # 2.1. Install statusline.sh (atomic copy)
   local template_statusline="${AZG_ROOT}/templates/global/statusline.sh"
   local statusline_path="${AZG_GLOBAL_DIR}/statusline.sh"
@@ -136,42 +157,47 @@ cmd_setup() {
   # Source apply-overlay
   source "${AZG_ROOT}/lib/apply-overlay.sh"
 
-  # 3. Copy vendor skills (if any exist — Phase 2 will populate vendor/)
+  # 3. Copy vendor skills
   local skills_copied=0
   local skills_skipped=0
   local skills_pruned=0
+  local vendor_base_dir="${template_global}/skills/vendor"
 
-  if [ -d "${template_vendor}" ]; then
-    for category_dir in "${template_vendor}"/{engineering,productivity}; do
-      [ -d "${category_dir}" ] || continue
-      for skill_dir in "${category_dir}"/*/; do
-        [ -d "${skill_dir}" ] || continue
-        local skill_name
-        skill_name="$(basename "${skill_dir}")"
-        local dest="${AZG_GLOBAL_SKILLS_DIR}/${skill_name}"
+  if [ -d "${vendor_base_dir}" ]; then
+    # Loop over each vendor pack directory under vendor/
+    for vendor_root in "${vendor_base_dir}"/*/; do
+      [ -d "${vendor_root}" ] || continue
+      local vendor_name
+      vendor_name="$(basename "${vendor_root}")"
 
-        if [ -d "${dest}" ] && [ "${force}" -eq 0 ]; then
-          info "skill '${skill_name}' already installed, skipping (use --force to re-install)"
-          skills_skipped=$((skills_skipped + 1))
-        else
-          apply_overlay "${skill_name}" "${category_dir}" "${template_global}/skills/overlay/mattpocock-skills" "${AZG_GLOBAL_SKILLS_DIR}"
-          skills_copied=$((skills_copied + 1))
-        fi
+      # Loop over each category under this vendor pack
+      for category_dir in "${vendor_root}"/*/; do
+        [ -d "${category_dir}" ] || continue
+        for skill_dir in "${category_dir}"/*/; do
+          [ -d "${skill_dir}" ] || continue
+          local skill_name
+          skill_name="$(basename "${skill_dir}")"
+          local dest="${AZG_GLOBAL_SKILLS_DIR}/${skill_name}"
+
+          if [ -d "${dest}" ] && [ "${force}" -eq 0 ]; then
+            info "skill '${skill_name}' already installed, skipping (use --force to re-install)"
+            skills_skipped=$((skills_skipped + 1))
+          else
+            apply_overlay "${skill_name}" "${category_dir}" "${template_global}/skills/overlay/${vendor_name}" "${AZG_GLOBAL_SKILLS_DIR}"
+            skills_copied=$((skills_copied + 1))
+          fi
+        done
       done
-    done
 
-    # -------------------------------------------------------------------------
-    # Prune: remove installed vendor skills that no longer exist in vendor tree.
-    # A skill is vendor-managed iff it has an ANTIGRAVITY-NOTE.md sentinel file.
-    # Custom skills (no sentinel) are never touched.
-    # -------------------------------------------------------------------------
-    _prune_vendor_skills \
-      "${AZG_GLOBAL_SKILLS_DIR}" \
-      "${template_vendor}" \
-      skills_pruned
+      # Prune skills from this vendor pack
+      _prune_vendor_skills \
+        "${AZG_GLOBAL_SKILLS_DIR}" \
+        "${vendor_root}" \
+        skills_pruned
+    done
   else
-    info "No vendor skills found at ${template_vendor}"
-    info "Tip: run 'azg update --vendor' to vendor mattpocock/skills (Phase 2)"
+    info "No vendor skills found at ${vendor_base_dir}"
+    info "Tip: run 'azg update --vendor' to vendor skills"
   fi
 
   # -------------------------------------------------------------------------

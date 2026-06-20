@@ -13,14 +13,11 @@ run_test() {
   fi
 }
 
-# Test 1: GEMINI.md.tmpl exists
-run_test "GEMINI.md.tmpl exists" "[ -f \"$REPO_ROOT/templates/project/GEMINI.md.tmpl\" ]"
-
-# Test 2: AGENTS.md.tmpl exists
+# Test 1: AGENTS.md.tmpl exists
 run_test "AGENTS.md.tmpl exists" "[ -f \"$REPO_ROOT/templates/project/AGENTS.md.tmpl\" ]"
 
-# Test 3: GEMINI.md.tmpl contains expected placeholders
-run_test "GEMINI.md.tmpl has {{PROJECT_NAME}}" "grep -q '{{PROJECT_NAME}}' \"$REPO_ROOT/templates/project/GEMINI.md.tmpl\""
-run_test "GEMINI.md.tmpl has {{BUILD_COMMANDS}}" "grep -q '{{BUILD_COMMANDS}}' \"$REPO_ROOT/templates/project/GEMINI.md.tmpl\""
+# Test 2: AGENTS.md.tmpl contains expected placeholders
+run_test "AGENTS.md.tmpl has {{PROJECT_NAME}}" "grep -q '{{PROJECT_NAME}}' \"$REPO_ROOT/templates/project/AGENTS.md.tmpl\""
+run_test "AGENTS.md.tmpl has {{BUILD_COMMANDS}}" "grep -q '{{BUILD_COMMANDS}}' \"$REPO_ROOT/templates/project/AGENTS.md.tmpl\""
 
 test_summary

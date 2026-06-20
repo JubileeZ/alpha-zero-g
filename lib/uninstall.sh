@@ -10,6 +10,7 @@ cmd_uninstall() {
   local target_dir="${HOME}/.gemini/antigravity-cli"
   local global_skills="${HOME}/.gemini/config/skills"
   local global_mcp="${HOME}/.gemini/config/mcp_config.json"
+  local global_agents="${AZG_GLOBAL_AGENTS}"
   
   local removed=0
   if [ -d "${target_dir}" ]; then
@@ -25,6 +26,11 @@ cmd_uninstall() {
   if [ -f "${global_mcp}" ]; then
     rm -f "${global_mcp}"
     ok "Removed: ${global_mcp}"
+    removed=1
+  fi
+  if [ -f "${global_agents}" ]; then
+    rm -f "${global_agents}"
+    ok "Removed: ${global_agents}"
     removed=1
   fi
   

@@ -38,17 +38,14 @@ chmod +x .agents/hooks/block-destructive-ops.sh
 # Apply
 "$REPO_ROOT/azg" apply .
 
-run_test ".agents/hooks/quality-gate.sh copied" "[ -f \".agents/hooks/quality-gate.sh\" ]"
 run_test "Existing hook not overwritten" "[ \"\$(cat .agents/hooks/block-destructive-ops.sh)\" = \"dummy hook\" ]"
 run_test "hooks.json existing key preserved" "[ \"\$(jq -r '.\"existing-gate\".enabled' .agents/hooks.json)\" = \"true\" ]"
 run_test "hooks.json default safety-gate added as false" "[ \"\$(jq -r '.\"safety-gate\".enabled' .agents/hooks.json)\" = \"false\" ]"
-run_test "hooks.json default quality-gate added as false" "[ \"\$(jq -r '.\"quality-gate\".enabled' .agents/hooks.json)\" = \"false\" ]"
 
-run_test "GEMINI.md created from template" "[ -f \"GEMINI.md\" ]"
 run_test "AGENTS.md created from template" "[ -f \"AGENTS.md\" ]"
 
-# Add custom content to GEMINI.md, run apply again to verify managed block update
-cat << 'EOF' > GEMINI.md
+# Add custom content to AGENTS.md, run apply again to verify managed block update
+cat << 'EOF' > AGENTS.md
 # Custom Header
 Custom Content
 <!-- AZG:MANAGED:START -->
@@ -59,9 +56,9 @@ EOF
 
 "$REPO_ROOT/azg" apply .
 
-run_test "Custom content preserved" "grep -q 'Custom Content' GEMINI.md"
-run_test "Old Managed Content replaced" "! grep -q 'Old Managed Content' GEMINI.md"
-run_test "New Managed Content inserted" "grep -q '## Build and Test Commands' GEMINI.md"
-run_test "Footer preserved" "grep -q 'Footer' GEMINI.md"
+run_test "Custom content preserved" "grep -q 'Custom Content' AGENTS.md"
+run_test "Old Managed Content replaced" "! grep -q 'Old Managed Content' AGENTS.md"
+run_test "New Managed Content inserted" "grep -q '## Key Commands' AGENTS.md"
+run_test "Footer preserved" "grep -q 'Footer' AGENTS.md"
 
 test_summary

@@ -51,12 +51,9 @@ cd "${TEMP_WORKSPACE}"
 # Inputs for interactive flow:
 # 1) stack: 1 (python)
 # 2) custom cmds: n
-# 3) hooks: y (quality-gate), y (auto-lint)
-# 4) run setup-matt-pocock-skills now: n
-# 5) mcp: 2 (GitHub)
-# 6) AGENTS.md: y
-# 7) git init: y
-printf "1\nn\ny\ny\nn\n2\ny\ny\n" | "${AZG}" new my-new-app >/dev/null 2>&1
+# 3) mcp: 2 (GitHub)
+# 4) git init: y
+printf "1\nn\n2\ny\n" | "${AZG}" new my-new-app >/dev/null 2>&1
 
 if [ -d "my-new-app/.agents" ]; then
   pass "Scaffolded app has .agents dir"
@@ -64,10 +61,10 @@ else
   fail "Scaffolded app missing .agents dir"
 fi
 
-if [ -f "my-new-app/GEMINI.md" ] && grep -q "## Build and Test Commands" "my-new-app/GEMINI.md"; then
-  pass "GEMINI.md generated correctly"
+if [ -f "my-new-app/AGENTS.md" ] && grep -q "## Key Commands" "my-new-app/AGENTS.md"; then
+  pass "AGENTS.md generated correctly"
 else
-  fail "GEMINI.md missing or malformed"
+  fail "AGENTS.md missing or malformed"
 fi
 
 if [ -d "my-new-app/.git" ]; then
@@ -83,9 +80,9 @@ cd existing-app
 git init -q
 git commit --allow-empty -m "Init" -q
 touch README.md
-echo "# Existing Project" > GEMINI.md
-git add README.md GEMINI.md
-git commit -q -m "Add README and GEMINI.md"
+echo "# Existing Project" > AGENTS.md
+git add README.md AGENTS.md
+git commit -q -m "Add README and AGENTS.md"
 
 assert_exit "azg apply exits 0" 0 "${AZG}" apply . >/dev/null
 
@@ -95,10 +92,10 @@ else
   fail "Apply failed to inject hooks"
 fi
 
-if [ -f "GEMINI.md" ] && grep -q "AZG:MANAGED:START" "GEMINI.md"; then
-  pass "Apply injected GEMINI.md managed block"
+if [ -f "AGENTS.md" ] && grep -q "AZG:MANAGED:START" "AGENTS.md"; then
+  pass "Apply injected AGENTS.md managed block"
 else
-  fail "Apply failed to inject GEMINI.md managed block"
+  fail "Apply failed to inject AGENTS.md managed block"
 fi
 
 test_summary

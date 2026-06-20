@@ -222,13 +222,9 @@ cmd_new() {
     local mcp_choice
     mcp_choice="$(ask 'Choose [1/2/3/4]' '1')"
 
-    # Q6: AGENTS.md
-    local write_agents_md
-    write_agents_md="$(ask_yn 'Q6. Write AGENTS.md alongside GEMINI.md?' 'y')"
-
-    # Q7: Git init
+    # Q6: Git init
     local git_init
-    git_init="$(ask_yn 'Q7. Run git init and create initial commit?' 'y')"
+    git_init="$(ask_yn 'Q6. Run git init and create initial commit?' 'y')"
 
     # ── scaffold the project ──────────────────────────────────────────────────
 
@@ -274,26 +270,14 @@ cmd_new() {
             ;;
     esac
 
-    # Render GEMINI.md
+    # Render AGENTS.md
     render_template \
-        "$tmpl_proj/GEMINI.md.tmpl" \
-        "$target_dir/GEMINI.md" \
+        "$tmpl_proj/AGENTS.md.tmpl" \
+        "$target_dir/AGENTS.md" \
         "PROJECT_NAME" "$project_name" \
         "AZG_VERSION" "$AZG_VERSION" \
         "DATE" "$TODAY" \
-        "BUILD_COMMANDS" "$build_cmds_table" \
-        "DEFINITION_OF_DONE" "$done_steps"
-
-    # Render AGENTS.md
-    if [ "$write_agents_md" = "yes" ]; then
-        render_template \
-            "$tmpl_proj/AGENTS.md.tmpl" \
-            "$target_dir/AGENTS.md" \
-            "PROJECT_NAME" "$project_name" \
-            "AZG_VERSION" "$AZG_VERSION" \
-            "DATE" "$TODAY" \
-            "BUILD_COMMANDS" "$build_cmds_table"
-    fi
+        "BUILD_COMMANDS" "$build_cmds_table"
 
     # Git init
     if [ "$git_init" = "yes" ]; then

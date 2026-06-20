@@ -129,6 +129,7 @@ require_agy() {
 AZG_GLOBAL_DIR="${HOME}/.gemini/antigravity-cli"
 AZG_GLOBAL_SKILLS_DIR="${HOME}/.gemini/config/skills"
 AZG_GLOBAL_MCP_CONFIG="${HOME}/.gemini/config/mcp_config.json"
+AZG_GLOBAL_AGENTS="${HOME}/.gemini/config/AGENTS.md"
 
 # ---------------------------------------------------------------------------
 # Atomic file write helpers
