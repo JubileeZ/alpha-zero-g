@@ -23,7 +23,7 @@ git commit -q -m "Initial commit"
 cd "${REPO_ROOT}"
 
 rm -rf "${TEMP_REPO}"
-git clone -q "${UPSTREAM_REPO}" "${TEMP_REPO}"
+git clone -q --no-local "${UPSTREAM_REPO}" "${TEMP_REPO}"
 git -C "${TEMP_REPO}" config user.name "Test"
 git -C "${TEMP_REPO}" config user.email "test@example.com"
 

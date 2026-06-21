@@ -95,4 +95,5 @@ VERSION                      # File indicating the current Alpha-Zero-G release 
 
 - ponytail: Bash and jq are pre-approved stack requirements.
 - clean-temp: Temporary files created during tests must be cleaned up properly using traps or explicit or automatic cleanup.
+- When user requests changes to devices on agent harness, implement scalably. Design for current device and repo, ensuring compatibility with future devices and new repositories 
 <!-- AZG:MANAGED:END -->

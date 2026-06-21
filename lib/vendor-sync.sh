@@ -155,7 +155,22 @@ _sync_one_repo() {
   local lock_content
   lock_content="source: ${upstream}
 commit: ${commit_sha}
-date_vendored: ${today}
+date_vendored: ${today}"
+
+  if [[ "${dest_base}" == *mattpocock-skills* ]]; then
+    lock_content="${lock_content}
+license: MIT (verify against upstream before publishing)
+included:
+  - skills/engineering
+  - skills/productivity
+excluded:
+  - skills/deprecated
+  - skills/in-progress
+  - skills/misc
+  - skills/personal"
+  fi
+
+  lock_content="${lock_content}
 "
   atomic_write "${vendor_lock}" "${lock_content}"
 

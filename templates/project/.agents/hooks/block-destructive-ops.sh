@@ -2,12 +2,44 @@
 # block-destructive-ops.sh
 input=$(cat)
 
+tool_name=""
 cmd=""
+target_file=""
+
 if command -v jq >/dev/null 2>&1; then
+  tool_name=$(printf '%s' "$input" | jq -r '.toolCall.name // empty' 2>/dev/null)
   cmd=$(printf '%s' "$input" | jq -r '.toolCall.args.CommandLine // empty' 2>/dev/null)
+  target_file=$(printf '%s' "$input" | jq -r '.toolCall.args.TargetFile // .toolCall.args.path // .toolCall.args.file // empty' 2>/dev/null)
 fi
-[ -z "$cmd" ] && cmd=$(printf '%s' "$input" | \
-  sed -n 's/.*"CommandLine"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p')
+
+# Fallback parsing in case jq is not present or parsing failed
+if [ -z "$tool_name" ]; then
+  tool_name=$(printf '%s' "$input" | sed -n 's/.*"name"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' | head -n1)
+fi
+if [ -z "$cmd" ]; then
+  cmd=$(printf '%s' "$input" | sed -n 's/.*"CommandLine"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' | head -n1)
+fi
+if [ -z "$target_file" ]; then
+  target_file=$(printf '%s' "$input" | sed -n 's/.*"TargetFile"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' | head -n1)
+  [ -z "$target_file" ] && target_file=$(printf '%s' "$input" | sed -n 's/.*"path"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' | head -n1)
+  [ -z "$target_file" ] && target_file=$(printf '%s' "$input" | sed -n 's/.*"file"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' | head -n1)
+fi
+
+# 1. Protect hooks and .agents configuration from being modified via file writing tools
+if [[ "$tool_name" =~ ^(write_to_file|replace_file_content|multi_replace_file_content|write_file|edit_file)$ ]]; then
+  if [[ "$target_file" =~ (\.agents|hooks\.json|hooks/) ]]; then
+    printf '{"decision":"deny","reason":"Modifying safety-gate configuration or hooks is not allowed."}\n'
+    exit 0
+  fi
+fi
+
+# 2. Protect hooks and .agents configuration from being modified via command line
+if [ "$tool_name" = "run_command" ] || [ -n "$cmd" ]; then
+  if printf '%s' "$cmd" | grep -qE '(\b(rm|mv|cp|sed|echo|tee|chmod|write|overwrite)\b|>|>>|\bgit\s+(checkout|reset|clean|revert)\b).*(hooks\.json|\.agents)'; then
+    printf '{"decision":"deny","reason":"Modifying safety-gate configuration or hooks is not allowed."}\n'
+    exit 0
+  fi
+fi
 
 haystack="$cmd $input"
 

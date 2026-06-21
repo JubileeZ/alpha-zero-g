@@ -120,7 +120,7 @@ _remap_skill_frontmatter() {
   # We store them as: "FROM=TO" pairs, one per line.
   grep -E '"[^"]+": *"[^"]+"' "${tool_map_json}" | \
     sed 's/^[[:space:]]*"\([^"]*\)":[[:space:]]*"\([^"]*\)".*/\1=\2/' \
-    > "${tmp_map}"
+    > "${tmp_map}" || true
 
   # Now rewrite SKILL_MD:
   # - Find the frontmatter block (between first and second `---`)
@@ -254,6 +254,18 @@ _prune_vendor_skills() {
     # Not vendor-managed: no sentinel → skip (never prune custom skills)
     [ -f "${installed_dir}/ANTIGRAVITY-NOTE.md" ] || continue
 
+    local vendor_name
+    vendor_name="$(basename "${vendor_dir}")"
+    local belongs=0
+    if grep -q "vendor/" "${installed_dir}/ANTIGRAVITY-NOTE.md"; then
+      if grep -q "vendor/${vendor_name}/" "${installed_dir}/ANTIGRAVITY-NOTE.md"; then
+        belongs=1
+      fi
+    else
+      belongs=1
+    fi
+    [ "${belongs}" -eq 1 ] || continue
+
     # Still present in vendor tree? Check all included categories.
     local found=0
     for category_dir in "${vendor_dir}"/*/; do
@@ -271,4 +283,5 @@ _prune_vendor_skills() {
       eval "${count_var}=\$(( \${${count_var}} + 1 ))"
     fi
   done
+  return 0
 }

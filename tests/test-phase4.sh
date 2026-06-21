@@ -56,5 +56,37 @@ assert_output "Allows git status"         '{"decision":"allow"}' run_block_hook 
 assert_output "Allows ls -la /"           '{"decision":"allow"}' run_block_hook "ls -la /"
 assert_output "Allows rm file.txt"        '{"decision":"allow"}' run_block_hook "rm file.txt"
 
+section "3. Guardrail bypass protection"
+
+run_custom_hook() {
+  local json="$1"
+  echo "${json}" | "${HOOKS_DIR}/block-destructive-ops.sh"
+}
+
+assert_output "Blocks write_to_file to hooks.json" \
+  '{"decision":"deny","reason":"Modifying safety-gate configuration or hooks is not allowed."}' \
+  run_custom_hook '{"toolCall":{"name":"write_to_file","args":{"TargetFile":"/workspace/.agents/hooks.json","CodeContent":"{}"}}}'
+
+assert_output "Blocks replace_file_content to hooks.json" \
+  '{"decision":"deny","reason":"Modifying safety-gate configuration or hooks is not allowed."}' \
+  run_custom_hook '{"toolCall":{"name":"replace_file_content","args":{"TargetFile":"/workspace/.agents/hooks.json","TargetContent":"enabled","ReplacementContent":"disabled"}}}'
+
+assert_output "Blocks write_to_file to hook script" \
+  '{"decision":"deny","reason":"Modifying safety-gate configuration or hooks is not allowed."}' \
+  run_custom_hook '{"toolCall":{"name":"write_to_file","args":{"TargetFile":"/workspace/.agents/hooks/block-destructive-ops.sh","CodeContent":"{}"}}}'
+
+assert_output "Blocks command writing to hooks.json" \
+  '{"decision":"deny","reason":"Modifying safety-gate configuration or hooks is not allowed."}' \
+  run_custom_hook '{"toolCall":{"name":"run_command","args":{"CommandLine":"echo \"\" > .agents/hooks.json"}}}'
+
+assert_output "Blocks command deleting .agents" \
+  '{"decision":"deny","reason":"Modifying safety-gate configuration or hooks is not allowed."}' \
+  run_custom_hook '{"toolCall":{"name":"run_command","args":{"CommandLine":"rm -rf .agents"}}}'
+
+assert_output "Blocks git checkout on hooks.json" \
+  '{"decision":"deny","reason":"Modifying safety-gate configuration or hooks is not allowed."}' \
+  run_custom_hook '{"toolCall":{"name":"run_command","args":{"CommandLine":"git checkout -- .agents/hooks.json"}}}'
+
 # ---------------------------------------------------------------------------
 test_summary
+
