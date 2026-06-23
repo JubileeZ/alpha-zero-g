@@ -73,6 +73,7 @@
   `# DESTRUCTIVE: <reason this is safe to proceed>`
 - Never add a new top-level dependency without flagging it explicitly in your response.
 - Prefer reversible actions. When an irreversible action is required, state it clearly before executing.
+- If a tool call is blocked by a safety hook (returns decision: deny), clearly explain the block to the user and suggest the next manual action (providing the exact shell command or file content to write manually).
 
 **Project-specific:**
 - <!-- AGENT: Add rules relevant to this codebase. Examples:

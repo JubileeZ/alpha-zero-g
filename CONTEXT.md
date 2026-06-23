@@ -28,3 +28,7 @@ _Avoid_: Cooldown quota, hourly limit
 The visual rendering style of the statusline (Nerd Font, Unicode, or ASCII) selected dynamically or via user settings to match font capabilities.
 _Avoid_: Status bar theme, icon mode.
 
+**Safety Hook**:
+An interceptor script run automatically before any agent tool call to validate command patterns and file targets, preventing unauthorized alterations or system damage.
+_Avoid_: Guardrail, safety command, block policy.
+

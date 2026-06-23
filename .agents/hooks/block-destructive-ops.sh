@@ -28,7 +28,7 @@ fi
 # 1. Protect hooks and .agents configuration from being modified via file writing tools
 if [[ "$tool_name" =~ ^(write_to_file|replace_file_content|multi_replace_file_content|write_file|edit_file)$ ]]; then
   if [[ "$target_file" =~ (\.agents|hooks\.json|hooks/) ]]; then
-    printf '{"decision":"force_ask","reason":"Modifying safety-gate configuration or hooks is not allowed."}\n'
+    printf '{"decision":"deny","reason":"Modifying safety-gate configuration or hooks is not allowed. Apply edits to these files manually if needed."}\n'
     exit 0
   fi
 fi
@@ -36,7 +36,7 @@ fi
 # 2. Protect hooks and .agents configuration from being modified via command line
 if [ "$tool_name" = "run_command" ] || [ -n "$cmd" ]; then
   if printf '%s' "$cmd" | grep -qE '(\b(rm|mv|cp|sed|echo|tee|chmod|write|overwrite)\b|>|>>|\bgit\s+(checkout|reset|clean|revert)\b).*(hooks\.json|\.agents)'; then
-    printf '{"decision":"force_ask","reason":"Modifying safety-gate configuration or hooks is not allowed."}\n'
+    printf '{"decision":"deny","reason":"Modifying safety-gate configuration or hooks is not allowed. Apply edits to these files manually if needed."}\n'
     exit 0
   fi
 fi
@@ -60,7 +60,7 @@ patterns=(
 
 for p in "${patterns[@]}"; do
   if printf '%s' "$haystack" | grep -qE "$p"; then
-    printf '{"decision":"force_ask","reason":"Destructive operation blocked by safety-gate policy."}\n'
+    printf '{"decision":"deny","reason":"Destructive operation blocked by safety-gate policy. Run this command manually in a terminal if you need to proceed."}\n'
     exit 0
   fi
 done
