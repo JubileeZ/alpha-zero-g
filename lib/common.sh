@@ -228,3 +228,44 @@ prompt_choice() {
     echo "${options[0]}"
   fi
 }
+# replace_managed_block TARGET_FILE START_MARKER END_MARKER NEW_CONTENT
+# Replaces everything between START_MARKER and END_MARKER (inclusive of markers)
+# with START_MARKER + NEW_CONTENT + END_MARKER.
+# Returns 0 on success, or 1 if target file does not contain START_MARKER.
+replace_managed_block() {
+  local target="${1}"
+  local start_marker="${2}"
+  local end_marker="${3}"
+  local new_content="${4}"
+
+  if [ ! -f "${target}" ]; then
+    return 1
+  fi
+  if ! grep -q "${start_marker}" "${target}"; then
+    return 1
+  fi
+
+  export _RMB_CONTENT="${new_content}"
+  export _RMB_START="${start_marker}"
+  export _RMB_END="${end_marker}"
+
+  # Replace using awk and atomic_write
+  awk '
+  BEGIN { in_block = 0 }
+  index($0, ENVIRON["_RMB_START"]) {
+      print ENVIRON["_RMB_START"]
+      print ENVIRON["_RMB_CONTENT"]
+      print ENVIRON["_RMB_END"]
+      in_block = 1
+      next
+  }
+  index($0, ENVIRON["_RMB_END"]) {
+      in_block = 0
+      next
+  }
+  !in_block { print }
+  ' "${target}" | atomic_write "${target}"
+
+  unset _RMB_CONTENT _RMB_START _RMB_END
+  return 0
+}

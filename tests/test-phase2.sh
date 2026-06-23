@@ -87,6 +87,9 @@ section "Setup: creating mock upstream git repo"
   printf "# deprecated\n" > skills/deprecated/README.md
   printf "# misc\n"       > skills/misc/README.md
 
+  # Add mock AGENTS.md for ponytail rules sync
+  printf "# Mock Ponytail AGENTS.md\n" > AGENTS.md
+
   git add -A
   git commit --quiet -m "initial mock commit"
 ) || { printf "  ${_clr_red}✗ Failed to create mock upstream${_clr_reset}\n"; exit 1; }
@@ -107,6 +110,7 @@ VENDOR_DIR="${TEMP_REPO}/templates/global/skills/vendor/mattpocock-skills"
 # Helper: run vendor_sync inside TEMP_REPO against mock upstream
 run_vendor_sync() {
   AZG_VENDOR_UPSTREAM="${MOCK_UPSTREAM}" \
+  AZG_PONYTAIL_UPSTREAM="${MOCK_UPSTREAM}" \
   AZG_ROOT="${TEMP_REPO}" \
     bash -c "
       source '${TEMP_REPO}/lib/common.sh'
@@ -273,6 +277,7 @@ section "12. azg update --vendor — wired through (uses TEMP_REPO)"
 
 _update_exit=0
 AZG_VENDOR_UPSTREAM="${MOCK_UPSTREAM}" \
+AZG_PONYTAIL_UPSTREAM="${MOCK_UPSTREAM}" \
   HOME="${TEMP_HOME}" \
   AZG_ROOT="${TEMP_REPO}" \
   "${TEMP_AZG}" update --vendor > /dev/null 2>&1 || _update_exit=$?

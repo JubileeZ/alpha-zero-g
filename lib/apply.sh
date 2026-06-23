@@ -101,23 +101,9 @@ cmd_apply() {
             "DATE" "$today" \
             "BUILD_COMMANDS" "$build_cmds_table"
         
-        if grep -q '<!-- AZG:MANAGED:START -->' "$dst"; then
-            export MANAGED_CONTENT="$(cat "$rendered_tmpl")"
-            awk '
-            BEGIN { in_block = 0 }
-            /<!-- AZG:MANAGED:START -->/ {
-                print "<!-- AZG:MANAGED:START -->"
-                print ENVIRON["MANAGED_CONTENT"]
-                print "<!-- AZG:MANAGED:END -->"
-                in_block = 1
-                next
-            }
-            /<!-- AZG:MANAGED:END -->/ {
-                in_block = 0
-                next
-            }
-            !in_block { print }
-            ' "$dst" | atomic_write "$dst"
+        local managed_content
+        managed_content="$(cat "$rendered_tmpl")"
+        if replace_managed_block "$dst" "<!-- AZG:MANAGED:START -->" "<!-- AZG:MANAGED:END -->" "$managed_content"; then
             info "Updated managed block in $doc"
         else
             {

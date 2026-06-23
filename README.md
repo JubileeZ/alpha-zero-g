@@ -64,7 +64,7 @@ Keep your Alpha-Zero-G setup and vendored skills up to date:
 # Pull latest Alpha-Zero-G updates
 ./azg update
 
-# Sync the latest vendored skills
+# Sync the latest vendored skills and ponytail rules
 ./azg update --vendor
 
 # Apply updates globally

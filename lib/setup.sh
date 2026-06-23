@@ -93,23 +93,36 @@ cmd_setup() {
     ok "Installed: mcp_config.json"
   fi
 
-  # 2.0. Install global AGENTS.md (atomic copy)
+  # 2.0. Install global AGENTS.md (managed-block aware)
   if [ ! -f "${template_agents}" ]; then
     die "Template AGENTS.md not found: ${template_agents}"
   fi
 
-  local _install_agents=1
-  if [ -f "${AZG_GLOBAL_AGENTS}" ] && [ "${force}" -eq 0 ]; then
-    # Already installed — check if identical
-    if diff -q "${template_agents}" "${AZG_GLOBAL_AGENTS}" > /dev/null 2>&1; then
-      info "AGENTS.md already up-to-date, skipping"
-      _install_agents=0
-    fi
-  fi
-
-  if [ "${_install_agents}" -eq 1 ]; then
+  if [ ! -f "${AZG_GLOBAL_AGENTS}" ]; then
     atomic_copy "${template_agents}" "${AZG_GLOBAL_AGENTS}"
     ok "Installed: AGENTS.md (global)"
+  elif [ "${force}" -eq 1 ]; then
+    cp "${AZG_GLOBAL_AGENTS}" "${AZG_GLOBAL_AGENTS}.bak"
+    atomic_copy "${template_agents}" "${AZG_GLOBAL_AGENTS}"
+    ok "Installed: AGENTS.md (global, forced; backup saved to .bak)"
+  elif diff -q "${template_agents}" "${AZG_GLOBAL_AGENTS}" > /dev/null 2>&1; then
+    info "AGENTS.md already up-to-date, skipping"
+  else
+    if grep -q '<!-- PONYTAIL:MANAGED:START -->' "${AZG_GLOBAL_AGENTS}"; then
+      local new_ponytail
+      new_ponytail="$(awk '/<!-- PONYTAIL:MANAGED:START -->/{f=1; next} /<!-- PONYTAIL:MANAGED:END -->/{f=0} f' "${template_agents}")"
+      if replace_managed_block "${AZG_GLOBAL_AGENTS}" "<!-- PONYTAIL:MANAGED:START -->" "<!-- PONYTAIL:MANAGED:END -->" "${new_ponytail}"; then
+        ok "Updated: AGENTS.md ponytail block (global)"
+      else
+        die "Failed to update managed block in ${AZG_GLOBAL_AGENTS}"
+      fi
+    else
+      warn "Existing global AGENTS.md does not have PONYTAIL:MANAGED markers."
+      info "Backing up legacy file to ${AZG_GLOBAL_AGENTS}.bak"
+      cp "${AZG_GLOBAL_AGENTS}" "${AZG_GLOBAL_AGENTS}.bak"
+      atomic_copy "${template_agents}" "${AZG_GLOBAL_AGENTS}"
+      ok "Installed: AGENTS.md (global, upgraded to managed-block format)"
+    fi
   fi
 
   # 2.1. Install statusline.sh (atomic copy)

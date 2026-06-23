@@ -3,8 +3,10 @@ import os
 import re
 import sys
 
-DOCS_DIR = "/Users/jubilee/Alpha-Zero-G/docs/antigravity-agent-architect"
-ROUTER_FILE = "/Users/jubilee/Alpha-Zero-G/docs/antigravity-agent-architecture.md"
+script_dir = os.path.dirname(os.path.abspath(__file__))
+project_root = os.path.dirname(script_dir)
+DOCS_DIR = os.path.join(project_root, "docs", "antigravity-agent-architect")
+ROUTER_FILE = os.path.join(project_root, "docs", "antigravity-agent-architecture.md")
 
 def check_file_exists(path, referrer):
     if not os.path.exists(path):

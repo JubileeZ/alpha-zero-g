@@ -219,12 +219,13 @@ Re-running `azg apply` only replaces content between these markers.
 
 - `azg update`: `git pull` the Alpha-Zero-G repo itself
 - `azg update --vendor`:
-  1. Shallow clone `mattpocock/skills@main`
-  2. Replace `templates/global/skills/vendor/mattpocock-skills/{engineering,productivity}/` wholesale
-  3. Update `VENDOR.lock` (commit + date)
-  4. Print diff summary (changed files per skill)
-  5. `overlay/` untouched
-- After either: re-run `azg setup` on each device to push changes to `~/.gemini/antigravity-cli/`
+  1. Shallow clone `mattpocock/skills@main` and `DietrichGebert/ponytail@main` (reusing clones)
+  2. Replace `templates/global/skills/vendor/mattpocock-skills/{engineering,productivity}/` wholesale, and sync ponytail-skills
+  3. Sync ponytail `AGENTS.md` into `templates/global/AGENTS.md` inside the `<!-- PONYTAIL:MANAGED:START -->` block
+  4. Update `VENDOR.lock` files (commit + date)
+  5. Print diff summary
+  6. `overlay/` untouched
+- After either: re-run `azg setup` on each device, which atomically merges the updated ponytail instructions into `~/.gemini/config/AGENTS.md` (backing up legacy configs to `.bak`)
 
 ---
 
