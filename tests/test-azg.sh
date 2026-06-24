@@ -67,6 +67,24 @@ else
   fail "AGENTS.md missing or malformed"
 fi
 
+if [ -f "my-new-app/ROADMAP.md" ] && grep -q "my-new-app - Project Roadmap" "my-new-app/ROADMAP.md"; then
+  pass "ROADMAP.md generated correctly"
+else
+  fail "ROADMAP.md missing or malformed"
+fi
+
+if [ -f "my-new-app/docs/agents/current-state.md" ] && grep -q "Current Implementation State" "my-new-app/docs/agents/current-state.md"; then
+  pass "current-state.md generated correctly"
+else
+  fail "current-state.md missing or malformed"
+fi
+
+if [ -f "my-new-app/docs/agents/progress.md" ] && grep -q "Agent Progress Updates" "my-new-app/docs/agents/progress.md"; then
+  pass "progress.md generated correctly"
+else
+  fail "progress.md missing or malformed"
+fi
+
 if [ -d "my-new-app/.git" ]; then
   pass "Git repository initialized"
 else
@@ -96,6 +114,12 @@ if [ -f "AGENTS.md" ] && grep -q "AZG:MANAGED:START" "AGENTS.md"; then
   pass "Apply injected AGENTS.md managed block"
 else
   fail "Apply failed to inject AGENTS.md managed block"
+fi
+
+if [ -f "ROADMAP.md" ] && [ -f "docs/agents/current-state.md" ] && [ -f "docs/agents/progress.md" ]; then
+  pass "Apply created tracking templates"
+else
+  fail "Apply failed to create tracking templates"
 fi
 
 test_summary

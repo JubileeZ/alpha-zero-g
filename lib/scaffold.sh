@@ -279,6 +279,33 @@ cmd_new() {
         "DATE" "$TODAY" \
         "BUILD_COMMANDS" "$build_cmds_table"
 
+    # Render ROADMAP.md
+    render_template \
+        "$tmpl_proj/ROADMAP.md.tmpl" \
+        "$target_dir/ROADMAP.md" \
+        "PROJECT_NAME" "$project_name" \
+        "AZG_VERSION" "$AZG_VERSION" \
+        "DATE" "$TODAY" \
+        "BUILD_COMMANDS" "$build_cmds_table"
+
+    # Render docs/agents/current-state.md
+    render_template \
+        "$tmpl_proj/docs/agents/current-state.md.tmpl" \
+        "$target_dir/docs/agents/current-state.md" \
+        "PROJECT_NAME" "$project_name" \
+        "AZG_VERSION" "$AZG_VERSION" \
+        "DATE" "$TODAY" \
+        "BUILD_COMMANDS" "$build_cmds_table"
+
+    # Render docs/agents/progress.md
+    render_template \
+        "$tmpl_proj/docs/agents/progress.md.tmpl" \
+        "$target_dir/docs/agents/progress.md" \
+        "PROJECT_NAME" "$project_name" \
+        "AZG_VERSION" "$AZG_VERSION" \
+        "DATE" "$TODAY" \
+        "BUILD_COMMANDS" "$build_cmds_table"
+
     # Git init
     if [ "$git_init" = "yes" ]; then
         if command -v git >/dev/null 2>&1; then

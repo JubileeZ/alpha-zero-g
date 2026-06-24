@@ -117,5 +117,21 @@ cmd_apply() {
         rm -f "$rendered_tmpl"
     fi
 
+    # 5. Handle ROADMAP.md, docs/agents/current-state.md, docs/agents/progress.md
+    for doc in "ROADMAP.md" "docs/agents/current-state.md" "docs/agents/progress.md"; do
+        local tmpl="$tmpl_proj/${doc}.tmpl"
+        local dst="$target_dir/$doc"
+        if [ ! -f "$dst" ]; then
+            render_template "$tmpl" "$dst" \
+                "PROJECT_NAME" "$project_name" \
+                "AZG_VERSION" "$azg_version" \
+                "DATE" "$today" \
+                "BUILD_COMMANDS" "$build_cmds_table"
+            info "Created $doc"
+        else
+            warn "Skipping existing tracking file: $doc"
+        fi
+    done
+
     ok "Retrofit complete."
 }

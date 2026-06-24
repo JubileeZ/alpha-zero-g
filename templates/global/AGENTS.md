@@ -48,3 +48,13 @@ If you read the project-level `AGENTS.md` and see placeholders to be filled (e.g
 # AGENT INSTRUCTIONS: Temporary File Cleanup
 
 Clean up any temporary directories, scratch files, or test outputs that you create during your work before finishing the task. Do not leave untracked temporary files in the repository.
+
+# AGENT INSTRUCTIONS: Project Status Tracking Placeholder Rule
+
+If you read the project-level tracking files (`ROADMAP.md`, `docs/agents/progress.md`, or `docs/agents/current-state.md`) and see placeholders to be filled (e.g., `<!-- AGENT: ... -->` blocks):
+1. Ask the user if they want to fill them in first.
+2. The user can skip this. If skipped, leave the `<!-- AGENT: ... -->` placeholders exactly as they are.
+3. If the user agrees to fill them:
+   - Interview the user to align on the project's current status and goals.
+   - Propose content for the placeholders following the established styles of each document.
+   - Remove the placeholder comments from the sections that are filled in; preserve them in skipped sections.
