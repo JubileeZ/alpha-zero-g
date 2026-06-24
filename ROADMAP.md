@@ -8,69 +8,56 @@ This roadmap tracks the development progress, target architecture, and phases fo
 
 ## Personas
 
-<!-- AGENT: Define the primary user and developer personas.
-     Identify who they are, their goals, and their primary interface surface.
-     Example:
-     | Persona | Goal | Primary surface |
-     |---------|------|-----------------|
-     | **User** | Query API and view dashboard | Web UI |
--->
+| Persona | Goal | Primary surface |
+|---------|------|-----------------|
+| **AI Agents** | Execute tasks, consume instructions/skills, and maintain codebase alignment | Local agent environment (`agy`) |
+| **Human Software Engineers** | Configure, scaffold, test, and run the `azg` tool & hooks | Command Line Interface (`azg`) |
 
 ---
 
-## Current Project Status: **Phase 1 (Foundations)**
-
-<!-- AGENT: Update the active phase and customize the diagram/phases below. -->
+## Current Project Status: **All Phases Complete (Phase 9/Production Ready)**
 
 ```mermaid
 flowchart TD
-    P1["Phase 1: Foundations ⏳"] --> P2["Phase 2: Core Implementation"]
-    P2 --> P3["Phase 3: Integration & Testing"]
-    P3 --> P4["Phase 4: Deployment"]
+    P1["Phase 1: Foundations (Complete)"] --> P2["Phase 2: Core Implementation (Complete)"]
+    P2 --> P3["Phase 3: Integration & Testing (Complete)"]
+    P3 --> P4["Phase 4: Deployment & Release (Complete)"]
 
-    style P1 fill:#1a365d,stroke:#2b6cb0,stroke-width:2px,color:#fff
-    style P2 fill:#2d3748,stroke:#4a5568,stroke-width:1px,color:#a0aec0
-    style P3 fill:#2d3748,stroke:#4a5568,stroke-width:1px,color:#a0aec0
-    style P4 fill:#2d3748,stroke:#4a5568,stroke-width:1px,color:#a0aec0
+    style P1 fill:#1c7430,stroke:#28a745,stroke-width:2px,color:#fff
+    style P2 fill:#1c7430,stroke:#28a745,stroke-width:2px,color:#fff
+    style P3 fill:#1c7430,stroke:#28a745,stroke-width:2px,color:#fff
+    style P4 fill:#1c7430,stroke:#28a745,stroke-width:2px,color:#fff
 ```
 
 ---
 
 ## Implementation Phases
 
-### ⏳ Phase 1: Repo Infrastructure & Foundations (Active)
+### Phase 1: Repo Infrastructure & Foundations (Complete)
 
-<!-- AGENT: List the foundations for Phase 1. Examples:
-     - [ ] Repository layout and initial structure
-     - [ ] Basic configuration and environment wiring
-     - [ ] Initial test and lint setup
--->
-- [ ] Initialize repository structure and configuration.
-- [ ] Setup testing and linting tools.
+- [x] Initialize repository structure and configuration.
+- [x] Setup testing and linting tools.
 
 ---
 
-### 📋 Phase 2: Core Implementation (Planned)
+### Phase 2: Core Implementation (Complete)
 
-<!-- AGENT: List the core features for Phase 2. -->
-- [ ] Core business logic and data structures.
-- [ ] Basic unit and integration tests.
-
----
-
-### 📋 Phase 3: Integration & Testing (Planned)
-
-<!-- AGENT: List the integration targets for Phase 3. -->
-- [ ] Integration with external services or databases.
-- [ ] System and end-to-end verification.
+- [x] Core business logic and data structures (CLI setup, new, apply, update, uninstall).
+- [x] Basic unit and integration tests (test-phase0 through test-phase9).
 
 ---
 
-### 📋 Phase 4: Deployment & Release (Planned)
+### Phase 3: Integration & Testing (Complete)
 
-<!-- AGENT: List deployment and release steps for Phase 4. -->
-- [ ] Build and release pipeline.
-- [ ] Production hosting setup and verification.
+- [x] Integration with external services or databases (mattpocock-skills vendoring, tool-map remapping, hook libraries).
+- [x] System and end-to-end verification (test-azg.sh, verify_docs.py, and verify_lightweight_teamwork.py).
+
+---
+
+### Phase 4: Deployment & Release (Complete)
+
+- [x] Build and release pipeline.
+- [x] Production hosting setup and verification (machine-level install via setup script).
 
 ---
 
