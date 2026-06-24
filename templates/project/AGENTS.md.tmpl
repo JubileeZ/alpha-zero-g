@@ -16,17 +16,6 @@
 
 ---
 
-## Key Commands
-
-<!-- AGENT: Fill in the exact commands an agent needs to install, test, lint, and run this project.
-     Use the actual package manager and toolchain. Do not use generic placeholders. -->
-
-{{BUILD_COMMANDS}}
-
-**Pre-commit gate:** agents must run test and lint commands and confirm both pass before proposing any commit.
-
----
-
 ## Repo Structure
 
 <!-- AGENT: List top-level directories and key subdirectories only. Keep to ≤ 15 lines.
@@ -45,6 +34,17 @@
 ```
 <repo structure here>
 ```
+
+---
+
+## Key Commands
+
+<!-- AGENT: Fill in the exact commands an agent needs to install, test, lint, and run this project.
+     Use the actual package manager and toolchain. Do not use generic placeholders. -->
+
+{{BUILD_COMMANDS}}
+
+**Pre-commit gate:** agents must run test and lint commands and confirm both pass before proposing any commit.
 
 ---
 
@@ -100,7 +100,7 @@
 ## Known Footguns
 
 <!-- AGENT: Gotchas that will silently burn an agent or produce wrong output.
-     These are non-obvious traps — if it's obvious, skip it.
+     These are permanent, codebase-wide design traps (not phase-specific).
      Examples:
      - "uv run is required — do not call python directly, the venv won't activate."
      - "The ORM session is not thread-safe — never share it across async tasks."
