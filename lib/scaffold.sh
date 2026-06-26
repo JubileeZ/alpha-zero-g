@@ -235,19 +235,25 @@ cmd_new() {
     chmod +x "$target_dir/tests/test-harness.sh"
 
     # Copy pre-seeded agent guides
-    copy_template "$tmpl_proj/docs/agents/issue-tracker.md" "$target_dir/docs/agents/issue-tracker.md"
     copy_template "$tmpl_proj/docs/agents/triage-labels.md" "$target_dir/docs/agents/triage-labels.md"
     copy_template "$tmpl_proj/docs/agents/domain.md" "$target_dir/docs/agents/domain.md"
     copy_template "$tmpl_proj/docs/agents/CONTEXT.md.tmpl" "$target_dir/docs/agents/CONTEXT.md.tmpl"
 
-    # Configure tracker type in issue-tracker.md
-    if [ "$tracker" != "github" ]; then
-        local tracker_cap
-        tracker_cap="$(echo "$tracker" | awk '{print toupper(substr($0,1,1))tolower(substr($0,2))}')"
-        if [ "$tracker" = "gitlab" ]; then
-            tracker_cap="GitLab"
-        fi
-        sed_portable "s/GitHub/${tracker_cap}/g" "$target_dir/docs/agents/issue-tracker.md"
+    # Copy the correct issue-tracker template based on selected tracker
+    local tracker_src=""
+    if [ "$tracker" = "github" ]; then
+        tracker_src="$tmpl_proj/docs/agents/issue-tracker.md"
+    elif [ "$tracker" = "gitlab" ]; then
+        tracker_src="$REPO_ROOT/templates/global/skills/vendor/mattpocock-skills/engineering/setup-matt-pocock-skills/issue-tracker-gitlab.md"
+    elif [ "$tracker" = "local" ]; then
+        tracker_src="$REPO_ROOT/templates/global/skills/vendor/mattpocock-skills/engineering/setup-matt-pocock-skills/issue-tracker-local.md"
+    fi
+
+    if [ -n "$tracker_src" ] && [ -f "$tracker_src" ]; then
+        copy_template "$tracker_src" "$target_dir/docs/agents/issue-tracker.md"
+    else
+        # None or fallback
+        printf "# Issue tracker: None\n\nNo external issue tracker is configured.\nAll work state is tracked locally on the filesystem using task.md and ROADMAP.md.\n" > "$target_dir/docs/agents/issue-tracker.md"
     fi
 
     # Build commands default table

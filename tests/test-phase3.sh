@@ -441,7 +441,7 @@ done
 
 # Run azg setup with the temp repo and home
 SETUP_EXIT=0
-HOME="${TEMP_HOME}" AZG_ROOT="${TEMP_REPO}" "${TEMP_AZG}" setup > /dev/null 2>&1 \
+HOME="${TEMP_HOME}" AZG_ROOT="${TEMP_REPO}" "${TEMP_AZG}" setup --profile full > /dev/null 2>&1 \
   || SETUP_EXIT=$?
 
 if [ "${SETUP_EXIT}" -eq 0 ]; then
@@ -485,7 +485,7 @@ section "18. azg setup — idempotency still holds after Phase 3"
 
 # Second run of setup should exit 0 and produce same files
 SETUP2_EXIT=0
-HOME="${TEMP_HOME}" AZG_ROOT="${TEMP_REPO}" "${TEMP_AZG}" setup > /dev/null 2>&1 \
+HOME="${TEMP_HOME}" AZG_ROOT="${TEMP_REPO}" "${TEMP_AZG}" setup --profile full > /dev/null 2>&1 \
   || SETUP2_EXIT=$?
 
 if [ "${SETUP2_EXIT}" -eq 0 ]; then

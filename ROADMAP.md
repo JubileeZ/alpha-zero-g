@@ -60,37 +60,37 @@ Ship a **clone-and-go outer harness** for solo/small teams: harness-only templat
 
 ## Phase 3 — `azg apply` / merge
 
-- [ ] `azg apply --dry-run` shows managed-block diff
-- [ ] `azg apply --tracker github|gitlab|local|none` selects adapter template
-- [ ] Idempotent re-apply upgrades AZG managed sections only
-- [ ] Remove scaffold Q4 dependency on manual `setup-matt-pocock-skills` for GitHub default
+- [x] `azg apply --dry-run` shows managed-block diff
+- [x] `azg apply --tracker github|gitlab|local|none` selects adapter template
+- [x] Idempotent re-apply upgrades AZG managed sections only
+- [x] Remove scaffold Q4 dependency on manual `setup-matt-pocock-skills` for GitHub default
 
 ---
 
 ## Phase 4 — Global setup (minimal profile)
 
-- [ ] `azg setup --profile minimal` (default) — 9 skills only
-- [ ] `azg setup --profile full` — entire vendored catalog
-- [ ] Smart skill sync: copy only when `VENDOR.lock` commit differs from last setup stamp
-- [ ] MCP template: `gh` default docs; commented read-only GitHub MCP stub
-- [ ] Document update ritual in README
+- [x] `azg setup --profile minimal` (default) — 9 skills only
+- [x] `azg setup --profile full` — entire vendored catalog
+- [x] Smart skill sync: copy only when `VENDOR.lock` commit differs from last setup stamp
+- [x] MCP template: `gh` default docs; commented read-only GitHub MCP stub
+- [x] Document update ritual in README
 
 ---
 
 ## Phase 5 — Tests & verification
 
-- [ ] Extend `test-azg.sh` for harness-only `azg new`
-- [ ] Test commit-gate and spawn-budget hooks in isolated HOME
-- [ ] `verify_docs.py` includes new doc paths
-- [ ] Cross-platform note in AGENTS.md for Windows Git Bash
+- [x] Extend `test-azg.sh` for harness-only `azg new`
+- [x] Test commit-gate and spawn-budget hooks in isolated HOME
+- [x] `verify_docs.py` includes new doc paths
+- [x] Cross-platform note in AGENTS.md for Windows Git Bash
 
 ---
 
 ## Phase 6 — Cleanup
 
-- [ ] README reflects v4 onboarding (two-step ritual)
-- [ ] Bump `VERSION` to 4.0.0 when phases 1–5 complete
-- [ ] ADR for v4 harness-only pivot if needed
+- [x] README reflects v4 onboarding (two-step ritual)
+- [x] Bump `VERSION` to 4.0.0 when phases 1–5 complete
+- [x] ADR for v4 harness-only pivot if needed
 
 ---
 

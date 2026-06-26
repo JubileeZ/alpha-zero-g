@@ -45,6 +45,42 @@ else
   fail "settings.json not created globally"
 fi
 
+# 1a. Profile validation
+assert_exit "azg setup with invalid profile fails" 1 "${AZG}" setup --profile invalid
+
+# 1b. Profile minimal (default) check
+# Default is minimal profile. Verify that one of the 9 minimal skills is copied, but ponytail or setup-matt-pocock-skills is NOT.
+if [ -d "${TEMP_HOME}/.gemini/config/skills/tdd" ]; then
+  pass "minimal profile copies tdd"
+else
+  fail "minimal profile missing tdd"
+fi
+
+if [ ! -d "${TEMP_HOME}/.gemini/config/skills/setup-matt-pocock-skills" ] && [ ! -d "${TEMP_HOME}/.gemini/config/skills/ponytail" ]; then
+  pass "minimal profile excludes setup-matt-pocock-skills and ponytail"
+else
+  fail "minimal profile did not exclude setup-matt-pocock-skills or ponytail"
+fi
+
+# 1c. Smart Setup Sync verification
+# Run setup again, capturing output to check if smart sync kicks in
+_setup_sync_out="$("${AZG}" setup 2>&1)"
+if echo "${_setup_sync_out}" | grep -q "Smart Sync: VENDOR.lock commits unchanged"; then
+  pass "setup smart sync skips copying skills when lock commit is unchanged"
+else
+  fail "setup smart sync failed to skip skill copying" "got: ${_setup_sync_out}"
+fi
+
+# 1d. Profile full check
+# Force setup with full profile to copy all skills
+assert_exit "azg setup --profile full exits 0" 0 "${AZG}" setup --profile full --force >/dev/null
+if [ -d "${TEMP_HOME}/.gemini/config/skills/setup-matt-pocock-skills" ] && [ -d "${TEMP_HOME}/.gemini/config/skills/ponytail" ]; then
+  pass "full profile copies setup-matt-pocock-skills and ponytail"
+else
+  fail "full profile missing setup-matt-pocock-skills or ponytail"
+fi
+
+
 section "2. azg new in workspace"
 
 cd "${TEMP_WORKSPACE}"
@@ -85,6 +121,35 @@ else
   fail "progress.md missing or malformed"
 fi
 
+if [ -f "my-new-app/.agents/hooks/commit-gate.sh" ] && \
+   [ -f "my-new-app/.agents/hooks/checkpoint.sh" ] && \
+   [ -f "my-new-app/.agents/hooks/spawn-budget.sh" ]; then
+  pass "Hooks generated correctly during new"
+else
+  fail "Hooks missing or failed to generate during new"
+fi
+
+if [ -f "my-new-app/.cursor/rules/read-agents-md.md" ] && \
+   [ -f "my-new-app/.cursor/rules/work-state-continuity.md" ]; then
+  pass "Cursor rules generated correctly during new"
+else
+  fail "Cursor rules missing or failed to generate during new"
+fi
+
+if [ -f "my-new-app/tests/test-harness.sh" ] && [ -x "my-new-app/tests/test-harness.sh" ]; then
+  pass "Test harness generated correctly during new"
+else
+  fail "Test harness missing or not executable"
+fi
+
+if [ -f "my-new-app/docs/agents/issue-tracker.md" ] && \
+   [ -f "my-new-app/docs/agents/triage-labels.md" ] && \
+   [ -f "my-new-app/docs/agents/domain.md" ]; then
+  pass "Agent doc guides generated correctly during new"
+else
+  fail "Agent doc guides missing or failed to generate during new"
+fi
+
 if [ -d "my-new-app/.git" ]; then
   pass "Git repository initialized"
 else
@@ -122,4 +187,94 @@ else
   fail "Apply failed to create tracking templates"
 fi
 
+# 3a. Tracker validation
+assert_exit "azg apply with invalid tracker fails" 1 "${AZG}" apply . --tracker invalid
+
+# 3b. Dry-run verification
+# Prepare a fresh repo to test dry-run
+cd "${TEMP_WORKSPACE}"
+mkdir -p dryrun-app
+cd dryrun-app
+git init -q
+git commit --allow-empty -m "Init" -q
+echo "# User Customized AGENTS.md" > AGENTS.md
+
+_dryrun_out="$(${AZG} apply . --dry-run)"
+assert_exit "azg apply --dry-run exits 0" 0 echo "$?"
+
+# Assert dry-run output contains creation actions and diff
+if echo "${_dryrun_out}" | grep -q "\[CREATE\] docs/agents/issue-tracker.md" && \
+   echo "${_dryrun_out}" | grep -q "\[COPY\] .agents/hooks/commit-gate.sh" && \
+   echo "${_dryrun_out}" | grep -q "<!-- AZG:MANAGED:START -->"; then
+  pass "dry-run displays actions and unified diff"
+else
+  fail "dry-run missing action summary or diff" "got: ${_dryrun_out}"
+fi
+
+# Assert no files actually written during dry-run
+if [ ! -d ".agents" ] && [ ! -f "docs/agents/issue-tracker.md" ] && [ ! -f "ROADMAP.md" ]; then
+  pass "dry-run does not modify target workspace"
+else
+  fail "dry-run modified target workspace"
+fi
+
+# 3c. Overwrite issue-tracker based on tracker flag
+cd "${TEMP_WORKSPACE}"
+# GitLab tracker test
+mkdir -p gitlab-app
+cd gitlab-app
+git init -q
+git commit --allow-empty -m "Init" -q
+"${AZG}" apply . --tracker gitlab >/dev/null
+assert_file_contains "GitLab issue-tracker used" "docs/agents/issue-tracker.md" "GitLab"
+
+# Local tracker test
+cd "${TEMP_WORKSPACE}"
+mkdir -p local-app
+cd local-app
+git init -q
+git commit --allow-empty -m "Init" -q
+"${AZG}" apply . --tracker local >/dev/null
+assert_file_contains "Local issue-tracker used" "docs/agents/issue-tracker.md" "Local Markdown"
+
+# None tracker test
+cd "${TEMP_WORKSPACE}"
+mkdir -p none-app
+cd none-app
+git init -q
+git commit --allow-empty -m "Init" -q
+"${AZG}" apply . --tracker none >/dev/null
+assert_file_contains "None issue-tracker used" "docs/agents/issue-tracker.md" "Issue tracker: None"
+
+# 3d. Idempotency test (no block duplication and updates block only)
+cd "${TEMP_WORKSPACE}"
+mkdir -p idempotency-app
+cd idempotency-app
+git init -q
+git commit --allow-empty -m "Init" -q
+echo -e "# User custom header\n\n<!-- AZG:MANAGED:START -->\nOld content\n<!-- AZG:MANAGED:END -->\n\n# User custom footer" > AGENTS.md
+git add AGENTS.md
+git commit -m "commit agents" -q
+
+# Run apply once
+"${AZG}" apply . >/dev/null
+
+# Assert block replaced but user prose untouched
+if grep -q "# User custom header" AGENTS.md && \
+   grep -q "# User custom footer" AGENTS.md && \
+   grep -q "Session start" AGENTS.md; then
+  pass "apply merges block without clobbering user prose"
+else
+  fail "apply clobbered user prose or failed to update block" "$(cat AGENTS.md)"
+fi
+
+# Assert no duplicated blocks
+_start_count=$(grep -c "<!-- AZG:MANAGED:START -->" AGENTS.md)
+if [ "${_start_count}" -eq 1 ]; then
+  pass "apply is idempotent (no block duplication)"
+else
+  fail "apply duplicated managed block" "count: ${_start_count}"
+fi
+
 test_summary
+

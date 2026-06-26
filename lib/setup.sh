@@ -11,20 +11,58 @@
 # shellcheck source=lib/common.sh
 # common.sh is already sourced by the dispatcher before this file is sourced.
 
+is_skill_in_profile() {
+  local skill_name="${1}"
+  local profile="${2}"
+
+  if [ "${profile}" = "full" ]; then
+    return 0
+  fi
+
+  # Minimal profile: exactly 9 skills
+  case "${skill_name}" in
+    grill-with-docs|grilling|domain-modeling|handoff|ask-matt|triage|to-issues|diagnosing-bugs|tdd)
+      return 0
+      ;;
+    *)
+      return 1
+      ;;
+  esac
+}
+
 cmd_setup() {
   local dry_run=0
   local force=0
+  local profile="minimal"
 
   # Parse flags
-  for arg in "$@"; do
-    case "${arg}" in
-      --dry-run) dry_run=1 ;;
-      --force)   force=1   ;;
+  while [ $# -gt 0 ]; do
+    case "$1" in
+      --dry-run)
+        dry_run=1
+        shift
+        ;;
+      --force)
+        force=1
+        shift
+        ;;
+      --profile)
+        if [ -n "${2:-}" ]; then
+          profile="$2"
+          shift 2
+        else
+          die "azg setup: --profile requires an argument (minimal|full)"
+        fi
+        ;;
       *)
-        die "azg setup: unknown option '${arg}'. Usage: azg setup [--dry-run] [--force]"
+        die "azg setup: unknown option '$1'. Usage: azg setup [--dry-run] [--force] [--profile minimal|full]"
         ;;
     esac
   done
+
+  if [ "${profile}" != "minimal" ] && [ "${profile}" != "full" ]; then
+    die "azg setup: invalid profile '${profile}'. Allowed values are: minimal, full"
+  fi
 
   # -------------------------------------------------------------------------
   # Paths (AZG_GLOBAL_DIR, AZG_GLOBAL_SKILLS_DIR, AZG_GLOBAL_MCP_CONFIG
@@ -33,7 +71,24 @@ cmd_setup() {
   local template_global="${AZG_ROOT}/templates/global"
   local template_mcp="${template_global}/mcp_config.json"
   local template_agents="${template_global}/AGENTS.md"
-  local template_vendor="${template_global}/skills/vendor/mattpocock-skills"
+  local vendor_base_dir="${template_global}/skills/vendor"
+
+  # Check if we can skip skill copying based on VENDOR.lock commits (Smart Sync)
+  local skip_sync=0
+  local current_stamp_file="${AZG_GLOBAL_DIR}/setup_stamp"
+  local new_stamp=""
+
+  if [ -d "${vendor_base_dir}" ]; then
+    new_stamp="$(find "${vendor_base_dir}" -name "VENDOR.lock" -exec grep "^commit:" {} + | sort)"
+  fi
+
+  if [ "${force}" -eq 0 ] && [ -f "${current_stamp_file}" ] && [ -n "${new_stamp}" ]; then
+    local old_stamp
+    old_stamp="$(cat "${current_stamp_file}" 2>/dev/null || echo "")"
+    if [ "${old_stamp}" = "${new_stamp}" ]; then
+      skip_sync=1
+    fi
+  fi
 
   # -------------------------------------------------------------------------
   # Dry-run mode: just print what would happen and exit 0
@@ -45,19 +100,28 @@ cmd_setup() {
     info "  copy file  : ${template_mcp} → ${AZG_GLOBAL_MCP_CONFIG}"
     info "  copy file  : ${template_agents} → ${AZG_GLOBAL_AGENTS}"
 
-    # List vendor skills if any exist
-    if [ -d "${template_vendor}" ]; then
-      for category_dir in "${template_vendor}"/{engineering,productivity}; do
-        [ -d "${category_dir}" ] || continue
-        for skill_dir in "${category_dir}"/*/; do
-          [ -d "${skill_dir}" ] || continue
-          local skill_name
-          skill_name="$(basename "${skill_dir}")"
-          info "  copy skill : ${skill_dir} → ${AZG_GLOBAL_SKILLS_DIR}/${skill_name}/"
-        done
-      done
+    if [ "${skip_sync}" -eq 1 ]; then
+      info "  [SMART SYNC] skills are up-to-date (VENDOR.lock unchanged); would skip skill copying"
     else
-      info "  (no vendor skills found — run azg update --vendor to populate)"
+      # List vendor skills if any exist
+      if [ -d "${vendor_base_dir}" ]; then
+        for vendor_root in "${vendor_base_dir}"/*/; do
+          [ -d "${vendor_root}" ] || continue
+          for category_dir in "${vendor_root}"/*/; do
+            [ -d "${category_dir}" ] || continue
+            for skill_dir in "${category_dir}"/*/; do
+              [ -d "${skill_dir}" ] || continue
+              local skill_name
+              skill_name="$(basename "${skill_dir}")"
+              if is_skill_in_profile "${skill_name}" "${profile}"; then
+                info "  copy skill : ${skill_dir} → ${AZG_GLOBAL_SKILLS_DIR}/${skill_name}/"
+              fi
+            done
+          done
+        done
+      else
+        info "  (no vendor skills found — run azg update --vendor to populate)"
+      fi
     fi
 
     ok "Dry run complete. Run 'azg setup' to apply."
@@ -69,6 +133,7 @@ cmd_setup() {
   # -------------------------------------------------------------------------
   step "azg setup v${AZG_VERSION} — installing global config"
   info "Destination: ${AZG_GLOBAL_DIR}"
+  info "Profile: ${profile}"
 
   # 1. Create destination directories
   ensure_dir "${AZG_GLOBAL_DIR}"
@@ -81,7 +146,6 @@ cmd_setup() {
 
   local _install_mcp=1
   if [ -f "${AZG_GLOBAL_MCP_CONFIG}" ] && [ "${force}" -eq 0 ]; then
-    # Already installed — check if identical
     if diff -q "${template_mcp}" "${AZG_GLOBAL_MCP_CONFIG}" > /dev/null 2>&1; then
       info "mcp_config.json already up-to-date, skipping"
       _install_mcp=0
@@ -150,7 +214,6 @@ cmd_setup() {
   # 2.2. Configure/merge settings.json
   local settings_file="${AZG_GLOBAL_DIR}/settings.json"
   if [ -f "${settings_file}" ]; then
-    # Merge using jq to preserve other user settings
     info "Merging statusline configuration into settings.json"
     local tmp_settings="${settings_file}.azg.tmp"
     jq --arg path "${statusline_path}" '
@@ -161,7 +224,6 @@ cmd_setup() {
       }
     ' "${settings_file}" > "${tmp_settings}" && mv "${tmp_settings}" "${settings_file}"
   else
-    # Create new settings.json with statusline configuration
     info "Creating new settings.json with statusline configuration"
     printf '{\n  "statusLine": {\n    "type": "command",\n    "command": "%s",\n    "enabled": true\n  }\n}\n' "${statusline_path}" > "${settings_file}"
   fi
@@ -174,9 +236,10 @@ cmd_setup() {
   local skills_copied=0
   local skills_skipped=0
   local skills_pruned=0
-  local vendor_base_dir="${template_global}/skills/vendor"
 
-  if [ -d "${vendor_base_dir}" ]; then
+  if [ "${skip_sync}" -eq 1 ]; then
+    info "Smart Sync: VENDOR.lock commits unchanged. Skipping global skill sync."
+  elif [ -d "${vendor_base_dir}" ]; then
     # Loop over each vendor pack directory under vendor/
     for vendor_root in "${vendor_base_dir}"/*/; do
       [ -d "${vendor_root}" ] || continue
@@ -191,6 +254,10 @@ cmd_setup() {
           local skill_name
           skill_name="$(basename "${skill_dir}")"
           local dest="${AZG_GLOBAL_SKILLS_DIR}/${skill_name}"
+
+          if ! is_skill_in_profile "${skill_name}" "${profile}"; then
+            continue
+          fi
 
           if [ -d "${dest}" ] && [ "${force}" -eq 0 ]; then
             info "skill '${skill_name}' already installed, skipping (use --force to re-install)"
@@ -208,6 +275,11 @@ cmd_setup() {
         "${vendor_root}" \
         skills_pruned
     done
+
+    # Update setup_stamp if successful
+    if [ -n "${new_stamp}" ]; then
+      printf "%s\n" "${new_stamp}" > "${current_stamp_file}"
+    fi
   else
     info "No vendor skills found at ${vendor_base_dir}"
     info "Tip: run 'azg update --vendor' to vendor skills"
@@ -217,7 +289,9 @@ cmd_setup() {
   # Summary
   # -------------------------------------------------------------------------
   local _sum_skills=""
-  if [ "${skills_copied}" -gt 0 ] && [ "${skills_skipped}" -gt 0 ]; then
+  if [ "${skip_sync}" -eq 1 ]; then
+    _sum_skills="skills up-to-date (smart sync)"
+  elif [ "${skills_copied}" -gt 0 ] && [ "${skills_skipped}" -gt 0 ]; then
     _sum_skills="${skills_copied} skill(s) installed, ${skills_skipped} skipped"
   elif [ "${skills_copied}" -gt 0 ]; then
     _sum_skills="${skills_copied} skill(s) installed"

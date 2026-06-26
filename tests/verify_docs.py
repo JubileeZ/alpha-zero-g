@@ -23,8 +23,9 @@ def verify_links(file_path):
     # Ignore absolute web URLs starting with http/https
     links = re.findall(r'\[([^\]]+)\]\(([^)]+)\)', content)
     for text, link in links:
-        # Ignore external links, mailto, etc.
-        if link.startswith(("http://", "https://", "mailto:", "#")):
+        link = link.strip().strip("<>")
+        # Ignore external links, mailto, site-absolute paths, etc.
+        if link.startswith(("http://", "https://", "mailto:", "#", "/")):
             continue
         
         # Strip anchor from internal links
@@ -61,32 +62,24 @@ def verify_keywords(file_path):
 def main():
     success = True
     
-    if not os.path.exists(DOCS_DIR):
-        print(f"ERROR: docs directory does not exist: {DOCS_DIR}")
+    # Find all markdown files recursively in project root (excluding hidden dirs, tmp, etc.)
+    md_files = []
+    for root, dirs, files in os.walk(project_root):
+        dirs[:] = [d for d in dirs if not d.startswith(".") and d not in ["tmp", "node_modules", "vendor", "brain", "conversations"]]
+        for f in files:
+            if f.endswith(".md"):
+                md_files.append(os.path.join(root, f))
+                
+    if not md_files:
+        print("ERROR: No markdown files found.")
         sys.exit(1)
         
-    if not os.path.exists(ROUTER_FILE):
-        print(f"ERROR: router file does not exist: {ROUTER_FILE}")
-        sys.exit(1)
-        
-    # Verify router links
-    print(f"Verifying router links: {ROUTER_FILE}")
-    if not verify_links(ROUTER_FILE):
-        success = False
-        
-    # Verify each markdown file in docs directory
-    files = [f for f in os.listdir(DOCS_DIR) if f.endswith(".md")]
-    if not files:
-        print(f"ERROR: No markdown files found in {DOCS_DIR}")
-        success = False
-        
-    for f in files:
-        full_path = os.path.join(DOCS_DIR, f)
+    for full_path in sorted(md_files):
         print(f"Verifying {full_path}")
         if not verify_links(full_path):
             success = False
         if not verify_keywords(full_path):
-            # We don't block on keyword warning but print it
+            # We don't block on keyword warnings
             pass
             
     if success:
