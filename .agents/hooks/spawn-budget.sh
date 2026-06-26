@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 # spawn-budget.sh — enforce spawn depth and count limits
-input=$(cat)
-
 STATE_FILE=".agents/spawn-state.json"
 mkdir -p .agents
 
@@ -10,6 +8,8 @@ if [ "${1:-}" = "--reset" ]; then
   printf '{"decision":"allow"}\n'
   exit 0
 fi
+
+input=$(cat)
 
 max_spawns=3
 max_depth=2
