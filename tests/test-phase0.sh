@@ -28,7 +28,7 @@ assert_dir_exists   "docs/ directory exists"                           "${REPO_R
 
 section "2. VERSION file"
 
-assert_file_contains "VERSION contains '3.0.0'"   "${REPO_ROOT}/VERSION"   "3.0.0"
+assert_file_contains "VERSION contains '4.0.0'"   "${REPO_ROOT}/VERSION"   "4.0.0"
 _ver="$(cat "${REPO_ROOT}/VERSION" 2>/dev/null | tr -d '[:space:]')"
 if [[ "${_ver}" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
   pass "VERSION is semver format (${_ver})"
@@ -106,11 +106,11 @@ done
 section "6. azg dispatcher — version flags"
 
 assert_exit             "azg version exits 0"                0  "${AZG}" version
-assert_output_contains  "azg version prints version number" "3.0.0"  "${AZG}" version
+assert_output_contains  "azg version prints version number" "4.0.0"  "${AZG}" version
 assert_exit             "azg --version exits 0"              0  "${AZG}" --version
-assert_output_contains  "azg --version prints version"       "3.0.0"  "${AZG}" --version
+assert_output_contains  "azg --version prints version"       "4.0.0"  "${AZG}" --version
 assert_exit             "azg -v exits 0"                     0  "${AZG}" -v
-assert_output_contains  "azg -v prints version"              "3.0.0"  "${AZG}" -v
+assert_output_contains  "azg -v prints version"              "4.0.0"  "${AZG}" -v
 
 section "7. azg dispatcher — help flags"
 

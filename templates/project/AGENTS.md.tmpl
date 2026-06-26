@@ -45,6 +45,27 @@
 
 ---
 
+## Project-Specific Safety Rules
+
+- <!-- AGENT: Add safety rules specific to this codebase that agents must follow.
+     Example: "Never run tests against the production database." -->
+
+---
+
+## Code Conventions
+
+- <!-- AGENT: Document conventions specific to this codebase that deviate from defaults or language standards.
+     Example: "Use strict type annotations for all new Python functions." -->
+
+---
+
+## Agent Behavior Overrides
+
+- <!-- AGENT: List custom rules that override default agent behaviors or define project-specific constraints.
+     Example: "- ponytail: Python and uv are pre-approved stack requirements." -->
+
+---
+
 <!-- AZG:MANAGED:START -->
 ## Session start (agents)
 
@@ -56,24 +77,14 @@
 
 ---
 
-## Safety Rules
+## Universal Safety Rules
 
-**Universal (keep always):**
 - Never commit secrets, tokens, or credentials to any file.
 - Destructive operations (delete, overwrite, truncate, drop) require an inline comment:
   `# DESTRUCTIVE: <reason this is safe to proceed>`
 - Never add a new top-level dependency without flagging it explicitly in your response.
 - Prefer reversible actions. When an irreversible action is required, state it clearly before executing.
 - If a tool call is blocked by a safety hook (returns decision: deny), clearly explain the block to the user and suggest the next manual action (providing the exact shell command or file content to write manually).
-
-**Project-specific:**
-- <!-- AGENT: Add rules relevant to this codebase. -->
-
----
-
-## Code Conventions
-
-- <!-- AGENT: Only document conventions that deviate from obvious defaults or language standards. -->
 - On Windows, always run CLI commands, scripts, and hooks inside Git Bash (command execution in CMD or PowerShell is not supported).
 
 ---
@@ -89,4 +100,11 @@
 
 - Pointers to issue tracking and progress update ritual can be found in `docs/agents/progress.md`.
 - Active issue tracking configuration is described in `docs/agents/issue-tracker.md`.
+
+---
+
+## Downstream Harness Alignment
+
+- If working on a project that integrates with or generates downstream client repositories, ensure that the downstream `AGENTS.md` files also follow this hybrid layout (customizable Agent/Users zone above the markers, managed zone between the markers).
+- Keep project-specific context lightweight in `AGENTS.md` and direct agents to `docs/agents/` or modular files rather than inlining detailed instructions.
 <!-- AZG:MANAGED:END -->

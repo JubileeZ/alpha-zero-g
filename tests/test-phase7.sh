@@ -58,7 +58,7 @@ EOF
 
 run_test "Custom content preserved" "grep -q 'Custom Content' AGENTS.md"
 run_test "Old Managed Content replaced" "! grep -q 'Old Managed Content' AGENTS.md"
-run_test "New Managed Content inserted" "grep -q '## Key Commands' AGENTS.md"
+run_test "New Managed Content inserted" "grep -q '## Session start' AGENTS.md"
 run_test "Footer preserved" "grep -q 'Footer' AGENTS.md"
 
 test_summary

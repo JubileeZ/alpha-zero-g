@@ -40,7 +40,7 @@ vendor_sync() {
 
   # Always clean up clone directories even on error or early return
   # shellcheck disable=SC2064
-  trap "safe_rm_rf '${clone_matt}'; safe_rm_rf '${clone_pony}'" RETURN
+  trap 'safe_rm_rf "${clone_matt}"; safe_rm_rf "${clone_pony}"' RETURN
 
   # 1. Sync mattpocock-skills
   step "vendor-sync: syncing mattpocock-skills"

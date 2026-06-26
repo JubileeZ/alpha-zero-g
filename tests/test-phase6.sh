@@ -1,4 +1,9 @@
 #!/usr/bin/env bash
+# tests/test-phase6.sh — TDD suite for Phase 6: non-interactive harness scaffolding
+#
+# Tests that `azg new` executes fully non-interactively and scaffolds
+# the harness-only project layout correctly.
+
 set -e
 
 source "$(dirname "${BASH_SOURCE[0]}")/harness.sh"
@@ -23,43 +28,30 @@ export GIT_AUTHOR_EMAIL="test@example.com"
 export GIT_COMMITTER_NAME="Test User"
 export GIT_COMMITTER_EMAIL="test@example.com"
 
-# Test 1: Scaffold a python project with default options
-# inputs for questions:
-# Q2: stack -> 1 (python)
-# Q3: custom build cmds -> n
-# Q5: MCP -> 2 (GitHub)
-# Q6: git init -> y
-printf "1\nn\n2\ny\n" | "$REPO_ROOT/azg" new my-python-app > /dev/null
+section "1. Default non-interactive harness scaffolding"
 
-run_test "Project directory created" "[ -d \"$TEST_DIR/my-python-app\" ]"
-run_test "AGENTS.md created" "[ -f \"$TEST_DIR/my-python-app/AGENTS.md\" ]"
-run_test "Git repo initialized" "[ -d \"$TEST_DIR/my-python-app/.git\" ]"
-run_test "Hooks copied" "[ -x \"$TEST_DIR/my-python-app/.agents/hooks/block-destructive-ops.sh\" ]"
-run_test "MCP config has GitHub" "grep -q 'server-github' \"$TEST_DIR/my-python-app/.agents/mcp_config.json\""
+# Close stdin to guarantee it does not prompt
+"$REPO_ROOT/azg" new my-default-app < /dev/null > /dev/null
 
-# Test 2: Custom build commands, Node stack
-# inputs:
-# Q2: 2 (node)
-# Q3: y (custom cmds)
-#   step 1 cmd: npm run mylint
-#   step 1 desc: My lint
-#   step 2 cmd: npm run mytest
-#   step 2 desc: My test
-#   step 3 cmd: (empty to finish)
-# Q5: 1 (None)
-# Q6: n (no git init)
-printf "2\ny\nnpm run mylint\nMy lint\nnpm run mytest\nMy test\n\n1\nn\n" | "$REPO_ROOT/azg" new my-node-app
+run_test "Default project directory created" "[ -d \"$TEST_DIR/my-default-app\" ]"
+run_test "Default AGENTS.md created" "[ -f \"$TEST_DIR/my-default-app/AGENTS.md\" ]"
+run_test "Default Git repo initialized" "[ -d \"$TEST_DIR/my-default-app/.git\" ]"
+run_test "Default Hooks copied" "[ -x \"$TEST_DIR/my-default-app/.agents/hooks/block-destructive-ops.sh\" ]"
+run_test "Default issue tracker is GitHub" "grep -q 'GitHub' \"$TEST_DIR/my-default-app/docs/agents/issue-tracker.md\""
 
-run_test "Node project created" "[ -d \"$TEST_DIR/my-node-app\" ]"
-run_test "AGENTS.md created in Node project" "[ -f \"$TEST_DIR/my-node-app/AGENTS.md\" ]"
-run_test "Git repo not initialized" "[ ! -d \"$TEST_DIR/my-node-app/.git\" ]"
-if ! grep -q 'npm run mylint' "$TEST_DIR/my-node-app/AGENTS.md"; then
-  echo "DEBUG: AGENTS.md contents:"
-  cat "$TEST_DIR/my-node-app/AGENTS.md"
-  run_test "Custom build commands in AGENTS.md" "false"
-else
-  run_test "Custom build commands in AGENTS.md" "true"
-fi
-run_test "Empty MCP config" "grep -q '\"mcpServers\":{}' \"$TEST_DIR/my-node-app/.agents/mcp_config.json\""
+section "2. Scaffold with --no-git flag"
+
+"$REPO_ROOT/azg" new my-nogit-app --no-git < /dev/null > /dev/null
+
+run_test "No-Git project directory created" "[ -d \"$TEST_DIR/my-nogit-app\" ]"
+run_test "No-Git AGENTS.md created" "[ -f \"$TEST_DIR/my-nogit-app/AGENTS.md\" ]"
+run_test "No-Git Git repo NOT initialized" "[ ! -d \"$TEST_DIR/my-nogit-app/.git\" ]"
+
+section "3. Scaffold with custom tracker flag"
+
+"$REPO_ROOT/azg" new my-gitlab-app --tracker gitlab < /dev/null > /dev/null
+
+run_test "GitLab project directory created" "[ -d \"$TEST_DIR/my-gitlab-app\" ]"
+run_test "GitLab issue tracker set to GitLab" "grep -q 'GitLab' \"$TEST_DIR/my-gitlab-app/docs/agents/issue-tracker.md\""
 
 test_summary
