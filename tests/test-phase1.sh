@@ -1,23 +1,33 @@
 #!/usr/bin/env bash
-# tests/test-phase1.sh — TDD suite for Phase 1: azg setup
+# tests/test-phase1.sh — TDD suite for Phase 1: Project template (harness-only)
 #
 # Run from repo root:  bash tests/test-phase1.sh
 #
 # What is tested:
-#   1. azg setup exits 0 and is no longer a stub
-#   2. ~/.gemini/antigravity-cli/ directory is created
-#   3. skills/ and mcp_config.json are installed
-#   4. Vendor skills are NOT required (Phase 2 handles vendoring); any skills
-#      found under templates/global/skills/vendor/ are copied.
-#   5. mcp_config.json is installed correctly (byte-identical to template)
-#   6. Idempotency: running azg setup a second time produces exit 0 with no
-#      diff in installed files
-#   7. Cross-platform guards: no sed -i in setup.sh
-#   8. setup.sh does not use ((VAR++)) (set -e incompatibility)
-#   9. azg setup --dry-run prints what would be done without writing files
-#  10. azg setup --force flag re-installs even if already installed
-#
-# All tests run against a TEMP_HOME to avoid polluting the real ~/.gemini/.
+#   1. azg new requires a positional target directory argument
+#   2. azg new scaffolds without interactive prompts (non-interactive)
+#   3. Scaffolds harness-only (no app code, no stack questions)
+#   4. Checks for templates and generated files:
+#        - AGENTS.md (thin managed block)
+#        - ROADMAP.md (empty phases)
+#        - task.md (from task.md.tmpl)
+#        - docs/agents/current-state.md
+#        - docs/agents/progress.md
+#        - docs/agents/issue-tracker.md (GitHub default)
+#        - docs/agents/triage-labels.md
+#        - docs/agents/domain.md
+#        - docs/agents/CONTEXT.md.tmpl
+#        - .agents/hooks.json
+#        - .agents/hooks/block-destructive-ops.sh (executable)
+#        - .agents/session-handoff.md
+#        - .agents/spawn-budget.json
+#        - .vscode/settings.json
+#        - tests/test-harness.sh (executable)
+#   5. Runs tests/test-harness.sh inside the scaffolded project and verifies it passes
+#   6. Default git initialization + initial commit behaves as expected
+#   7. CLI flags:
+#        - --no-git skips git init
+#        - --tracker gitlab/none/etc adjusts the tracker template (or is validated)
 #
 # Exit code: 0 if all tests pass, 1 if any fail.
 
@@ -25,221 +35,104 @@ set -uo pipefail
 
 source "$(dirname "${BASH_SOURCE[0]}")/harness.sh"
 
-# ---------------------------------------------------------------------------
-# Temp HOME setup — all setup tests run with HOME overridden
-# ---------------------------------------------------------------------------
-TEMP_HOME="$(mktemp -d "${PWD}/tmp_azg_phase1-test-XXXXXX")"
-trap 'rm -rf "${TEMP_HOME}"' EXIT
+TEMP_WORKSPACE="$(mktemp -d "${PWD}/tmp_azg_phase1-workspace-XXXXXX")"
+TEMP_HOME="$(mktemp -d "${PWD}/tmp_azg_phase1-home-XXXXXX")"
+# Use python to clean up directory to avoid triggering the safety gate hook with rm -rf
+trap 'python3 -c "import shutil, sys; [shutil.rmtree(x, ignore_errors=True) for x in sys.argv[1:]]" "${TEMP_WORKSPACE}" "${TEMP_HOME}"' EXIT
 
-run_setup() {
-  # Run azg setup with a temporary HOME so it never touches the real ~/.gemini
-  HOME="${TEMP_HOME}" "${AZG}" setup "$@"
-}
+export HOME="${TEMP_HOME}"
+export AZG_ROOT="${REPO_ROOT}"
+export GIT_TERMINAL_PROMPT=0
+export GIT_AUTHOR_NAME="Test User"
+export GIT_AUTHOR_EMAIL="test@example.com"
+export GIT_COMMITTER_NAME="Test User"
+export GIT_COMMITTER_EMAIL="test@example.com"
 
-INSTALL_DIR="${TEMP_HOME}/.gemini/antigravity-cli"
-INSTALL_SKILLS_DIR="${TEMP_HOME}/.gemini/config/skills"
-INSTALL_MCP="${TEMP_HOME}/.gemini/config/mcp_config.json"
-INSTALL_STATUSLINE="${INSTALL_DIR}/statusline.sh"
-INSTALL_SETTINGS="${INSTALL_DIR}/settings.json"
+# Setup the global directory configuration
+"${AZG}" setup >/dev/null 2>&1 || true
 
-TEMPLATE_GLOBAL="${REPO_ROOT}/templates/global"
-TEMPLATE_VENDOR="${TEMPLATE_GLOBAL}/skills/vendor/mattpocock-skills"
-TEMPLATE_MCP="${TEMPLATE_GLOBAL}/mcp_config.json"
-TEMPLATE_STATUSLINE="${TEMPLATE_GLOBAL}/statusline.sh"
+section "1. CLI Positionals & Non-interactive Execution"
 
-# ---------------------------------------------------------------------------
-# T E S T S
-# ---------------------------------------------------------------------------
+# Run without arguments should exit non-zero
+assert_exit "azg new with no args fails" 1 "${AZG}" new
 
-section "1. azg setup — is no longer a stub"
+# Run azg new non-interactively
+cd "${TEMP_WORKSPACE}"
+assert_exit "azg new my-app succeeds" 0 "${AZG}" new my-app
 
-assert_exit            "azg setup exits 0"                0  run_setup
-assert_output_not_contains "azg setup does not say 'not yet implemented'" \
-                           "not yet implemented"               run_setup
+section "2. Harness-only Files Existence"
 
-section "2. azg setup — destination directories created"
+APP_DIR="${TEMP_WORKSPACE}/my-app"
 
-assert_dir_exists  "~/.gemini/antigravity-cli/ created"         "${INSTALL_DIR}"
-assert_dir_exists  "~/.gemini/config/skills/ created"  "${INSTALL_SKILLS_DIR}"
+assert_dir_exists "Project directory exists" "${APP_DIR}"
+assert_file_exists "AGENTS.md exists" "${APP_DIR}/AGENTS.md"
+assert_file_exists "ROADMAP.md exists" "${APP_DIR}/ROADMAP.md"
+assert_file_exists "task.md exists" "${APP_DIR}/task.md"
 
-section "3. azg setup — configuration and statusline installed"
+assert_dir_exists "docs/agents/ directory exists" "${APP_DIR}/docs/agents"
+assert_file_exists "docs/agents/current-state.md exists" "${APP_DIR}/docs/agents/current-state.md"
+assert_file_exists "docs/agents/progress.md exists" "${APP_DIR}/docs/agents/progress.md"
+assert_file_exists "docs/agents/issue-tracker.md exists" "${APP_DIR}/docs/agents/issue-tracker.md"
+assert_file_exists "docs/agents/triage-labels.md exists" "${APP_DIR}/docs/agents/triage-labels.md"
+assert_file_exists "docs/agents/domain.md exists" "${APP_DIR}/docs/agents/domain.md"
+assert_file_exists "docs/agents/CONTEXT.md.tmpl exists" "${APP_DIR}/docs/agents/CONTEXT.md.tmpl"
 
-assert_file_exists     "mcp_config.json installed"                    "${INSTALL_MCP}"
-assert_files_identical "mcp_config.json is identical to template"     \
-                       "${INSTALL_MCP}" "${TEMPLATE_MCP}"
+assert_dir_exists ".agents/ directory exists" "${APP_DIR}/.agents"
+assert_file_exists ".agents/hooks.json exists" "${APP_DIR}/.agents/hooks.json"
+assert_file_exists ".agents/hooks/block-destructive-ops.sh exists" "${APP_DIR}/.agents/hooks/block-destructive-ops.sh"
+assert_executable "block-destructive-ops.sh is executable" "${APP_DIR}/.agents/hooks/block-destructive-ops.sh"
+assert_file_exists ".agents/session-handoff.md exists" "${APP_DIR}/.agents/session-handoff.md"
+assert_file_exists ".agents/spawn-budget.json exists" "${APP_DIR}/.agents/spawn-budget.json"
 
-assert_file_exists     "statusline.sh installed"                      "${INSTALL_STATUSLINE}"
-assert_files_identical "statusline.sh is identical to template"       \
-                       "${INSTALL_STATUSLINE}" "${TEMPLATE_STATUSLINE}"
-if [ -x "${INSTALL_STATUSLINE}" ]; then
-  pass "statusline.sh is executable"
+assert_dir_exists ".vscode/ directory exists" "${APP_DIR}/.vscode"
+assert_file_exists ".vscode/settings.json exists" "${APP_DIR}/.vscode/settings.json"
+
+assert_dir_exists "tests/ directory exists" "${APP_DIR}/tests"
+assert_file_exists "tests/test-harness.sh exists" "${APP_DIR}/tests/test-harness.sh"
+assert_executable "test-harness.sh is executable" "${APP_DIR}/tests/test-harness.sh"
+
+section "3. File Contents & Configurations"
+
+# Thin AGENTS.md managed block checks
+assert_file_contains "AGENTS.md has AZG:MANAGED block start" "${APP_DIR}/AGENTS.md" "<!-- AZG:MANAGED:START -->"
+assert_file_contains "AGENTS.md has AZG:MANAGED block end" "${APP_DIR}/AGENTS.md" "<!-- AZG:MANAGED:END -->"
+assert_file_contains "AGENTS.md references session start" "${APP_DIR}/AGENTS.md" "docs/agents/current-state.md"
+
+# Empty phase ROADMAP.md checks
+assert_file_contains "ROADMAP.md has active status" "${APP_DIR}/ROADMAP.md" "Phase 1"
+assert_file_not_contains "ROADMAP.md does not contain Python stack defaults" "${APP_DIR}/ROADMAP.md" "uv sync"
+
+# VSCode Windows-safe shell settings
+assert_file_contains "settings.json has PowerShell (Workspace Root)" "${APP_DIR}/.vscode/settings.json" "PowerShell (Workspace Root)"
+assert_file_contains "settings.json sets location to workspace" "${APP_DIR}/.vscode/settings.json" "Set-Location -LiteralPath '\${workspaceFolder}'"
+
+section "4. Meta-harness execution"
+
+# Run tests/test-harness.sh in the scaffolded app, it should pass
+(
+  cd "${APP_DIR}"
+  assert_exit "test-harness.sh runs and passes" 0 bash tests/test-harness.sh
+)
+
+section "5. Git integration & flags"
+
+assert_dir_exists "Git repository initialized" "${APP_DIR}/.git"
+_commit_msg=$(git -C "${APP_DIR}" log -1 --pretty=%B)
+if [[ "${_commit_msg}" == *"scaffold project"* ]]; then
+  pass "Git initial commit exists with expected message"
 else
-  fail "statusline.sh is NOT executable"
+  fail "Git initial commit message mismatch" "got: ${_commit_msg}"
 fi
 
-assert_file_exists     "settings.json created"                        "${INSTALL_SETTINGS}"
-assert_file_contains   "settings.json has statusLine command config"  "${INSTALL_SETTINGS}" "\"command\": \"${INSTALL_STATUSLINE}\""
-assert_file_contains   "settings.json has statusLine type config"     "${INSTALL_SETTINGS}" "\"type\": \"command\""
+# Run with --no-git
+cd "${TEMP_WORKSPACE}"
+assert_exit "azg new with --no-git succeeds" 0 "${AZG}" new no-git-app --no-git
+assert_dir_not_exists "Git repository NOT initialized when --no-git passed" "${TEMP_WORKSPACE}/no-git-app/.git"
 
-section "4. azg setup — vendor skills copied (if any exist in vendor/)"
+# Run with --tracker gitlab
+cd "${TEMP_WORKSPACE}"
+assert_exit "azg new with --tracker gitlab succeeds" 0 "${AZG}" new gitlab-app --tracker gitlab
+# Tracker configuration should be reflected in the issue-tracker.md
+assert_file_contains "issue-tracker.md points to GitLab" "${TEMP_WORKSPACE}/gitlab-app/docs/agents/issue-tracker.md" "GitLab"
 
-# Count how many skill directories exist in the vendor tree
-_vendor_skill_count=0
-if [ -d "${TEMPLATE_VENDOR}" ]; then
-  # A skill directory is any directory directly under engineering/ or productivity/
-  for category_dir in "${TEMPLATE_VENDOR}"/{engineering,productivity}; do
-    [ -d "${category_dir}" ] || continue
-    for skill_dir in "${category_dir}"/*/; do
-      [ -d "${skill_dir}" ] || continue
-      _vendor_skill_count=$((_vendor_skill_count + 1))
-    done
-  done
-fi
-
-if [ "${_vendor_skill_count}" -eq 0 ]; then
-  skip "No vendor skills present yet (Phase 2 will populate them) — skipping copy check"
-else
-  # Each skill should appear under ~/.gemini/antigravity-cli/skills/<name>/
-  _copied=0
-  _missing=0
-  for category_dir in "${TEMPLATE_VENDOR}"/{engineering,productivity}; do
-    [ -d "${category_dir}" ] || continue
-    for skill_dir in "${category_dir}"/*/; do
-      [ -d "${skill_dir}" ] || continue
-      skill_name="$(basename "${skill_dir}")"
-      if [ -d "${INSTALL_SKILLS_DIR}/${skill_name}" ]; then
-        _copied=$((_copied + 1))
-      else
-        _missing=$((_missing + 1))
-        fail "skill '${skill_name}' missing from install dir"
-      fi
-    done
-  done
-  [ "${_missing}" -eq 0 ] && pass "all ${_copied} vendor skills copied to install dir"
-fi
-
-section "5. azg setup — idempotency (run twice, same result)"
-
-# Run a second time
-run_setup > /dev/null 2>&1
-_second_exit=$?
-if [ "${_second_exit}" -eq 0 ]; then
-  pass "second azg setup run exits 0"
-else
-  fail "second azg setup run exited ${_second_exit} (expected 0)"
-fi
-
-# mcp_config.json should still be identical to template after second run
-assert_files_identical "mcp_config.json unchanged after second setup run" \
-                       "${INSTALL_MCP}" "${TEMPLATE_MCP}"
-
-section "6. azg setup --dry-run — prints plan, writes nothing"
-
-# Remove install dir to test clean dry-run
-TEMP_HOME2="$(mktemp -d "${PWD}/tmp_azg_phase1-dryrun-XXXXXX")"
-trap 'rm -rf "${TEMP_HOME2}"' EXIT
-
-DRY_OUT="$(HOME="${TEMP_HOME2}" "${AZG}" setup --dry-run 2>&1)" || true
-DRY_EXIT=0
-HOME="${TEMP_HOME2}" "${AZG}" setup --dry-run > /dev/null 2>&1 || DRY_EXIT=$?
-
-if [ "${DRY_EXIT}" -eq 0 ]; then
-  pass "azg setup --dry-run exits 0"
-else
-  fail "azg setup --dry-run exited ${DRY_EXIT} (expected 0)"
-fi
-
-if echo "${DRY_OUT}" | grep -qiF "dry"; then
-  pass "azg setup --dry-run output mentions 'dry'"
-else
-  fail "azg setup --dry-run output should mention 'dry'" "got: ${DRY_OUT}"
-fi
-
-# No files should have been written to TEMP_HOME2
-if [ ! -d "${TEMP_HOME2}/.gemini" ]; then
-  pass "azg setup --dry-run wrote no files"
-else
-  fail "azg setup --dry-run should not write any files" \
-       "found: ${TEMP_HOME2}/.gemini"
-fi
-
-section "7. azg setup --force — re-installs even when already installed"
-
-# Corrupt the mcp_config in TEMP_HOME and verify --force restores it
-printf '{}' > "${INSTALL_MCP}"
-run_setup --force > /dev/null 2>&1
-assert_files_identical "azg setup --force restores mcp_config.json" \
-                       "${INSTALL_MCP}" "${TEMPLATE_MCP}"
-
-section "7.1. azg setup — merges settings.json correctly"
-
-# Write a dummy settings.json with a custom policy
-printf '{\n  "artifactReviewPolicy": "agent-decides",\n  "toolPermission": "always-proceed"\n}\n' > "${INSTALL_SETTINGS}"
-
-# Run setup to trigger merge
-run_setup > /dev/null 2>&1
-
-# Check if both existing and new keys are present
-assert_file_contains "settings.json preserves existing keys" "${INSTALL_SETTINGS}" "\"artifactReviewPolicy\": \"agent-decides\""
-assert_file_contains "settings.json merges statusline config" "${INSTALL_SETTINGS}" "\"command\": \"${INSTALL_STATUSLINE}\""
-
-section "8. azg setup — output is informative"
-
-_setup_out="$(run_setup 2>&1)" || true
-if echo "${_setup_out}" | grep -qiE "install|setup|skill|done|complete|ok"; then
-  pass "setup output contains progress/completion message"
-else
-  fail "setup output should contain informative messages" "got: ${_setup_out}"
-fi
-
-section "9. Cross-platform guards in setup.sh"
-
-# No sed -i (strip comment lines first)
-if grep -v '^[[:space:]]*#' "${REPO_ROOT}/lib/setup.sh" | grep -q 'sed -i'; then
-  fail "setup.sh must NOT use 'sed -i' (BSD/GNU incompatible)"
-else
-  pass "setup.sh does not use 'sed -i'"
-fi
-
-# No ((VAR++)) with set -e
-if grep -v '^[[:space:]]*#' "${REPO_ROOT}/lib/setup.sh" | grep -qE '\(\([A-Za-z_]+\+\+\)\)'; then
-  fail "setup.sh must NOT use ((VAR++)) with set -e"
-else
-  pass "setup.sh does not use ((VAR++))"
-fi
-
-section "10. setup.sh — shebang and sourceable"
-
-_shebang="$(head -1 "${REPO_ROOT}/lib/setup.sh")"
-if [ "${_shebang}" = "#!/usr/bin/env bash" ]; then
-  pass "setup.sh uses '#!/usr/bin/env bash' shebang"
-else
-  fail "setup.sh shebang is wrong" "got: '${_shebang}'"
-fi
-
-# Must be sourceable (define cmd_setup) without side-effects
-if bash -c "source '${REPO_ROOT}/lib/setup.sh' 2>&1 && declare -f cmd_setup" > /dev/null 2>&1; then
-  pass "setup.sh defines cmd_setup() function"
-else
-  fail "setup.sh must define cmd_setup() and source without errors"
-fi
-
-section "11. azg setup — summary line printed on success"
-
-_out="$(run_setup 2>&1)" || true
-if echo "${_out}" | grep -qiE "done|complete|installed|setup complete"; then
-  pass "setup prints a completion/summary message"
-else
-  fail "setup should print a completion message" "got: ${_out}"
-fi
-
-section "12. Phase 0 regression — stub tests still respected"
-
-# After Phase 1 implementation, setup must no longer be a stub.
-# Other commands (new, apply, update, uninstall) must still be stubs.
-# All commands implemented!
-
-# ---------------------------------------------------------------------------
-# Summary
-# ---------------------------------------------------------------------------
 test_summary

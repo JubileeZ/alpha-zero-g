@@ -12,24 +12,14 @@
 **Stack:** <!-- AGENT: list primary language, runtime version, key frameworks, and package manager.
               Example: Python 3.12 · uv · FastAPI · PostgreSQL · SQLAlchemy · pytest -->
 
-**Monorepo:** yes / no <!-- AGENT: delete one -->
+**Monorepo:** no
 
 ---
 
 ## Repo Structure
 
 <!-- AGENT: List top-level directories and key subdirectories only. Keep to ≤ 15 lines.
-     Annotate each line with a short purpose comment.
-     Example:
-     src/
-       api/        # route handlers
-       models/     # Pydantic schemas and ORM models
-       services/   # business logic, no framework imports
-       db/         # migrations and connection setup
-     tests/        # mirrors src/ structure
-     docs/         # ADRs and architecture notes
-     .env.example  # copy to .env, never commit .env
--->
+     Annotate each line with a short purpose comment. -->
 
 ```
 <repo structure here>
@@ -39,9 +29,6 @@
 
 ## Key Commands
 
-<!-- AGENT: Fill in the exact commands an agent needs to install, test, lint, and run this project.
-     Use the actual package manager and toolchain. Do not use generic placeholders. -->
-
 {{BUILD_COMMANDS}}
 
 **Pre-commit gate:** agents must run test and lint commands and confirm both pass before proposing any commit.
@@ -50,22 +37,26 @@
 
 ## Off-Limits: Never Touch Without Explicit Instruction
 
-<!-- AGENT: List files, dirs, or operations that are dangerous to modify autonomously.
-     These are hard stops — flag and wait for confirmation before proceeding.
-     Defaults below are universal; add project-specific entries. -->
-
 - `.env` and any file containing secrets or credentials
 - Database migrations — always flag, never auto-apply or auto-run
 - Production configuration files
 - Any file marked `# DO NOT EDIT` or `# GENERATED`
-- <!-- AGENT: add project-specific off-limits entries, e.g. vendored lock files, parquet datasets, etc. -->
+- <!-- AGENT: add project-specific off-limits entries, e.g. vendored lock files, etc. -->
+
+---
+
+<!-- AZG:MANAGED:START -->
+## Session start (agents)
+
+1. Read `docs/agents/current-state.md` — what exists vs roadmap gaps
+2. Read `ROADMAP.md` — first unchecked item in active phase
+3. Read `task.md` (or open issue) if present
+4. Run `git log -5 --oneline` and `git status`
+5. Do not rely on chat history.
 
 ---
 
 ## Safety Rules
-
-<!-- AGENT: Supplement global safety rules with rules specific to this repo's risk profile.
-     The rules below are universal defaults — keep them and add project-specific ones below. -->
 
 **Universal (keep always):**
 - Never commit secrets, tokens, or credentials to any file.
@@ -76,59 +67,25 @@
 - If a tool call is blocked by a safety hook (returns decision: deny), clearly explain the block to the user and suggest the next manual action (providing the exact shell command or file content to write manually).
 
 **Project-specific:**
-- <!-- AGENT: Add rules relevant to this codebase. Examples:
-       "Never mutate raw input files — always write to a new output path."
-       "All external API calls must go through src/clients/, never inline."
-       "Tests must not make real network calls — use fixtures or mocks." -->
+- <!-- AGENT: Add rules relevant to this codebase. -->
 
 ---
 
 ## Code Conventions
 
-<!-- AGENT: Only document conventions that deviate from obvious defaults or language standards.
-     Skip this section if the project follows standard style with no notable exceptions.
-     Examples of what belongs here:
-     - "All service functions return Result objects, not raw values or exceptions."
-     - "Type hints required on all public functions and class attributes."
-     - "No bare except: — always catch specific exception types."
-     - "Tests live beside source (src/foo/tests/), not in a top-level tests/ dir." -->
-
-- <!-- AGENT: fill in or remove -->
+- <!-- AGENT: Only document conventions that deviate from obvious defaults or language standards. -->
 
 ---
 
-## Known Footguns
+## Domain Vocabulary
 
-<!-- AGENT: Gotchas that will silently burn an agent or produce wrong output.
-     These are permanent, codebase-wide design traps (not phase-specific).
-     Examples:
-     - "uv run is required — do not call python directly, the venv won't activate."
-     - "The ORM session is not thread-safe — never share it across async tasks."
-     - "Config is loaded once at import time — changes to .env require a process restart."
-     - "Pagination is 0-indexed on the internal API but 1-indexed on the public API." -->
-
-- <!-- AGENT: fill in or remove -->
+- If domain terminology or relationships are ambiguous, check `docs/agents/domain.md`.
+- Create `CONTEXT.md` at the repo root from `docs/agents/CONTEXT.md.tmpl` if you need to resolve or record new domain vocabulary.
 
 ---
 
-## MCP / Tool Access
+## Agent Progress Updates
 
-<!-- AGENT: Tell agents what external tools, MCP servers, or integrations are active in this context.
-     Remove this section entirely if no MCP tools are connected.
-     Examples:
-     - "GitHub MCP connected — use for PR creation and issue lookup, not raw git push."
-     - "No internet access in the CI container — all data must be pre-fetched locally."
-     - "Database MCP available — read queries allowed, write queries require confirmation." -->
-
-- <!-- AGENT: fill in or remove this section -->
-
----
-
-## Agent Behavior Overrides
-
-<!-- AGENT: Override global defaults ONLY when this project specifically needs it.
-     Leave this section empty or remove it if global defaults are fine.
-     Examples:
-     - "Auto-proceed on file edits within src/ — no confirmation needed for non-destructive writes." -->
-
-- <!-- AGENT: fill in or remove this section -->
+- Pointers to issue tracking and progress update ritual can be found in `docs/agents/progress.md`.
+- Active issue tracking configuration is described in `docs/agents/issue-tracker.md`.
+<!-- AZG:MANAGED:END -->

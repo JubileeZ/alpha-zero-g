@@ -142,133 +142,93 @@ done_steps_for_stack() {
 # ── main scaffold flow ────────────────────────────────────────────────────────
 
 cmd_new() {
-    local target_dir="${1:-}"
+    local target_dir=""
+    local git_init="yes"
+    local tracker="github"
 
-    printf '\nAlpha-Zero-G — New Project Scaffold\n' >&2
-    printf '=====================================\n\n' >&2
+    while [ $# -gt 0 ]; do
+        case "$1" in
+            --no-git)
+                git_init="no"
+                shift
+                ;;
+            --tracker)
+                if [ -n "${2:-}" ]; then
+                    tracker="$2"
+                    shift 2
+                else
+                    die "Error: --tracker requires an argument."
+                fi
+                ;;
+            -*)
+                die "Error: Unknown option $1"
+                ;;
+            *)
+                if [ -z "$target_dir" ]; then
+                    target_dir="$1"
+                    shift
+                else
+                    die "Error: Multiple target directories specified ($target_dir and $1)"
+                fi
+                ;;
+        esac
+    done
 
-    # Q1: Project name / directory
-    local project_name
-    if [ -n "$target_dir" ]; then
-        project_name="$(basename "$target_dir")"
-    else
-        project_name="$(ask 'Q1. Project name (used as directory name)')"
-        if [ -z "$project_name" ]; then
-            printf 'Error: project name is required.\n' >&2
-            exit 1
-        fi
-        target_dir="$(pwd)/$project_name"
+    if [ -z "$target_dir" ]; then
+        printf 'Usage: azg new <target-dir> [--no-git] [--tracker <github|gitlab|local|none>]\n' >&2
+        exit 1
     fi
+
+    local project_name
+    project_name="$(basename "$target_dir")"
 
     if [ -e "$target_dir" ]; then
         printf 'Error: "%s" already exists. Choose a different name or use "azg apply" to retrofit.\n' "$target_dir" >&2
         exit 1
     fi
 
-    # Q2: Stack
-    printf '\nQ2. Technology stack:\n' >&2
-    printf '  1) Python + uv\n' >&2
-    printf '  2) Node / TypeScript\n' >&2
-    printf '  3) Other\n' >&2
-    local stack_choice
-    stack_choice="$(ask 'Choose [1/2/3]' '1')"
-    local stack
-    case "$stack_choice" in
-        1) stack="python" ;;
-        2) stack="node" ;;
-        *) stack="other" ;;
-    esac
-
-    # Q3: Custom build commands (or accept defaults from stack)
-    local build_cmds_table
-    build_cmds_table="$(build_commands_for_stack "$stack")"
-    local done_steps
-    done_steps="$(done_steps_for_stack "$stack")"
-
-    printf '\nQ3. Build commands (press Enter to accept defaults for %s):\n' "$stack" >&2
-    local custom
-    custom="$(ask_yn 'Customize build commands?' 'n')"
-    if [ "$custom" = "yes" ]; then
-        printf 'Enter each command on one line. Enter an empty line to finish.\n' >&2
-        build_cmds_table='| Command | What it does |
-|---------|-------------|'
-        done_steps=""
-        local step=1
-        while true; do
-            local line
-            line="$(ask "  Step $step command (empty to finish)")"
-            [ -z "$line" ] && break
-            local desc
-            desc="$(ask "  Step $step description")"
-            build_cmds_table="${build_cmds_table}
-| \`${line}\` | ${desc} |"
-            done_steps="${done_steps}${step}. \`${line}\` exits 0\n"
-            step=$((step + 1))
-        done
-    fi
-
-    # Q4: mattpocock skills
-    printf '\nQ4. The "setup-matt-pocock-skills" global skill will be available after azg setup.\n' >&2
-    printf '    After scaffolding, run it inside your first agy session to set up issue tracking.\n' >&2
-    local remind_skills
-    remind_skills="yes"
-
-    # Q5: MCP servers
-    printf '\nQ5. MCP servers to include in .agents/mcp_config.json:\n' >&2
-    printf '  1) None\n' >&2
-    printf '  2) GitHub MCP\n' >&2
-    printf '  3) Browser (headless Chrome)\n' >&2
-    printf '  4) Custom path\n' >&2
-    local mcp_choice
-    mcp_choice="$(ask 'Choose [1/2/3/4]' '1')"
-
-    # Q6: Git init
-    local git_init
-    git_init="$(ask_yn 'Q6. Run git init and create initial commit?' 'y')"
-
-    # ── scaffold the project ──────────────────────────────────────────────────
-
-    printf '\nScaffolding "%s"...\n' "$project_name" >&2
+    printf 'Scaffolding "%s"...\n' "$project_name" >&2
     mkdir -p "$target_dir"
 
     local tmpl_proj="$REPO_ROOT/templates/project"
 
-    # Copy .agents/ skeleton — safety-gate hook only
+    # Copy .agents/ skeleton
     copy_template \
         "$tmpl_proj/.agents/hooks/block-destructive-ops.sh" \
         "$target_dir/.agents/hooks/block-destructive-ops.sh"
     chmod +x "$target_dir/.agents/hooks/block-destructive-ops.sh"
 
-    # Copy hooks.json (safety-gate only)
     copy_template "$tmpl_proj/.agents/hooks.json" "$target_dir/.agents/hooks.json"
+    copy_template "$tmpl_proj/.agents/spawn-budget.json" "$target_dir/.agents/spawn-budget.json"
+    copy_template "$tmpl_proj/.agents/session-handoff.md.tmpl" "$target_dir/.agents/session-handoff.md"
 
-    # Copy skills placeholder
-    copy_template "$tmpl_proj/.agents/skills/.gitkeep" "$target_dir/.agents/skills/.gitkeep"
+    # Copy VSCode settings
+    copy_template "$tmpl_proj/.vscode/settings.json" "$target_dir/.vscode/settings.json"
 
-    # MCP config
-    case "$mcp_choice" in
-        2)
-            printf '{"mcpServers":{"github":{"command":"npx","args":["-y","@modelcontextprotocol/server-github"]}}}\n' | \
-                atomic_write "$target_dir/.agents/mcp_config.json"
-            ;;
-        3)
-            printf '{"mcpServers":{"browser":{"command":"npx","args":["-y","@modelcontextprotocol/server-puppeteer"]}}}\n' | \
-                atomic_write "$target_dir/.agents/mcp_config.json"
-            ;;
-        4)
-            local custom_mcp
-            custom_mcp="$(ask 'Path to custom mcp_config.json')"
-            if [ -f "$custom_mcp" ]; then
-                copy_template "$custom_mcp" "$target_dir/.agents/mcp_config.json"
-            else
-                printf '{"mcpServers":{}}\n' | atomic_write "$target_dir/.agents/mcp_config.json"
-                printf 'Warning: custom MCP config not found; wrote empty config.\n' >&2
-            fi
-            ;;
-        *)
-            printf '{"mcpServers":{}}\n' | atomic_write "$target_dir/.agents/mcp_config.json"
-            ;;
-    esac
+    # Copy test harness
+    copy_template "$tmpl_proj/tests/test-harness.sh" "$target_dir/tests/test-harness.sh"
+    chmod +x "$target_dir/tests/test-harness.sh"
+
+    # Copy pre-seeded agent guides
+    copy_template "$tmpl_proj/docs/agents/issue-tracker.md" "$target_dir/docs/agents/issue-tracker.md"
+    copy_template "$tmpl_proj/docs/agents/triage-labels.md" "$target_dir/docs/agents/triage-labels.md"
+    copy_template "$tmpl_proj/docs/agents/domain.md" "$target_dir/docs/agents/domain.md"
+    copy_template "$tmpl_proj/docs/agents/CONTEXT.md.tmpl" "$target_dir/docs/agents/CONTEXT.md.tmpl"
+
+    # Configure tracker type in issue-tracker.md
+    if [ "$tracker" != "github" ]; then
+        local tracker_cap
+        tracker_cap="$(echo "$tracker" | awk '{print toupper(substr($0,1,1))tolower(substr($0,2))}')"
+        if [ "$tracker" = "gitlab" ]; then
+            tracker_cap="GitLab"
+        fi
+        sed_portable "s/GitHub/${tracker_cap}/g" "$target_dir/docs/agents/issue-tracker.md"
+    fi
+
+    # Build commands default table
+    local build_cmds_table='| Command | What it does |
+|---------|-------------|
+| `bash tests/test-harness.sh` | Run project harness verification |'
 
     # Render AGENTS.md
     render_template \
@@ -306,6 +266,12 @@ cmd_new() {
         "DATE" "$TODAY" \
         "BUILD_COMMANDS" "$build_cmds_table"
 
+    # Render task.md from template
+    render_template \
+        "$tmpl_proj/task.md.tmpl" \
+        "$target_dir/task.md" \
+        "TASK_NAME" "Initial project setup"
+
     # Git init
     if [ "$git_init" = "yes" ]; then
         if command -v git >/dev/null 2>&1; then
@@ -323,9 +289,6 @@ cmd_new() {
     printf '\nDone! Project scaffolded at: %s\n' "$target_dir" >&2
     printf '\nNext steps:\n' >&2
     printf '  1. cd %s\n' "$project_name" >&2
-    printf '  2. agy  (start your first session)\n' >&2
-    if [ "$remind_skills" = "yes" ]; then
-        printf '  3. Inside agy: run the "setup-matt-pocock-skills" skill to configure issue tracking.\n' >&2
-    fi
-    printf '\n' >&2
+    printf '  2. bash tests/test-harness.sh  (verify your harness)\n' >&2
+    printf '  3. agy  (start your first session)\n\n' >&2
 }

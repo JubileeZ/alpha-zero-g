@@ -35,15 +35,15 @@ Ship a **clone-and-go outer harness** for solo/small teams: harness-only templat
 
 ---
 
-## Phase 1 — Project template (harness-only) (in progress)
+## Phase 1 — Project template (harness-only) (complete)
 
-- [ ] `azg new` scaffolds **harness only** — remove stack/lint wizard questions
-- [ ] Add templates: `task.md.tmpl`, `session-handoff.md.tmpl`, `CONTEXT.md.tmpl`, `ROADMAP.md.tmpl` (empty phases)
-- [ ] Pre-seed in `templates/project/docs/agents/`: `issue-tracker.md`, `triage-labels.md`, `domain.md` (GitHub default)
-- [ ] Thin project `AGENTS.md.tmpl` managed block per REVAMP-SPEC §5
-- [ ] Add `tests/test-harness.sh` template + wire into project template
-- [ ] `.vscode/settings.json` in project template (terminal cwd)
-- [ ] Phase test: `bash tests/test-phase<N>.sh` (new or extended)
+- [x] `azg new` scaffolds **harness only** — remove stack/lint wizard questions
+- [x] Add templates: `task.md.tmpl`, `session-handoff.md.tmpl`, `CONTEXT.md.tmpl`, `ROADMAP.md.tmpl` (empty phases)
+- [x] Pre-seed in `templates/project/docs/agents/`: `issue-tracker.md`, `triage-labels.md`, `domain.md` (GitHub default)
+- [x] Thin project `AGENTS.md.tmpl` managed block per REVAMP-SPEC §5
+- [x] Add `tests/test-harness.sh` template + wire into project template
+- [x] `.vscode/settings.json` in project template (terminal cwd)
+- [x] Phase test: `bash tests/test-phase<N>.sh` (new or extended)
 
 ---
 

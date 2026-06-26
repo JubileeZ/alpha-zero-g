@@ -2,7 +2,7 @@
 
 **Read this first** after `docs/AGENT-ONBOARDING.md`. `ROADMAP.md` is the plan; this file is **what exists on disk today** vs what v4 still needs.
 
-**Active phase:** Phase 1 — Project template (harness-only)
+**Active phase:** Phase 2 — Hooks
 
 ---
 
@@ -16,8 +16,13 @@
 | Vendor sync | `lib/vendor-sync.sh`, `VENDOR.lock` | Pins mattpocock + ponytail upstream |
 | Safety hook | `templates/project/.agents/hooks/block-destructive-ops.sh` | Shipped |
 | Tests | `tests/test-azg.sh`, `test-phase0`–`test-phase9` | v3 phase coverage |
-| Agent docs | `docs/agents/progress.md`, issue-tracker, triage-labels, domain | Present for **this** repo; not pre-seeded in project template |
+| Agent docs | `docs/agents/progress.md`, issue-tracker, triage-labels, domain | Present for **this** repo; now pre-seeded in project template |
 | Revamp spec | `docs/REVAMP-SPEC.md`, `docs/AGENT-ONBOARDING.md` | v4 canonical docs |
+| Harness-only `azg new` | `lib/scaffold.sh` | Non-interactive project scaffolding with no stack questions |
+| Project templates | `templates/project/` | New `task.md.tmpl`, `.agents/session-handoff.md.tmpl`, `docs/agents/CONTEXT.md.tmpl` templates |
+| VSCode Workspace Settings | `templates/project/.vscode/settings.json` | Windows-safe terminal profile configuration |
+| Project self-check harness | `templates/project/tests/test-harness.sh` | Verification self-check for client project |
+| Thin project `AGENTS.md.tmpl` | `templates/project/AGENTS.md.tmpl` | Split user prose and updated managed block (~80 lines) |
 
 ---
 
@@ -25,17 +30,12 @@
 
 | Item | ROADMAP phase | Notes |
 |------|---------------|-------|
-| Harness-only `azg new` (no stack wizard) | Phase 1 | scaffold.sh still asks stack/questions |
-| `task.md.tmpl`, `session-handoff.md.tmpl`, `CONTEXT.md.tmpl` | Phase 1 | Not in templates/project |
-| Pre-seeded adapter docs in project template | Phase 1 | issue-tracker/triage/domain only in this repo |
-| `tests/test-harness.sh` project template | Phase 1 | Meta-harness gate for scaffolded projects |
 | `commit-gate.sh` hook | Phase 2 | Not in templates |
 | `checkpoint.sh` Stop hook | Phase 2 | Not in templates |
 | `spawn-budget.json` + hook | Phase 2 | Not in templates |
 | `azg setup --profile minimal` | Phase 4 | All vendor skills copied today |
 | Smart skill sync by VENDOR.lock SHA | Phase 4 | setup may skip mcp/agents but not SHA-gated skills |
 | `azg apply --tracker` flag | Phase 3 | Tracker selection not CLI flag yet |
-| Thin project AGENTS.md.tmpl (~80 lines) | Phase 1 | Template may still be verbose |
 
 ---
 
