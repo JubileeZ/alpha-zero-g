@@ -49,12 +49,12 @@ Ship a **clone-and-go outer harness** for solo/small teams: harness-only templat
 
 ## Phase 2 — Hooks
 
-- [ ] `commit-gate.sh` — block `git commit` until harness test passes
-- [ ] `checkpoint.sh` — Stop hook; stale `current-state.md` / handoff → continue loop
-- [ ] `spawn-budget.sh` + `.agents/spawn-budget.json` (`max_spawns: 3`, `max_depth: 2`)
-- [ ] Cursor: `preCompact` observability hook (log only, no block)
-- [ ] Update `hooks.json` template for Antigravity + Cursor hook paths
-- [ ] shellcheck + integration tests for all hooks
+- [x] `commit-gate.sh` — block `git commit` until harness test passes
+- [x] `checkpoint.sh` — Stop hook; stale `current-state.md` / handoff → continue loop
+- [x] `spawn-budget.sh` + `.agents/spawn-budget.json` (`max_spawns: 3`, `max_depth: 2`)
+- [x] Cursor: `preCompact` observability hook (log only, no block)
+- [x] Update `hooks.json` template for Antigravity + Cursor hook paths
+- [x] shellcheck + integration tests for all hooks
 
 ---
 

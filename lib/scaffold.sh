@@ -192,15 +192,40 @@ cmd_new() {
 
     local tmpl_proj="$REPO_ROOT/templates/project"
 
-    # Copy .agents/ skeleton
+    # Copy .agents/ skeleton and hooks
     copy_template \
         "$tmpl_proj/.agents/hooks/block-destructive-ops.sh" \
         "$target_dir/.agents/hooks/block-destructive-ops.sh"
     chmod +x "$target_dir/.agents/hooks/block-destructive-ops.sh"
 
+    copy_template \
+        "$tmpl_proj/.agents/hooks/commit-gate.sh" \
+        "$target_dir/.agents/hooks/commit-gate.sh"
+    chmod +x "$target_dir/.agents/hooks/commit-gate.sh"
+
+    copy_template \
+        "$tmpl_proj/.agents/hooks/checkpoint.sh" \
+        "$target_dir/.agents/hooks/checkpoint.sh"
+    chmod +x "$target_dir/.agents/hooks/checkpoint.sh"
+
+    copy_template \
+        "$tmpl_proj/.agents/hooks/spawn-budget.sh" \
+        "$target_dir/.agents/hooks/spawn-budget.sh"
+    chmod +x "$target_dir/.agents/hooks/spawn-budget.sh"
+
+    copy_template \
+        "$tmpl_proj/.agents/hooks/pre-compact.sh" \
+        "$target_dir/.agents/hooks/pre-compact.sh"
+    chmod +x "$target_dir/.agents/hooks/pre-compact.sh"
+
     copy_template "$tmpl_proj/.agents/hooks.json" "$target_dir/.agents/hooks.json"
     copy_template "$tmpl_proj/.agents/spawn-budget.json" "$target_dir/.agents/spawn-budget.json"
     copy_template "$tmpl_proj/.agents/session-handoff.md.tmpl" "$target_dir/.agents/session-handoff.md"
+
+    # Copy .cursor/rules/
+    mkdir -p "$target_dir/.cursor/rules"
+    copy_template "$tmpl_proj/.cursor/rules/read-agents-md.md" "$target_dir/.cursor/rules/read-agents-md.md"
+    copy_template "$tmpl_proj/.cursor/rules/work-state-continuity.md" "$target_dir/.cursor/rules/work-state-continuity.md"
 
     # Copy VSCode settings
     copy_template "$tmpl_proj/.vscode/settings.json" "$target_dir/.vscode/settings.json"

@@ -117,7 +117,22 @@ cmd_apply() {
         rm -f "$rendered_tmpl"
     fi
 
-    # 5. Handle ROADMAP.md, docs/agents/current-state.md, docs/agents/progress.md
+    # 5. Handle .cursor/rules/
+    ensure_dir "$target_dir/.cursor/rules"
+    for rule in "$tmpl_proj/.cursor/rules"/*; do
+        if [ -f "$rule" ]; then
+            local base
+            base="$(basename "$rule")"
+            if [ -f "$target_dir/.cursor/rules/$base" ]; then
+                warn "Skipping existing Cursor rule: $base"
+            else
+                copy_template "$rule" "$target_dir/.cursor/rules/$base"
+                info "Copied Cursor rule: $base"
+            fi
+        fi
+    done
+
+    # 6. Handle ROADMAP.md, docs/agents/current-state.md, docs/agents/progress.md
     for doc in "ROADMAP.md" "docs/agents/current-state.md" "docs/agents/progress.md"; do
         local tmpl="$tmpl_proj/${doc}.tmpl"
         local dst="$target_dir/$doc"

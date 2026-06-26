@@ -2,7 +2,7 @@
 
 **Read this first** after `docs/AGENT-ONBOARDING.md`. `ROADMAP.md` is the plan; this file is **what exists on disk today** vs what v4 still needs.
 
-**Active phase:** Phase 2 — Hooks
+**Active phase:** Phase 3 — azg apply / merge
 
 ---
 
@@ -23,6 +23,10 @@
 | VSCode Workspace Settings | `templates/project/.vscode/settings.json` | Windows-safe terminal profile configuration |
 | Project self-check harness | `templates/project/tests/test-harness.sh` | Verification self-check for client project |
 | Thin project `AGENTS.md.tmpl` | `templates/project/AGENTS.md.tmpl` | Split user prose and updated managed block (~80 lines) |
+| commit-gate.sh hook | `templates/project/.agents/hooks/commit-gate.sh` | Intercepts git commit and runs tests |
+| checkpoint.sh hook | `templates/project/.agents/hooks/checkpoint.sh` | Stop event hook checking for work-state updates |
+| spawn-budget.sh hook | `templates/project/.agents/hooks/spawn-budget.sh` | subagentStart event hook enforcing spawns & depth |
+| pre-compact.sh hook | `templates/project/.agents/hooks/pre-compact.sh` | PreCompact context compaction notice |
 
 ---
 
@@ -30,9 +34,6 @@
 
 | Item | ROADMAP phase | Notes |
 |------|---------------|-------|
-| `commit-gate.sh` hook | Phase 2 | Not in templates |
-| `checkpoint.sh` Stop hook | Phase 2 | Not in templates |
-| `spawn-budget.json` + hook | Phase 2 | Not in templates |
 | `azg setup --profile minimal` | Phase 4 | All vendor skills copied today |
 | Smart skill sync by VENDOR.lock SHA | Phase 4 | setup may skip mcp/agents but not SHA-gated skills |
 | `azg apply --tracker` flag | Phase 3 | Tracker selection not CLI flag yet |
