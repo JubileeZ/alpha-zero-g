@@ -1,29 +1,41 @@
 # Current Implementation State
 
-**Read this first** if you have no prior context. `ROADMAP.md` describes the target; this file describes **what exists today** (Phase 9/Production Ready).
+**Read this first** after `docs/AGENT-ONBOARDING.md`. `ROADMAP.md` is the plan; this file is **what exists on disk today** vs what v4 still needs.
 
-**Active phase:** All Phases Complete (Phase 9/Production Ready).
+**Active phase:** Phase 1 — Project template (harness-only)
 
 ---
 
-## What exists
+## What exists (v3 — keep & extend)
 
 | Area | Path | Notes |
 |------|------|-------|
-| CLI Entrypoint | `azg` | The main executable dispatcher script for setup, new, apply, update, and uninstall commands |
-| Implementation Lib | `lib/` | Shared common logging, OS-handling, setup, scaffolding, retrofit, updates, uninstallation, and skill synchronization scripts |
-| Scaffolding Templates | `templates/` | Global and project settings/MCP/skills files utilized during setup and new workspace scaffolding |
-| Test Suite | `tests/` | Integrated testing suites (`test-azg.sh`, `test-phase0.sh` to `test-phase9.sh`, document link verification, and lightweight teamwork tests) |
-| Local Agent Harness | `.agents/` | Local config, hook triggers, and custom skills directory configured for retrofitting workspaces |
-| Project Scaffold | `AGENTS.md` | Local rule configuration file outlining identity, commands, structure, and safety rules for agents |
+| CLI dispatcher | `azg` | setup, new, apply, update, uninstall |
+| Implementation | `lib/` | common, setup, scaffold, apply, update, vendor-sync, apply-overlay |
+| Templates | `templates/global/`, `templates/project/` | Global skills vendor tree, ponytail managed block, partial project harness |
+| Vendor sync | `lib/vendor-sync.sh`, `VENDOR.lock` | Pins mattpocock + ponytail upstream |
+| Safety hook | `templates/project/.agents/hooks/block-destructive-ops.sh` | Shipped |
+| Tests | `tests/test-azg.sh`, `test-phase0`–`test-phase9` | v3 phase coverage |
+| Agent docs | `docs/agents/progress.md`, issue-tracker, triage-labels, domain | Present for **this** repo; not pre-seeded in project template |
+| Revamp spec | `docs/REVAMP-SPEC.md`, `docs/AGENT-ONBOARDING.md` | v4 canonical docs |
 
 ---
 
-## What does NOT exist yet (do not assume)
+## What does NOT exist yet (v4 gaps — do not assume built)
 
-| Item | Planned phase | Notes |
+| Item | ROADMAP phase | Notes |
 |------|---------------|-------|
-| (None) | N/A | All planned v3 features, tests, and CLI commands are fully implemented on disk. |
+| Harness-only `azg new` (no stack wizard) | Phase 1 | scaffold.sh still asks stack/questions |
+| `task.md.tmpl`, `session-handoff.md.tmpl`, `CONTEXT.md.tmpl` | Phase 1 | Not in templates/project |
+| Pre-seeded adapter docs in project template | Phase 1 | issue-tracker/triage/domain only in this repo |
+| `tests/test-harness.sh` project template | Phase 1 | Meta-harness gate for scaffolded projects |
+| `commit-gate.sh` hook | Phase 2 | Not in templates |
+| `checkpoint.sh` Stop hook | Phase 2 | Not in templates |
+| `spawn-budget.json` + hook | Phase 2 | Not in templates |
+| `azg setup --profile minimal` | Phase 4 | All vendor skills copied today |
+| Smart skill sync by VENDOR.lock SHA | Phase 4 | setup may skip mcp/agents but not SHA-gated skills |
+| `azg apply --tracker` flag | Phase 3 | Tracker selection not CLI flag yet |
+| Thin project AGENTS.md.tmpl (~80 lines) | Phase 1 | Template may still be verbose |
 
 ---
 
@@ -31,19 +43,21 @@
 
 | Command | What it does |
 |---------|-------------|
-| `shellcheck azg lib/*.sh tests/*.sh` | Lint Bash scripts |
-| `bash tests/test-azg.sh` | Run general integration tests |
-| `bash tests/test-phase<0-9>.sh` | Run phase-specific integration/TDD tests |
-| `python3 tests/verify_docs.py` | Verify markdown documentation links |
-| `python3 -m unittest tests/test_verify_lightweight_teamwork.py` | Run subagent spawn compliance tests |
-| `./azg setup --dry-run` | Preview setup installation plan |
+| `shellcheck azg lib/*.sh tests/*.sh` | Lint Bash |
+| `bash tests/test-azg.sh` | General integration tests |
+| `bash tests/test-phase<N>.sh` | Phase-specific tests |
+| `python3 tests/verify_docs.py` | Doc link verification |
+| `./azg setup --dry-run` | Preview global install |
+| `./azg apply --dry-run <dir>` | Preview project apply (if supported) |
 
 ---
 
 ## Agent pitfalls
 
-1. Local testing of `azg setup` will modify/pollute the active developer configuration (e.g. `~/.gemini/antigravity-cli/`) unless the home directory is mocked (as done in `tests/test-azg.sh`).
-2. Custom hooks must be configured and merged carefully; direct changes to `hooks.json` will be blocked by the `block-destructive-ops.sh` safety guardrail unless bypassed.
+1. Mock `HOME` in tests — `azg setup` writes `~/.gemini/antigravity-cli/`.
+2. Do not assume v4 hooks exist — only `block-destructive-ops.sh` is in the project template today.
+3. `docs/antigravity-agent-architect/hook-architecture.md` lists PreCompact for Antigravity — **wrong** per official docs; v4 uses Stop checkpoint instead.
+4. README still describes v3 stack wizard — trust `REVAMP-SPEC.md` over README until Phase 6.
 
 ---
 
@@ -51,7 +65,9 @@
 
 | Question | Read |
 |----------|------|
-| Glossary | `CONTEXT.md` |
-| Phases & checklist | `ROADMAP.md` |
-| Agent rules | `AGENTS.md` |
-| How to update progress | `docs/agents/progress.md` |
+| Zero context | `docs/AGENT-ONBOARDING.md` |
+| What to build | `docs/REVAMP-SPEC.md` |
+| Phases | `ROADMAP.md` |
+| This file | `docs/agents/current-state.md` |
+| Progress ritual | `docs/agents/progress.md` |
+| Glossary | `CONTEXT.md` (this repo) |

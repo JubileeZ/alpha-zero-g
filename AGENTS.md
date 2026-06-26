@@ -20,11 +20,20 @@ Single-context layout with one `CONTEXT.md` and `docs/adr/` at the root. See `do
 
 ## Project Identity
 
-Alpha-Zero-G is a complete system for building and managing production-ready AI agent environments within the Antigravity CLI (`agy`) ecosystem. It provides orchestration tools, templates, hooks, and global configurations (including terminal statusline scripts) to run agent harnesses reliably. It enables developers to scaffold new AI agent projects or retroactively install the agent harness in existing repositories.
+Alpha-Zero-G is an **outer agent harness** installer: templates + `azg` CLI for solo/small teams using Cursor and/or Antigravity (`agy`). v4 revamp in progress — canonical spec: `docs/REVAMP-SPEC.md`.
 
 **Stack:** Bash (>= 4.0) · jq · Python (3.x) · Git · agy (Antigravity CLI)
 
 **Monorepo:** no
+
+---
+
+## Session start (agents)
+
+1. Read `docs/agents/current-state.md` — what exists vs v4 gaps
+2. Read `ROADMAP.md` — first unchecked item in active phase
+3. `git log -5 --oneline` and `git status`
+4. Do not rely on chat history. Deep spec: `docs/REVAMP-SPEC.md`
 
 ---
 
@@ -36,6 +45,7 @@ Alpha-Zero-G is a complete system for building and managing production-ready AI 
 | `bash tests/test-azg.sh` | Run general integration tests |
 | `bash tests/test-phase<0-9>.sh` | Run phase-specific integration/TDD tests |
 | `python3 tests/verify_docs.py` | Verify markdown documentation links |
+| `docs/AGENT-ONBOARDING.md` | Zero-context entry for new agents |
 
 **Pre-commit gate:** agents must run test and lint commands and confirm both pass before proposing any commit.
 
