@@ -72,11 +72,8 @@ VERSION                      # File indicating the current Alpha-Zero-G release 
 ---
 
 ## Agent Behavior Overrides
-
-- ponytail: Bash and jq are pre-approved stack requirements.
-- clean-temp: Temporary files created during tests must be cleaned up properly using traps or explicit or automatic cleanup.
-- When user requests changes to devices on agent harness, implement scalably. Design for current device and repo, ensuring compatibility with future devices and new repositories.
-- Known Footgun: The global statusline script and templates expect `~/.gemini/antigravity-cli/` to exist. When testing setup/CLI actions locally, use the test harness custom `HOME` logic (as seen in `tests/test-azg.sh`) to avoid polluting active developer configuration.
+- If working on a project that integrates with or generates downstream client repositories, ensure that the downstream `AGENTS.md` files also follow this hybrid layout (customizable Agent/Users zone above the markers, managed zone between the markers).
+- Keep project-specific context lightweight in `AGENTS.md` and direct agents to `docs/agents/` or modular files rather than inlining detailed instructions.
 
 ---
 
@@ -115,10 +112,4 @@ VERSION                      # File indicating the current Alpha-Zero-G release 
 - Pointers to issue tracking and progress update ritual can be found in `docs/agents/progress.md`.
 - Active issue tracking configuration is described in `docs/agents/issue-tracker.md`.
 
----
-
-## Downstream Harness Alignment
-
-- If working on a project that integrates with or generates downstream client repositories, ensure that the downstream `AGENTS.md` files also follow this hybrid layout (customizable Agent/Users zone above the markers, managed zone between the markers).
-- Keep project-specific context lightweight in `AGENTS.md` and direct agents to `docs/agents/` or modular files rather than inlining detailed instructions.
 <!-- AZG:MANAGED:END -->

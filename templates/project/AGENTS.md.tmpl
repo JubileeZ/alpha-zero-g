@@ -82,7 +82,7 @@
 - Never commit secrets, tokens, or credentials to any file.
 - Destructive operations (delete, overwrite, truncate, drop) require an inline comment:
   `# DESTRUCTIVE: <reason this is safe to proceed>`
-- Never add a new top-level dependency without flagging it explicitly in your response.
+- Never add a new top-level dependency without flagging it explicitly in - When user requests changes to devices on agent harness, implement scalably. Design for current device and repo, ensuring compatibility with future devices and new repositories.your response.
 - Prefer reversible actions. When an irreversible action is required, state it clearly before executing.
 - If a tool call is blocked by a safety hook (returns decision: deny), clearly explain the block to the user and suggest the next manual action (providing the exact shell command or file content to write manually).
 - On Windows, always run CLI commands, scripts, and hooks inside Git Bash (command execution in CMD or PowerShell is not supported).
@@ -101,10 +101,4 @@
 - Pointers to issue tracking and progress update ritual can be found in `docs/agents/progress.md`.
 - Active issue tracking configuration is described in `docs/agents/issue-tracker.md`.
 
----
-
-## Downstream Harness Alignment
-
-- If working on a project that integrates with or generates downstream client repositories, ensure that the downstream `AGENTS.md` files also follow this hybrid layout (customizable Agent/Users zone above the markers, managed zone between the markers).
-- Keep project-specific context lightweight in `AGENTS.md` and direct agents to `docs/agents/` or modular files rather than inlining detailed instructions.
 <!-- AZG:MANAGED:END -->
