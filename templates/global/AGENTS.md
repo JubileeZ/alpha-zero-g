@@ -35,26 +35,27 @@ Not lazy about: understanding the problem (read it fully and trace the real flow
 
 # AGENT INSTRUCTIONS: Project AGENTS.md Placeholder Rule
 
-If you read the project-level `AGENTS.md` and see placeholders to be filled (e.g., `<!-- AGENT: ... -->` blocks):
-1. Ask the user if they want to fill them in first.
-2. The user can skip this. If skipped, leave the `<!-- AGENT: ... -->` placeholders exactly as they are.
-3. If the user agrees to fill them:
-   - Interview the user one section at a time (never the whole file at once).
-   - For each section, suggest up to 3 options with the highest recommended option listed first. State that sections/placeholders can be removed if they do not apply.
-   - Writing style for AGENTS.md content: Drop pleasantries (sure, certainly, of course, happy to), filler words (just, really, basically, actually, simply), and hedging. Keep definitions and instructions extremely concise (sentence fragments are OK).
-   - If a placeholder or section does not apply to this project, and the user confirms it does not apply, remove that section/placeholder.
-   - Remove placeholder comments from sections that are filled in; preserve them in skipped sections.
+If project-level `AGENTS.md` has `<!-- AGENT: ... -->` placeholders:
+1. Ask user if they want to fill. If skipped, leave exact comments.
+2. If filling:
+   - Interview user section-by-section (never whole file).
+   - Propose max 3 options (recommended first). Remove section if inapplicable.
+   - Writing style: Telegraphic, no filler/pleasantries, concise fragments.
+   - Remove placeholder comments when filled; keep in skipped sections.
 
 # AGENT INSTRUCTIONS: Temporary File Cleanup
 
-Clean up any temporary directories, scratch files, or test outputs that you create during your work before finishing the task. Do not leave untracked temporary files in the repository.
+Clean up temp dirs, scratch files, or test outputs created during work before finishing. No untracked temp files in repo.
 
 # AGENT INSTRUCTIONS: Project Status Tracking Placeholder Rule
 
-If you read the project-level tracking files (`ROADMAP.md`, `docs/agents/progress.md`, or `docs/agents/current-state.md`) and see placeholders to be filled (e.g., `<!-- AGENT: ... -->` blocks):
-1. Ask the user if they want to fill them in first.
-2. The user can skip this. If skipped, leave the `<!-- AGENT: ... -->` placeholders exactly as they are.
-3. If the user agrees to fill them:
-   - Interview the user to align on the project's current status and goals.
-   - Propose content for the placeholders following the established styles of each document.
-   - Remove the placeholder comments from the sections that are filled in; preserve them in skipped sections.
+If project tracking (`ROADMAP.md`, `progress.md`, `current-state.md`) has `<!-- AGENT: ... -->` placeholders:
+1. Ask user if they want to fill. If skipped, leave exact comments.
+2. If filling:
+   - Interview user to align on status/goals.
+   - Propose content matching file style.
+   - Remove placeholder comments when filled; keep in skipped sections.
+
+# AGENT INSTRUCTIONS: Telegraphic Writing Style
+
+Write all system/project doc updates or additions in telegraphic style: drop articles (a/an/the), pleasantries, filler (just/actually/basically/simply), and hedging. Use concise fragments. Keep code, paths, commands, and technical terms exact.

@@ -1,6 +1,6 @@
 # Current Implementation State
 
-**Read this first** if you have no prior context. `ROADMAP.md` describes the target; this file describes **what exists today** (late Phase 1).
+Read if no prior context. `ROADMAP.md` shows target; this file shows what exists today.
 
 **Active phase:** Phase 1 — Repo Infrastructure & Foundations.
 
@@ -8,12 +8,10 @@
 
 ## What exists
 
-<!-- AGENT: Document components/files that have already been implemented.
-     Format as a table matching the example below.
-     Example:
+<!-- AGENT: Document implemented components/files. Table format:
      | Area | Path | Notes |
      |------|------|-------|
-     | Config | `config/` | Basic config loaders and environment variables |
+     | Config | `config/` | Basic loaders and env vars |
 -->
 
 | Area | Path | Notes |
@@ -24,11 +22,10 @@
 
 ## What does NOT exist yet (do not assume)
 
-<!-- AGENT: Document planned items that are NOT on disk yet. This prevents agents from assuming files or modules exist.
-     Example:
+<!-- AGENT: Document planned items not on disk yet. Prevents assuming files exist.
      | Item | Planned phase | Notes |
      |------|---------------|-------|
-     | DB models | 2 | SQLAlchemy models and connection setup |
+     | DB models | 2 | SQLAlchemy models and connection |
 -->
 
 | Item | Planned phase | Notes |
@@ -39,7 +36,7 @@
 
 ## Safe commands today
 
-<!-- AGENT: Provide exact, working commands that can be run safely right now without errors. -->
+<!-- AGENT: Provide exact working commands runnable safely right now. -->
 
 ```bash
 {{BUILD_COMMANDS}}
@@ -49,10 +46,9 @@
 
 ## Agent pitfalls
 
-<!-- AGENT: Document temporary, phase-specific pitfalls (e.g., components not yet built or API routes currently mocked). For permanent codebase traps, use AGENTS.md.
-     Example:
-     1. Do not use direct import of X without importing Y first.
-     2. Do not attempt to run migrations without human confirmation.
+<!-- AGENT: Document temporary/phase pitfalls (unbuilt components, mocked APIs). Permanent traps go in AGENTS.md.
+     1. Avoid importing X without Y.
+     2. Ask human before migrations.
 -->
 
 - <!-- AGENT: fill in or remove -->

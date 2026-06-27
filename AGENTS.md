@@ -72,44 +72,44 @@ VERSION                      # File indicating the current Alpha-Zero-G release 
 ---
 
 ## Agent Behavior Overrides
+- Keep project documentation edits (AGENTS.md, ROADMAP.md, current-state.md, etc.) telegraphic: no articles, no filler, concise fragments.
 - If working on a project that integrates with or generates downstream client repositories, ensure that the downstream `AGENTS.md` files also follow this hybrid layout (customizable Agent/Users zone above the markers, managed zone between the markers).
 - Keep project-specific context lightweight in `AGENTS.md` and direct agents to `docs/agents/` or modular files rather than inlining detailed instructions.
 
 ---
 
 <!-- AZG:MANAGED:START -->
-## Session start (agents)
+## Session start
 
-1. Read `docs/agents/current-state.md` — what exists vs roadmap gaps
-2. Read `ROADMAP.md` — first unchecked item in active phase
-3. Read `task.md` (or open issue) if present
-4. Run `git log -5 --oneline` and `git status`
+1. Read `docs/agents/current-state.md` (if unfamiliar with repo state).
+2. Read `ROADMAP.md` (first unchecked item in active phase).
+3. Read `task.md` / open issues (if present).
+4. Run `git log -5 --oneline` + `git status` (to sync history).
 5. Do not rely on chat history.
 
 ---
 
 ## Universal Safety Rules
 
-- Never commit secrets, tokens, or credentials to any file.
-- Destructive operations (delete, overwrite, truncate, drop) require an inline comment:
-  `# DESTRUCTIVE: <reason this is safe to proceed>`
-- Never add a new top-level dependency without flagging it explicitly in your response.
-- Prefer reversible actions. When an irreversible action is required, state it clearly before executing.
-- If a tool call is blocked by a safety hook (returns decision: deny), clearly explain the block to the user and suggest the next manual action (providing the exact shell command or file content to write manually).
-- On Windows, always run CLI commands, scripts, and hooks inside Git Bash (command execution in CMD or PowerShell is not supported).
+- No secrets/tokens/credentials in any file.
+- Destructive ops (delete/overwrite/truncate/drop): inline `# DESTRUCTIVE: <reason>`.
+- No new top-level dependencies without flagging in response.
+- Prefer reversible actions. If irreversible, state clearly before executing.
+- Tool blocked by safety hook? Explain block, suggest exact command/content to write manually.
+- Windows: run CLI/hooks only inside Git Bash.
 
 ---
 
 ## Domain Vocabulary
 
-- If domain terminology or relationships are ambiguous, check `docs/agents/domain.md`.
-- Create `CONTEXT.md` at the repo root from `docs/agents/CONTEXT.md.tmpl` if you need to resolve or record new domain vocabulary.
+- Ambiguous terminology? Read `docs/agents/domain.md`.
+- New terms? Create `CONTEXT.md` at root from `docs/agents/CONTEXT.md.tmpl` to register glossary.
 
 ---
 
-## Agent Progress Updates
+## Progress & Issues
 
-- Pointers to issue tracking and progress update ritual can be found in `docs/agents/progress.md`.
-- Active issue tracking configuration is described in `docs/agents/issue-tracker.md`.
+- Progress workflow: read `docs/agents/progress.md`.
+- Issue tracker setup: read `docs/agents/issue-tracker.md`.
 
 <!-- AZG:MANAGED:END -->
