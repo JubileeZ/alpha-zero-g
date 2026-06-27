@@ -94,6 +94,7 @@ VERSION                      # File indicating the current Alpha-Zero-G release 
 - No secrets/tokens/credentials in any file.
 - Destructive ops (delete/overwrite/truncate/drop): inline `# DESTRUCTIVE: <reason>`.
 - No new top-level dependencies without flagging in response.
+- Agent harness device changes: implement scalably for current/future devices and new repos.
 - Prefer reversible actions. If irreversible, state clearly before executing.
 - Tool blocked by safety hook? Explain block, suggest exact command/content to write manually.
 - Windows: run CLI/hooks only inside Git Bash.
@@ -113,5 +114,4 @@ VERSION                      # File indicating the current Alpha-Zero-G release 
 - Issue tracker setup: read `docs/agents/issue-tracker.md`.
 - Compaction: collapse completed phase checklists in `ROADMAP.md` to a single header/summary line (Active-Phase Compaction).
 - Cleanup: delete transient session files (`task.md`, `implementation_plan.md`, `walkthrough.md`) once milestone/task is complete.
-
 <!-- AZG:MANAGED:END -->

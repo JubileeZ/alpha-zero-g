@@ -28,12 +28,12 @@ assert_dir_exists   "docs/ directory exists"                           "${REPO_R
 
 section "2. VERSION file"
 
-assert_file_contains "VERSION contains '4.0.0'"   "${REPO_ROOT}/VERSION"   "4.0.0"
-_ver="$(cat "${REPO_ROOT}/VERSION" 2>/dev/null | tr -d '[:space:]')"
-if [[ "${_ver}" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-  pass "VERSION is semver format (${_ver})"
+_expected_ver="$(cat "${REPO_ROOT}/VERSION" 2>/dev/null | tr -d '[:space:]')"
+assert_file_contains "VERSION contains '${_expected_ver}'"   "${REPO_ROOT}/VERSION"   "${_expected_ver}"
+if [[ "${_expected_ver}" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+  pass "VERSION is semver format (${_expected_ver})"
 else
-  fail "VERSION is not semver format" "got: '${_ver}'"
+  fail "VERSION is not semver format" "got: '${_expected_ver}'"
 fi
 
 section "3. lib/ — all scripts present and executable"
@@ -106,11 +106,11 @@ done
 section "6. azg dispatcher — version flags"
 
 assert_exit             "azg version exits 0"                0  "${AZG}" version
-assert_output_contains  "azg version prints version number" "4.0.0"  "${AZG}" version
+assert_output_contains  "azg version prints version number" "${_expected_ver}"  "${AZG}" version
 assert_exit             "azg --version exits 0"              0  "${AZG}" --version
-assert_output_contains  "azg --version prints version"       "4.0.0"  "${AZG}" --version
+assert_output_contains  "azg --version prints version"       "${_expected_ver}"  "${AZG}" --version
 assert_exit             "azg -v exits 0"                     0  "${AZG}" -v
-assert_output_contains  "azg -v prints version"              "4.0.0"  "${AZG}" -v
+assert_output_contains  "azg -v prints version"              "${_expected_ver}"  "${AZG}" -v
 
 section "7. azg dispatcher — help flags"
 
