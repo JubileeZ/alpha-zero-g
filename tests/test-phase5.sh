@@ -55,6 +55,31 @@ else
   fail "commit-gate failed to deny commit or output error" "got: ${_res_deny}"
 fi
 
+# Reset test-harness to pass for subsequent cleanup tests
+printf '#!/usr/bin/env bash\nexit 0\n' > tests/test-harness.sh
+
+# 3. Cleanup case: task.md exists with all items completed, but implementation_plan.md exists -> deny
+echo "- [x] task 1" > task.md
+touch implementation_plan.md
+_res_cleanup_deny=$(echo '{"toolCall":{"name":"run_command","args":{"CommandLine":"git commit -m \"feat: foo\""}}}' | bash .agents/hooks/commit-gate.sh)
+if echo "${_res_cleanup_deny}" | jq -e '.decision == "deny"' >/dev/null && echo "${_res_cleanup_deny}" | jq -e '.reason | contains("transient files")' >/dev/null; then
+  pass "commit-gate denies commit when task complete but transient plans exist"
+else
+  fail "commit-gate failed to deny commit when transient plans exist on completed task" "got: ${_res_cleanup_deny}"
+fi
+
+# 4. Cleanup case: task.md exists with unchecked items, and implementation_plan.md exists -> allow
+echo "- [ ] task 1" > task.md
+_res_cleanup_allow=$(echo '{"toolCall":{"name":"run_command","args":{"CommandLine":"git commit -m \"feat: foo\""}}}' | bash .agents/hooks/commit-gate.sh)
+if echo "${_res_cleanup_allow}" | jq -e '.decision == "allow"' >/dev/null; then
+  pass "commit-gate allows commit when task is in-progress and transient plans exist"
+else
+  fail "commit-gate denied commit when task in-progress and transient plans exist" "got: ${_res_cleanup_allow}"
+fi
+
+# Clean up files created for testing
+rm -f task.md implementation_plan.md
+
 # spawn-budget testing
 # 1. Reset spawn budget
 _res_reset=$(bash .agents/hooks/spawn-budget.sh --reset)

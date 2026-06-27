@@ -41,6 +41,7 @@ flowchart LR
 ### 3. Before finishing (pre-commit gate)
 
 - Run all linting and test commands to verify success.
+- Delete transient session files (`task.md`, `implementation_plan.md`, `walkthrough.md`) once milestone/task complete.
 
 ### 4. On completion — update docs
 
@@ -50,7 +51,7 @@ flowchart LR
 | Added a file/dir listed in "does NOT exist" | Move row to **What exists**; remove from "does NOT exist" |
 | Changed architecture (hard to reverse) | New ADR in `docs/adr/` — do not bury in ROADMAP |
 | Resolved new domain term | `CONTEXT.md` glossary entry only |
-| Advanced to next phase (all bullets in phase done) | `current-state.md` **Active phase** header + `ROADMAP.md` status line |
+| Advanced to next phase (all bullets in phase done) | `current-state.md` **Active phase** header + `ROADMAP.md` status line; collapse completed phase checklist in `ROADMAP.md` to single summary line (Active-Phase Compaction). |
 
 ---
 

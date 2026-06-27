@@ -111,5 +111,7 @@ VERSION                      # File indicating the current Alpha-Zero-G release 
 
 - Progress workflow: read `docs/agents/progress.md`.
 - Issue tracker setup: read `docs/agents/issue-tracker.md`.
+- Compaction: collapse completed phase checklists in `ROADMAP.md` to a single header/summary line (Active-Phase Compaction).
+- Cleanup: delete transient session files (`task.md`, `implementation_plan.md`, `walkthrough.md`) once milestone/task is complete.
 
 <!-- AZG:MANAGED:END -->

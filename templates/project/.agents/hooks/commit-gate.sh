@@ -16,6 +16,20 @@ fi
 # Only intercept git commit commands
 if [ "$tool_name" = "run_command" ] || [ -n "$cmd" ]; then
   if echo "$cmd" | grep -qE '^git[[:space:]]+commit'; then
+    # Verify no transient file leftovers if the task is complete
+    if [ -f "task.md" ] && ! grep -q -E '\- \[[[:space:]]*\]' task.md; then
+      if [ -f "implementation_plan.md" ] || [ -f "walkthrough.md" ] || [ -s "task.md" ]; then
+        reason="Task is complete (no unchecked items in task.md). Please delete task.md, implementation_plan.md, and walkthrough.md (or clear task.md) to avoid leaving transient files in the repository."
+        if command -v jq >/dev/null 2>&1; then
+          jq -n --arg r "$reason" '{decision: "deny", reason: $r}'
+        else
+          escaped_reason=$(printf '%s' "$reason" | sed 's/"/\"/g' | tr '\n' ' ')
+          printf '{"decision":"deny","reason":"%s"}\n' "$escaped_reason"
+        fi
+        exit 0
+      fi
+    fi
+
     # Run harness tests
     harness_output=$(bash tests/test-harness.sh 2>&1)
     harness_status=$?
