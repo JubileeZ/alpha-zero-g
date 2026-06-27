@@ -62,7 +62,7 @@ cd existing-repo && azg apply --tracker github
 | Global (`azg setup` → `~/.gemini/antigravity-cli/`) | Project (git repo) |
 |------------------------------------------------------|---------------------|
 | Ponytail ladder (`PONYTAIL:MANAGED` in global `AGENTS.md`) | Project `AGENTS.md` managed block |
-| 9 default skills (minimal profile) | `.agents/hooks.json` + hook scripts |
+| 11 default skills (minimal profile) | `.agents/hooks.json` + hook scripts |
 | Statusline script | `.cursor/rules/` (thin) |
 | MCP config stub (`gh` default; commented read-only GitHub MCP) | `docs/agents/*` work-state & adapters |
 | | Continuity files: `task.md`, `ROADMAP.md`, `current-state.md`, handoff |
@@ -143,7 +143,7 @@ tests/test-harness.sh        # meta-harness self-check (no app stack required)
 
 Ship via `azg setup` when `VENDOR.lock` SHA changes (smart merge — skip if already at pin).
 
-**9 default skills** (user-invoked where marked):
+**11 default skills** (user-invoked where marked):
 
 | Skill | Invocation |
 |-------|------------|
@@ -156,6 +156,8 @@ Ship via `azg setup` when `VENDOR.lock` SHA changes (smart merge — skip if alr
 | to-issues | user |
 | diagnosing-bugs | model |
 | tdd | model |
+| teach | user |
+| writing-great-skills | user |
 
 **Ponytail:** global `AGENTS.md` managed block — **not** the `ponytail` skill (duplicate).
 
@@ -204,7 +206,7 @@ User:        git pull              →  get new Alpha-Zero-G
 1. `azg new` produces harness-only tree matching §5 with no app scaffold questions.
 2. `azg apply` pre-seeds GitHub adapter docs without running setup skill.
 3. All four v4 hooks pass shellcheck and integration tests on Linux + documented Windows path.
-4. `azg setup --profile minimal` installs exactly 9 skills + ponytail block.
+4. `azg setup --profile minimal` installs exactly 11 skills + ponytail block.
 5. `azg setup` skips skill copy when `VENDOR.lock` commit unchanged.
 6. Cold-start agent reading only onboarding docs produces the same build plan (validated by subagent test).
 

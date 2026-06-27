@@ -49,11 +49,13 @@ fi
 assert_exit "azg setup with invalid profile fails" 1 "${AZG}" setup --profile invalid
 
 # 1b. Profile minimal (default) check
-# Default is minimal profile. Verify that one of the 9 minimal skills is copied, but ponytail or setup-matt-pocock-skills is NOT.
-if [ -d "${TEMP_HOME}/.gemini/config/skills/tdd" ]; then
-  pass "minimal profile copies tdd"
+# Default is minimal profile. Verify that minimal skills (e.g. tdd, teach, writing-great-skills) are copied, but ponytail or setup-matt-pocock-skills is NOT.
+if [ -d "${TEMP_HOME}/.gemini/config/skills/tdd" ] && \
+   [ -d "${TEMP_HOME}/.gemini/config/skills/teach" ] && \
+   [ -d "${TEMP_HOME}/.gemini/config/skills/writing-great-skills" ]; then
+  pass "minimal profile copies minimal skills (tdd, teach, writing-great-skills)"
 else
-  fail "minimal profile missing tdd"
+  fail "minimal profile missing some minimal skills"
 fi
 
 if [ ! -d "${TEMP_HOME}/.gemini/config/skills/setup-matt-pocock-skills" ] && [ ! -d "${TEMP_HOME}/.gemini/config/skills/ponytail" ]; then

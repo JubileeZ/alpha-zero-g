@@ -19,9 +19,9 @@ is_skill_in_profile() {
     return 0
   fi
 
-  # Minimal profile: exactly 9 skills
+  # Minimal profile: exactly 11 skills
   case "${skill_name}" in
-    grill-with-docs|grilling|domain-modeling|handoff|ask-matt|triage|to-issues|diagnosing-bugs|tdd)
+    grill-with-docs|grilling|domain-modeling|handoff|ask-matt|triage|to-issues|diagnosing-bugs|tdd|teach|writing-great-skills)
       return 0
       ;;
     *)
