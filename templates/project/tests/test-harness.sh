@@ -39,7 +39,11 @@ echo "Running Alpha-Zero-G Project Harness Self-Check..."
 # 1. Check core documentation files
 check_file "AGENTS.md"
 check_file "ROADMAP.md"
-check_file "task.md"
+
+# task.md is transient; it is required if any active session files exist
+if [ -f "implementation_plan.md" ] || [ -f "walkthrough.md" ] || [ -f "task.md" ]; then
+    check_file "task.md"
+fi
 
 # 2. Check agent guides
 check_file "docs/agents/current-state.md"

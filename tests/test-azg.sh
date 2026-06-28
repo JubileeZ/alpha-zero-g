@@ -189,6 +189,12 @@ else
   fail "Apply failed to create tracking templates"
 fi
 
+if [ -f ".agents/spawn-budget.json" ] && [ -f ".agents/session-handoff.md" ] && [ -f ".vscode/settings.json" ] && [ -f "tests/test-harness.sh" ]; then
+  pass "Apply copied budget, handoff, vscode settings, and test harness"
+else
+  fail "Apply failed to copy budget, handoff, vscode settings, or test harness"
+fi
+
 # 3a. Tracker validation
 assert_exit "azg apply with invalid tracker fails" 1 "${AZG}" apply . --tracker invalid
 

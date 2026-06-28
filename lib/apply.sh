@@ -327,6 +327,64 @@ cmd_apply() {
         fi
     fi
 
+    # 9. Copy spawn-budget.json and session-handoff.md if they do not exist
+    if [ ! -f "$target_dir/.agents/spawn-budget.json" ]; then
+        if [ "$dry_run" = "yes" ]; then
+            printf "[CREATE] .agents/spawn-budget.json\n"
+        else
+            copy_template "$tmpl_proj/.agents/spawn-budget.json" "$target_dir/.agents/spawn-budget.json"
+            info "Created .agents/spawn-budget.json"
+        fi
+    else
+        if [ "$dry_run" = "yes" ]; then
+            printf "[SKIP] .agents/spawn-budget.json (already exists)\n"
+        fi
+    fi
+
+    if [ ! -f "$target_dir/.agents/session-handoff.md" ]; then
+        if [ "$dry_run" = "yes" ]; then
+            printf "[CREATE] .agents/session-handoff.md\n"
+        else
+            copy_template "$tmpl_proj/.agents/session-handoff.md.tmpl" "$target_dir/.agents/session-handoff.md"
+            info "Created .agents/session-handoff.md"
+        fi
+    else
+        if [ "$dry_run" = "yes" ]; then
+            printf "[SKIP] .agents/session-handoff.md (already exists)\n"
+        fi
+    fi
+
+    # 10. Copy .vscode/settings.json if it does not exist
+    if [ ! -f "$target_dir/.vscode/settings.json" ]; then
+        if [ "$dry_run" = "yes" ]; then
+            printf "[CREATE] .vscode/settings.json\n"
+        else
+            ensure_dir "$target_dir/.vscode"
+            copy_template "$tmpl_proj/.vscode/settings.json" "$target_dir/.vscode/settings.json"
+            info "Created .vscode/settings.json"
+        fi
+    else
+        if [ "$dry_run" = "yes" ]; then
+            printf "[SKIP] .vscode/settings.json (already exists)\n"
+        fi
+    fi
+
+    # 11. Copy tests/test-harness.sh if it does not exist
+    if [ ! -f "$target_dir/tests/test-harness.sh" ]; then
+        if [ "$dry_run" = "yes" ]; then
+            printf "[CREATE] tests/test-harness.sh\n"
+        else
+            ensure_dir "$target_dir/tests"
+            copy_template "$tmpl_proj/tests/test-harness.sh" "$target_dir/tests/test-harness.sh"
+            chmod +x "$target_dir/tests/test-harness.sh"
+            info "Created tests/test-harness.sh"
+        fi
+    else
+        if [ "$dry_run" = "yes" ]; then
+            printf "[SKIP] tests/test-harness.sh (already exists)\n"
+        fi
+    fi
+
     if [ "$dry_run" != "yes" ]; then
         ok "Retrofit complete."
     fi
