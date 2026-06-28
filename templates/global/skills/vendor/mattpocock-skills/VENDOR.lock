@@ -1,6 +1,6 @@
 source: https://github.com/mattpocock/skills.git
 commit: 5d78bd0903420f97c791f834201e550c765699f8
-date_vendored: 2569-06-27
+date_vendored: 2026-06-28
 license: MIT (verify against upstream before publishing)
 included:
   - skills/engineering
