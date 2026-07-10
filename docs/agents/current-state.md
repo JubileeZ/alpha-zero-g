@@ -14,7 +14,7 @@
 | Implementation | `lib/` | common, setup, scaffold, apply, update, vendor-sync, apply-overlay |
 | Templates | `templates/global/`, `templates/project/` | Global skills vendor tree, ponytail managed block, partial project harness |
 | Vendor sync | `lib/vendor-sync.sh`, `VENDOR.lock` | Pins mattpocock + ponytail upstream |
-| Core setup profile | `lib/setup.sh` | `azg setup --profile core` (default) installs 11 core skills |
+| Core setup profile | `lib/setup.sh` | `azg setup --profile core` (default) installs 12 core skills |
 | Smart setup sync | `lib/setup.sh` | Skips skill copying if `VENDOR.lock` commits unchanged |
 | apply --tracker flag | `lib/apply.sh` | `--tracker github|gitlab|local|none` selects issue adapter template |
 | Safety hook | `templates/project/.agents/hooks/block-destructive-ops.sh` | Shipped |

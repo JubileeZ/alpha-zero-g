@@ -19,7 +19,7 @@
 #  10.  apply_overlay: existing dest is replaced on each call (rm -rf + cp -R)
 #  11.  apply_overlay: skills outside frontmatter are NOT rewritten
 #  12.  apply_overlay: allowed-tools: line is also remapped (not just tools:)
-#  13.  apply_overlay: works for all 11 skills (round-trip)
+#  13.  apply_overlay: works for all vendor skills (round-trip)
 #  14.  azg setup now calls apply_overlay (post-Phase 3 regression)
 #  15.  Installed skill SKILL.md has remapped tools in global dir
 #  16.  Installed skill has ANTIGRAVITY-NOTE.md in global dir
@@ -386,7 +386,7 @@ for mapped in "read_file" "write_file" "edit_file" "run_command" "grep" "glob"; 
   fi
 done
 
-section "14. apply_overlay — round-trip: all 11 skills processed without error"
+section "14. apply_overlay — round-trip: all vendor skills processed without error"
 
 _all_skills_ok=1
 for skill in "${ENGINEERING_SKILLS[@]}"; do

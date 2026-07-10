@@ -143,7 +143,7 @@ tests/test-harness.sh        # meta-harness self-check (no app stack required)
 
 Ship via `azg setup` when `VENDOR.lock` SHA changes (smart merge — skip if already at pin).
 
-**11 default skills** (user-invoked where marked):
+**12 default skills** (user-invoked where marked):
 
 | Skill | Invocation |
 |-------|------------|
@@ -156,6 +156,7 @@ Ship via `azg setup` when `VENDOR.lock` SHA changes (smart merge — skip if alr
 | to-tickets | user |
 | diagnosing-bugs | model |
 | tdd | model |
+| code-review | user |
 | teach | user |
 | writing-great-skills | user |
 
@@ -206,7 +207,7 @@ User:        git pull              →  get new Alpha-Zero-G
 1. `azg new` produces harness-only tree matching §5 with no app scaffold questions.
 2. `azg apply` pre-seeds GitHub adapter docs without running setup skill.
 3. All four v4 hooks pass shellcheck and integration tests on Linux + documented Windows path.
-4. `azg setup --profile core` installs exactly 11 skills + ponytail block.
+4. `azg setup --profile core` installs exactly 12 skills + ponytail block.
 5. `azg setup` skips skill copy when `VENDOR.lock` commit unchanged.
 6. Cold-start agent reading only onboarding docs produces the same build plan (validated by subagent test).
 

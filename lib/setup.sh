@@ -19,9 +19,9 @@ is_skill_in_profile() {
     return 0
   fi
 
-  # Core profile: exactly 11 skills
+  # Core profile: exactly 12 skills
   case "${skill_name}" in
-    grill-with-docs|grilling|domain-modeling|handoff|ask-matt|triage|to-tickets|diagnosing-bugs|tdd|teach|writing-great-skills)
+    grill-with-docs|grilling|domain-modeling|handoff|ask-matt|triage|to-tickets|diagnosing-bugs|tdd|teach|writing-great-skills|code-review)
       return 0
       ;;
     *)
