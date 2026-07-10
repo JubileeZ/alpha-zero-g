@@ -42,6 +42,7 @@ source "$(dirname "${BASH_SOURCE[0]}")/harness.sh"
 # ---------------------------------------------------------------------------
 ENGINEERING_SKILLS=(
   "ask-matt"
+  "code-review"
   "codebase-design"
   "diagnosing-bugs"
   "domain-modeling"
@@ -49,12 +50,14 @@ ENGINEERING_SKILLS=(
   "implement"
   "improve-codebase-architecture"
   "prototype"
+  "research"
   "resolving-merge-conflicts"
   "setup-matt-pocock-skills"
   "tdd"
-  "to-issues"
-  "to-prd"
+  "to-spec"
+  "to-tickets"
   "triage"
+  "wayfinder"
 )
 PRODUCTIVITY_SKILLS=(
   "grill-me"

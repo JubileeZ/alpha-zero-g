@@ -2,7 +2,7 @@
 
 **Read this first** after `docs/AGENT-ONBOARDING.md`. `ROADMAP.md` is the plan; this file is **what exists on disk today** vs what v4 still needs.
 
-**Active phase:** Phase 3 — azg apply / merge
+**Active phase:** None (v4 Revamp complete)
 
 ---
 
@@ -14,6 +14,9 @@
 | Implementation | `lib/` | common, setup, scaffold, apply, update, vendor-sync, apply-overlay |
 | Templates | `templates/global/`, `templates/project/` | Global skills vendor tree, ponytail managed block, partial project harness |
 | Vendor sync | `lib/vendor-sync.sh`, `VENDOR.lock` | Pins mattpocock + ponytail upstream |
+| Core setup profile | `lib/setup.sh` | `azg setup --profile core` (default) installs 11 core skills |
+| Smart setup sync | `lib/setup.sh` | Skips skill copying if `VENDOR.lock` commits unchanged |
+| apply --tracker flag | `lib/apply.sh` | `--tracker github|gitlab|local|none` selects issue adapter template |
 | Safety hook | `templates/project/.agents/hooks/block-destructive-ops.sh` | Shipped |
 | Tests | `tests/test-azg.sh`, `test-phase0`–`test-phase9` | v3 phase coverage |
 | Agent docs | `docs/agents/progress.md`, issue-tracker, triage-labels, domain | Present for **this** repo; now pre-seeded in project template |
@@ -32,11 +35,7 @@
 
 ## What does NOT exist yet (v4 gaps — do not assume built)
 
-| Item | ROADMAP phase | Notes |
-|------|---------------|-------|
-| `azg setup --profile minimal` | Phase 4 | All vendor skills copied today |
-| Smart skill sync by VENDOR.lock SHA | Phase 4 | setup may skip mcp/agents but not SHA-gated skills |
-| `azg apply --tracker` flag | Phase 3 | Tracker selection not CLI flag yet |
+| None | - | All v4 spec features implemented |
 
 ---
 

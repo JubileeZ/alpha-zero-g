@@ -48,20 +48,20 @@ fi
 # 1a. Profile validation
 assert_exit "azg setup with invalid profile fails" 1 "${AZG}" setup --profile invalid
 
-# 1b. Profile minimal (default) check
-# Default is minimal profile. Verify that minimal skills (e.g. tdd, teach, writing-great-skills) are copied, but ponytail or setup-matt-pocock-skills is NOT.
+# 1b. Profile core (default) check
+# Default is core profile. Verify that core skills (e.g. tdd, teach, writing-great-skills) are copied, but ponytail or setup-matt-pocock-skills is NOT.
 if [ -d "${TEMP_HOME}/.gemini/config/skills/tdd" ] && \
    [ -d "${TEMP_HOME}/.gemini/config/skills/teach" ] && \
    [ -d "${TEMP_HOME}/.gemini/config/skills/writing-great-skills" ]; then
-  pass "minimal profile copies minimal skills (tdd, teach, writing-great-skills)"
+  pass "core profile copies core skills (tdd, teach, writing-great-skills)"
 else
-  fail "minimal profile missing some minimal skills"
+  fail "core profile missing some core skills"
 fi
 
 if [ ! -d "${TEMP_HOME}/.gemini/config/skills/setup-matt-pocock-skills" ] && [ ! -d "${TEMP_HOME}/.gemini/config/skills/ponytail" ]; then
-  pass "minimal profile excludes setup-matt-pocock-skills and ponytail"
+  pass "core profile excludes setup-matt-pocock-skills and ponytail"
 else
-  fail "minimal profile did not exclude setup-matt-pocock-skills or ponytail"
+  fail "core profile did not exclude setup-matt-pocock-skills or ponytail"
 fi
 
 # 1c. Smart Setup Sync verification

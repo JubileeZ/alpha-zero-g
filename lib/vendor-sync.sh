@@ -35,8 +35,9 @@ vendor_sync() {
     return 1
   fi
 
-  local clone_matt="" commit_matt=""
-  local clone_pony="" commit_pony=""
+  clone_matt=""
+  clone_pony=""
+  local commit_matt="" commit_pony=""
 
   # Always clean up clone directories even on error or early return
   # shellcheck disable=SC2064

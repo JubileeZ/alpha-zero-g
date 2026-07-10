@@ -4,7 +4,7 @@ Alpha-Zero-G is an **outer agent harness installer and template system** designe
 
 It ships the following capabilities out-of-the-box across macOS, Linux, and Windows:
 - **Harness-Only Project Templates**: Automatically scaffolds `AGENTS.md`, `ROADMAP.md`, `task.md`, and issue-tracker adapters so agents can maintain cross-device context without relying on expensive chat history or full MCP schemas.
-- **Global Config & Skills**: Installs a minimal profile of 11 global skills and a cross-platform statusline script directly to your machine's global configuration (`~/.gemini/antigravity-cli/`).
+- **Global Config & Skills**: Installs a core profile of 11 global skills and a cross-platform statusline script directly to your machine's global configuration (`~/.gemini/antigravity-cli/`).
 - **Safety Hooks**: Provides local `.agents/hooks/` for your repositories to block destructive operations, enforce commit gates, manage subagent spawn budgets, and verify work-state checkpoints.
 - **Brownfield & Greenfield Support**: Easily apply the harness to new projects (`azg new`) or safely retrofit existing repositories (`azg apply`).
 

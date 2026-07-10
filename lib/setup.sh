@@ -19,9 +19,9 @@ is_skill_in_profile() {
     return 0
   fi
 
-  # Minimal profile: exactly 11 skills
+  # Core profile: exactly 11 skills
   case "${skill_name}" in
-    grill-with-docs|grilling|domain-modeling|handoff|ask-matt|triage|to-issues|diagnosing-bugs|tdd|teach|writing-great-skills)
+    grill-with-docs|grilling|domain-modeling|handoff|ask-matt|triage|to-tickets|diagnosing-bugs|tdd|teach|writing-great-skills)
       return 0
       ;;
     *)
@@ -33,7 +33,7 @@ is_skill_in_profile() {
 cmd_setup() {
   local dry_run=0
   local force=0
-  local profile="minimal"
+  local profile="core"
 
   # Parse flags
   while [ $# -gt 0 ]; do
@@ -51,17 +51,17 @@ cmd_setup() {
           profile="$2"
           shift 2
         else
-          die "azg setup: --profile requires an argument (minimal|full)"
+          die "azg setup: --profile requires an argument (core|full)"
         fi
         ;;
       *)
-        die "azg setup: unknown option '$1'. Usage: azg setup [--dry-run] [--force] [--profile minimal|full]"
+        die "azg setup: unknown option '$1'. Usage: azg setup [--dry-run] [--force] [--profile core|full]"
         ;;
     esac
   done
 
-  if [ "${profile}" != "minimal" ] && [ "${profile}" != "full" ]; then
-    die "azg setup: invalid profile '${profile}'. Allowed values are: minimal, full"
+  if [ "${profile}" != "core" ] && [ "${profile}" != "full" ]; then
+    die "azg setup: invalid profile '${profile}'. Allowed values are: core, full"
   fi
 
   # -------------------------------------------------------------------------

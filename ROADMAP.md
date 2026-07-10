@@ -67,9 +67,9 @@ Ship a **clone-and-go outer harness** for solo/small teams: harness-only templat
 
 ---
 
-## Phase 4 — Global setup (minimal profile)
+## Phase 4 — Global setup (core profile)
 
-- [x] `azg setup --profile minimal` (default) — 11 skills only
+- [x] `azg setup --profile core` (default) — 11 skills only
 - [x] `azg setup --profile full` — entire vendored catalog
 - [x] Smart skill sync: copy only when `VENDOR.lock` commit differs from last setup stamp
 - [x] MCP template: `gh` default docs; commented read-only GitHub MCP stub
