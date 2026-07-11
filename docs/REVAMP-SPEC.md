@@ -38,7 +38,7 @@ Both paths consume the same `templates/project/` tree.
 ## 3. Distribution & onboarding
 
 ```bash
-git clone <alpha-zero-g-repo>   # e.g. https://github.com/<org>/Alpha-Zero-G.git
+git clone <alpha-zero-g-repo>   # e.g. https://github.com/<org>/alpha-zero-g.git
 cd alpha-zero-g
 azg setup                              # once per machine (global)
 azg new my-app --tracker github        # greenfield

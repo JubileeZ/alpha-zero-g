@@ -199,7 +199,7 @@ Output: fully scaffolded directory, `.agents/` populated, `GEMINI.md`/`AGENTS.md
 
 ## 7. `azg apply` — Retrofit Mode
 
-Target: existing repos (e.g. FPL-Jubilee-Ascent).
+Target: existing repos (e.g. fpl-jubilee-ascent).
 
 - `.agents/hooks/`, `.agents/skills/` → additive copy, never overwrite existing files with the same name (skip + warn)
 - `.agents/hooks.json` → merge JSON (preserve existing keys, add missing default gates as `enabled: false`)
