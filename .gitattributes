@@ -1,0 +1,12 @@
+# Force LF for shell so shellcheck/CI don't see CR (SC1017) on Windows runners.
+* text=auto
+azg text eol=lf
+*.sh text eol=lf
+*.bash text eol=lf
+*.py text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.md text eol=lf
+*.json text eol=lf
+*.tmpl text eol=lf
+*.mdc text eol=lf

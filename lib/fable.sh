@@ -86,7 +86,7 @@ fable_sync() {
     if [ -d "${skill}" ]; then
       local base
       base="$(basename "${skill}")"
-      rm -rf "${dest}/${base}"
+      rm -rf "${dest:?}/${base:?}"
       cp -R "${skill}" "${dest}/${base}"
       info "Installed skill: fable/${base}"
     fi

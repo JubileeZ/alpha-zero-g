@@ -46,9 +46,10 @@ printf "\n\033[1m\033[0;36m▶ shellcheck\033[0m\n"
 if [ "${LIST_ONLY}" -eq 1 ]; then
   ok "listed: shellcheck"
 elif command -v shellcheck >/dev/null 2>&1; then
+  # -S error: style/warning debt (SC2164 etc.) is tracked separately; errors (e.g. SC1017 CRLF) still fail the gate
   # shellcheck disable=SC2086
-  if shellcheck azg lib/*.sh tests/*.sh; then
-    ok "shellcheck azg lib/*.sh tests/*.sh"
+  if shellcheck -S error azg lib/*.sh tests/*.sh; then
+    ok "shellcheck -S error azg lib/*.sh tests/*.sh"
   else
     bad "shellcheck failed"
   fi

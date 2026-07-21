@@ -17,7 +17,16 @@ jobs:
       run:
         shell: bash
     steps:
+      - name: Force LF checkouts
+        run: |
+          git config --global core.autocrlf false
+          git config --global core.eol lf
+
       - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
 
       - name: Install deps (Ubuntu)
         if: runner.os == 'Linux'
@@ -29,10 +38,25 @@ jobs:
 
       - name: Install deps (Windows)
         if: runner.os == 'Windows'
-        shell: powershell
+        shell: pwsh
         run: |
-          choco install jq shellcheck -y
-          refreshenv
+          choco install jq shellcheck -y --no-progress
+          # refreshenv does not update PATH for later steps; pin Chocolatey bin
+          "C:\ProgramData\chocolatey\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+
+      - name: Sanity (jq / shellcheck / python)
+        run: |
+          command -v jq
+          command -v shellcheck
+          command -v python3
+          jq --version
+          shellcheck --version | head -2
+          python3 --version
+          # Guard: working tree must be LF for shell scripts (Windows autocrlf regressions)
+          if tr -cd '\r' < azg | grep -q .; then
+            echo "::error::azg has CR — .gitattributes / autocrlf misconfigured"
+            exit 1
+          fi
 
       - name: Aggregate gate
         env:
