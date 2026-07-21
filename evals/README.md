@@ -82,3 +82,12 @@ bash evals/run-exploratory-smoke.sh
 bash evals/record-pilot-pair.sh exploratory --fixture bug-fix \
   --core-scorecard ... --baseline-scorecard ...
 ```
+
+Analyze / held-out gate:
+
+```bash
+bash evals/analyze-pilot-log.sh confirmation
+bash evals/analyze-pilot-log.sh held-out
+bash evals/analyze-pilot-gate.sh              # writes gate-status.json
+# bash evals/analyze-pilot-gate.sh --apply-claim   # only when both green
+```

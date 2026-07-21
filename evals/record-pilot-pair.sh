@@ -72,8 +72,8 @@ else
   if [ "${ts}" = "1" ] || [ "${ts}" = "true" ]; then base_success=true; fi
 fi
 
-logfile="${ROOT}/evals/pilot/${PHASE}-log.jsonl"
-mkdir -p "${ROOT}/evals/pilot"
+logfile="${AZG_PILOT_DIR:-${ROOT}/evals/pilot}/${PHASE}-log.jsonl"
+mkdir -p "$(dirname "${logfile}")"
 
 jq -nc \
   --arg phase "${PHASE}" \

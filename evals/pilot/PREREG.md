@@ -37,3 +37,7 @@ Change control: edit `prereg.json` only by appending a new `version` and new `lo
 ## Exploratory log
 
 Append JSON lines to `exploratory-log.jsonl` via `evals/record-pilot-pair.sh` or by hand. Every line must include `"phase":"exploratory"` and `"reliability_claim":false`.
+
+## Held-out
+
+See [`HELD-OUT.md`](HELD-OUT.md). Analyze: `bash evals/analyze-pilot-log.sh held-out` then `bash evals/analyze-pilot-gate.sh`.

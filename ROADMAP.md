@@ -1,6 +1,6 @@
 # Alpha-Zero-G — Roadmap
 
-**Status:** v4 scaffolding complete · Phases 7–8 done · **Active: Phase 9 — Core Pilot**
+**Status:** v4 scaffolding complete · Phases 7–9 done · **Active: Phase 10 — Fable (blocked until held-out claim)**
 
 > Zero-context: [`docs/AGENT-ONBOARDING.md`](docs/AGENT-ONBOARDING.md) · Spec: [`docs/REVAMP-SPEC.md`](docs/REVAMP-SPEC.md) · Reality: [`docs/agents/current-state.md`](docs/agents/current-state.md) · Glossary: [`CONTEXT.md`](CONTEXT.md)
 
@@ -32,14 +32,10 @@ Aggregate `tests/run-all.sh` + CI matrix · host-contract smoke (`tests/host-con
 
 ---
 
-## Phase 9 — Core Pilot
+## Phase 9 — Core Pilot (complete)
 
-- [x] Evaluation Suite fixtures: 3 fixed tasks (bugfix, scoped change, regression-prone feature)
-- [x] Paired No-Harness Baseline runner + scorecard (Task Success, Delivery Cost, wall time, interventions)
-- [x] Blind Judge wiring (fixed independent model; human calibration notes)
-- [x] Long-Horizon Task script: fresh context + clean-device clone + Cursor↔Antigravity handoff
-- [x] Pilot run (exploratory only) + preregister confirmation thresholds/sample size
-- [ ] Held-out confirmation before any reliability claim
+Evaluation Suite + paired runner/scorecard · Blind Judge · Long-Horizon · exploratory prereg (N=9/held-out N=6) · analyze-pilot-gate. Claim only after confirmation+held-out green + --apply-claim.
+
 
 ---
 

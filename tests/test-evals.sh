@@ -319,4 +319,83 @@ else
   # Still ensure run-exploratory-smoke.sh is executable / --help path exists (already asserted)
 fi
 
+section "7. Held-out gate analysis"
+
+assert_file_exists "HELD-OUT.md" "${ROOT}/evals/pilot/HELD-OUT.md"
+assert_file_executable "analyze-pilot-log.sh" "${ROOT}/evals/analyze-pilot-log.sh"
+assert_file_executable "analyze-pilot-gate.sh" "${ROOT}/evals/analyze-pilot-gate.sh"
+
+if ! command -v jq >/dev/null 2>&1; then
+  skip "held-out gate tests need jq"
+else
+  pd="$(azg_mktemp_d "tmp_azg_gate-XXXXXX")"
+  cp "${ROOT}/evals/pilot/prereg.json" "${pd}/prereg.json"
+  : > "${pd}/confirmation-log.jsonl"
+  : > "${pd}/held-out-log.jsonl"
+
+  pair_line() {
+    local phase="$1" cs="$2" bs="$3"
+    jq -nc --arg phase "${phase}" --argjson cs "${cs}" --argjson bs "${bs}" \
+      '{phase:$phase,reliability_claim:false,fixture_id:"bug-fix",core_success:$cs,baseline_success:$bs,
+        core:{task_success:1,delivery_cost:1,wall_time_sec:10,interventions:0,treatment:"core",model:"",ide:""},
+        baseline:{task_success:0,delivery_cost:2,wall_time_sec:20,interventions:1,treatment:"baseline",model:"",ide:""}}'
+  }
+
+  i=0
+  while [ "${i}" -lt 9 ]; do
+    pair_line confirmation true false >> "${pd}/confirmation-log.jsonl"
+    i=$((i + 1))
+  done
+  i=0
+  while [ "${i}" -lt 6 ]; do
+    pair_line held-out true false >> "${pd}/held-out-log.jsonl"
+    i=$((i + 1))
+  done
+
+  export AZG_PILOT_DIR="${pd}"
+  conf=$(bash "${ROOT}/evals/analyze-pilot-log.sh" confirmation)
+  if [ "$(echo "${conf}" | jq -r '.ready')" = "true" ] && [ "$(echo "${conf}" | jq -r '.n')" = "9" ]; then
+    pass "confirmation log analyzes ready with N=9"
+  else
+    fail "confirmation analyze not ready" "${conf}"
+  fi
+  held=$(bash "${ROOT}/evals/analyze-pilot-log.sh" held-out)
+  if [ "$(echo "${held}" | jq -r '.ready')" = "true" ] && [ "$(echo "${held}" | jq -r '.n')" = "6" ]; then
+    pass "held-out log analyzes ready with N=6"
+  else
+    fail "held-out analyze not ready" "${held}"
+  fi
+  bash "${ROOT}/evals/analyze-pilot-gate.sh" >/dev/null
+  if [ "$(jq -r '.both_green' "${pd}/gate-status.json")" = "true" ]; then
+    pass "gate both_green when conf+held ready"
+  else
+    fail "gate should be both_green" "$(cat "${pd}/gate-status.json")"
+  fi
+  if [ "$(jq -r '.reliability_claim_allowed' "${pd}/prereg.json")" = "false" ]; then
+    pass "prereg claim still false before --apply-claim"
+  else
+    fail "should not auto-apply claim"
+  fi
+  assert_exit "apply-claim succeeds when green" 0 bash "${ROOT}/evals/analyze-pilot-gate.sh" --apply-claim
+  if [ "$(jq -r '.reliability_claim_allowed' "${pd}/prereg.json")" = "true" ]; then
+    pass "apply-claim sets reliability_claim_allowed"
+  else
+    fail "apply-claim did not flip prereg"
+  fi
+
+  # Insufficient held-out
+  : > "${pd}/held-out-log.jsonl"
+  pair_line held-out true false >> "${pd}/held-out-log.jsonl"
+  # reset claim
+  jq '.reliability_claim_allowed=false' "${pd}/prereg.json" > "${pd}/prereg.json.tmp" && mv "${pd}/prereg.json.tmp" "${pd}/prereg.json"
+  bash "${ROOT}/evals/analyze-pilot-gate.sh" >/dev/null
+  if [ "$(jq -r '.both_green' "${pd}/gate-status.json")" = "false" ]; then
+    pass "gate not green when held-out N insufficient"
+  else
+    fail "gate should be red with N=1 held-out"
+  fi
+  assert_exit "apply-claim refuses when not green" 1 bash "${ROOT}/evals/analyze-pilot-gate.sh" --apply-claim
+  unset AZG_PILOT_DIR
+fi
+
 test_summary

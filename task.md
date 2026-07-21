@@ -1,18 +1,19 @@
-# Active Task: Phase 9 Core Pilot
+# Active Task: Phase 10 Fable (blocked)
 
-- **Status:** In Progress
-- **Objective:** Held-out confirmation before any reliability claim
-- **Acceptance:** Held-out log with prereg sample size; analysis script or notes; reliability_claim still false until green
-- **Issue/Ticket:** Phase 9 ROADMAP
+- **Status:** Blocked
+- **Objective:** Bundle Fable skills as opt-in (`azg fable sync`) — only after held-out green + --apply-claim
+- **Acceptance:** N/A until `prereg.json` reliability_claim_allowed true from real confirmation+held-out runs
+- **Issue/Ticket:** Phase 10 ROADMAP · issues #52–55 paused
 
 ## Work Packet (SFDBN)
 
-- **Status:** Prereg locked (`evals/pilot/prereg.json`); exploratory log has documented non-claim pair; test-evals 69/69
-- **Files:** `evals/pilot/*`, `evals/record-pilot-pair.sh`, `evals/run-exploratory-smoke.sh`
-- **Decisions:** Confirmation N=9 pairs; primary core−baseline success ≥0; cost ratio ≤1.25; held-out N=6 separate
-- **Blocked:** None (live agent confirmation/held-out runs are operator time)
-- **Next:** Held-out confirmation procedure + empty held-out log scaffold
+- **Status:** Phase 9 tooling complete; reliability_claim_allowed still false until live pairs + gate
+- **Files:** `evals/analyze-pilot-log.sh`, `evals/analyze-pilot-gate.sh`, `evals/pilot/HELD-OUT.md`
+- **Decisions:** Held-out N=6 fresh; --apply-claim required to flip prereg; stub/synthetic logs ≠ claims
+- **Blocked:** Live confirmation (9) + held-out (6) agent pairs
+- **Next:** Run real pairs or wait; do not start Fable bundling until claim allowed
 
 ## Todo
-- [x] Exploratory pilot + prereg thresholds
-- [ ] Held-out confirmation
+- [x] Phase 9 Core Pilot tooling
+- [ ] Live confirmation + held-out (operator)
+- [ ] Phase 10 Fable (blocked)

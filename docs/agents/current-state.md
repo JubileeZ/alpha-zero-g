@@ -2,7 +2,7 @@
 
 **Read this first** after `docs/AGENT-ONBOARDING.md`. `ROADMAP.md` is plan; this file is **what exists on disk today**.
 
-**Active phase:** Phase 9 — Core Pilot
+**Active phase:** Phase 10 — Fable (blocked; Phase 9 tooling complete)
 
 ---
 
@@ -34,7 +34,7 @@
 
 | Item | Phase | Notes |
 |------|-------|-------|
-| Evaluation Suite + paired pilot | 9 | Fixtures+runner+Blind Judge+Long-Horizon script exist; prereg+exploratory done; held-out confirmation not done |
+| Evaluation Suite + paired pilot | 9 | Fixtures+runner+Blind Judge+Long-Horizon script exist; Phase 9 tooling complete; live held-out pairs + --apply-claim still required for claims |
 | Fable as measured treatment | 10 | Issues #52–55 paused |
 
 ---
