@@ -244,8 +244,8 @@ assert_file_exists "tests/run-all.sh exists" "${REPO_ROOT}/tests/run-all.sh"
 assert_file_executable "tests/run-all.sh executable" "${REPO_ROOT}/tests/run-all.sh"
 assert_exit "run-all --list exits 0" 0 bash "${REPO_ROOT}/tests/run-all.sh" --list
 _list_out="$(bash "${REPO_ROOT}/tests/run-all.sh" --list 2>&1)" || true
-if echo "${_list_out}" | grep -q "test-azg.sh" && echo "${_list_out}" | grep -q "test-phase10.sh" && echo "${_list_out}" | grep -q "shellcheck"; then
-  pass "run-all --list covers shellcheck, test-azg, phase10"
+if echo "${_list_out}" | grep -q "test-azg.sh" && echo "${_list_out}" | grep -q "test-phase10.sh" && echo "${_list_out}" | grep -q "shellcheck" && echo "${_list_out}" | grep -q "host-contract-smoke"; then
+  pass "run-all --list covers shellcheck, test-azg, host-contract, phase10"
 else
   fail "run-all --list missing expected suites" "got: ${_list_out}"
 fi

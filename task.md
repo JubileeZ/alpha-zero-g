@@ -1,19 +1,18 @@
-# Active Task: Phase 8 Evidence Trustworthy
+# Active Task: Phase 9 Core Pilot
 
-- **Status:** In Progress
-- **Objective:** Host-contract smoke — real Cursor + Antigravity hook fire (deny must prevent action)
-- **Acceptance:** Documented smoke procedure + at least one automated/host check proving deny blocks the action
-- **Issue/Ticket:** Phase 8 ROADMAP
+- **Status:** Ready
+- **Objective:** Evaluation Suite fixtures (3 fixed tasks) for paired no-harness vs core pilot
+- **Acceptance:** Three fixtures checked in with scorecard fields; runnable without Fable
+- **Issue/Ticket:** Phase 9 ROADMAP
 
 ## Work Packet (SFDBN)
 
-- **Status:** Aggregate runner + CI matrix added; Windows `AZG_OS` detection fixed
-- **Files:** `tests/run-all.sh`, `.github/workflows/ci.yml`, `lib/common.sh`
-- **Decisions:** `AZG_STRICT=1` on CI; soft-skip missing tools locally
-- **Blocked:** None (CI green pending first Actions run after push)
-- **Next:** Host-contract smoke for Cursor + Antigravity
+- **Status:** Phase 8 complete (aggregate, CI, host-contract, spawn-budget ADR 0006, mutation)
+- **Files:** `tests/host-contract-smoke.sh`, `tests/test-mutation-verify.sh`, `docs/adr/0006-spawn-budget-pretooluse.md`, `templates/project/.agents/hooks.json`
+- **Decisions:** Deny→no side-effect simulator + manual smoke doc; spawn-budget on PreToolUse `START_SUBAGENT`
+- **Blocked:** None
+- **Next:** Phase 9 — Evaluation Suite fixtures
 
 ## Todo
-- [x] Aggregate runner
-- [x] CI matrix
-- [ ] Host-contract smoke
+- [x] Phase 8 Evidence Trustworthy
+- [ ] Evaluation Suite fixtures

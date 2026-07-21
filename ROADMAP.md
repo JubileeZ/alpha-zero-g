@@ -1,6 +1,6 @@
 # Alpha-Zero-G — Roadmap
 
-**Status:** v4 scaffolding complete · Phase 7 done · **Active: Phase 8 — Evidence Trustworthy**
+**Status:** v4 scaffolding complete · Phases 7–8 done · **Active: Phase 9 — Core Pilot**
 
 > Zero-context: [`docs/AGENT-ONBOARDING.md`](docs/AGENT-ONBOARDING.md) · Spec: [`docs/REVAMP-SPEC.md`](docs/REVAMP-SPEC.md) · Reality: [`docs/agents/current-state.md`](docs/agents/current-state.md) · Glossary: [`CONTEXT.md`](CONTEXT.md)
 
@@ -26,13 +26,9 @@ Harness-only templates, hooks, apply/setup profiles, tests, VERSION 4.0.x. Detai
 
 ---
 
-## Phase 8 — Evidence Trustworthy
+## Phase 8 — Evidence Trustworthy (complete)
 
-- [x] Aggregate runner: shellcheck + `test-azg` + phase tests + Python verifiers
-- [x] CI matrix: Ubuntu, macOS, Windows Git Bash
-- [ ] Host-contract smoke: real Cursor + Antigravity hook fire (deny must prevent action)
-- [ ] Resolve spawn-budget event semantics on Antigravity (block vs observe)
-- [ ] Mutation checks: template verify fails when each required hook/config removed
+Aggregate `tests/run-all.sh` + CI matrix · host-contract smoke (`tests/host-contract-smoke.sh` + manual doc) · spawn-budget on PreToolUse (ADR 0006) · mutation verify (`tests/test-mutation-verify.sh`).
 
 ---
 
