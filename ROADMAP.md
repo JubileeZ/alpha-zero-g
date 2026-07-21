@@ -34,8 +34,8 @@ Aggregate `tests/run-all.sh` + CI matrix · host-contract smoke (`tests/host-con
 
 ## Phase 9 — Core Pilot
 
-- [ ] Evaluation Suite fixtures: 3 fixed tasks (bugfix, scoped change, regression-prone feature)
-- [ ] Paired No-Harness Baseline runner + scorecard (Task Success, Delivery Cost, wall time, interventions)
+- [x] Evaluation Suite fixtures: 3 fixed tasks (bugfix, scoped change, regression-prone feature)
+- [x] Paired No-Harness Baseline runner + scorecard (Task Success, Delivery Cost, wall time, interventions)
 - [ ] Blind Judge wiring (fixed independent model; human calibration notes)
 - [ ] Long-Horizon Task script: fresh context + clean-device clone + Cursor↔Antigravity handoff
 - [ ] Pilot run (exploratory only) + preregister confirmation thresholds/sample size
