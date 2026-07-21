@@ -222,17 +222,27 @@ cmd_new() {
     copy_template "$tmpl_proj/.agents/spawn-budget.json" "$target_dir/.agents/spawn-budget.json"
     copy_template "$tmpl_proj/.agents/session-handoff.md.tmpl" "$target_dir/.agents/session-handoff.md"
 
-    # Copy .cursor/rules/
+    # Copy .cursor/rules/ (.mdc — Cursor ignores plain .md rules)
     mkdir -p "$target_dir/.cursor/rules"
-    copy_template "$tmpl_proj/.cursor/rules/read-agents-md.md" "$target_dir/.cursor/rules/read-agents-md.md"
-    copy_template "$tmpl_proj/.cursor/rules/work-state-continuity.md" "$target_dir/.cursor/rules/work-state-continuity.md"
+    copy_template "$tmpl_proj/.cursor/rules/read-agents-md.mdc" "$target_dir/.cursor/rules/read-agents-md.mdc"
+    copy_template "$tmpl_proj/.cursor/rules/work-state-continuity.mdc" "$target_dir/.cursor/rules/work-state-continuity.mdc"
+
+    # Copy Cursor hook adapters
+    mkdir -p "$target_dir/.cursor/hooks"
+    copy_template "$tmpl_proj/.cursor/hooks.json" "$target_dir/.cursor/hooks.json"
+    for chook in commit-verify.sh stop-checkpoint.sh pre-compact.sh; do
+        copy_template "$tmpl_proj/.cursor/hooks/$chook" "$target_dir/.cursor/hooks/$chook"
+        chmod +x "$target_dir/.cursor/hooks/$chook"
+    done
 
     # Copy VSCode settings
     copy_template "$tmpl_proj/.vscode/settings.json" "$target_dir/.vscode/settings.json"
 
-    # Copy test harness
+    # Copy test harness + portable verify gate
     copy_template "$tmpl_proj/tests/test-harness.sh" "$target_dir/tests/test-harness.sh"
     chmod +x "$target_dir/tests/test-harness.sh"
+    copy_template "$tmpl_proj/tests/verify.sh" "$target_dir/tests/verify.sh"
+    chmod +x "$target_dir/tests/verify.sh"
 
     # Copy pre-seeded agent guides
     copy_template "$tmpl_proj/docs/agents/triage-labels.md" "$target_dir/docs/agents/triage-labels.md"
@@ -259,7 +269,8 @@ cmd_new() {
     # Build commands default table
     local build_cmds_table='| Command | What it does |
 |---------|-------------|
-| `bash tests/test-harness.sh` | Run project harness verification |'
+| `bash tests/verify.sh` | Portable delivery gate (harness + project validation) |
+| `bash tests/test-harness.sh` | Harness integrity self-check |'
 
     # Render AGENTS.md
     render_template \
@@ -320,6 +331,6 @@ cmd_new() {
     printf '\nDone! Project scaffolded at: %s\n' "$target_dir" >&2
     printf '\nNext steps:\n' >&2
     printf '  1. cd %s\n' "$project_name" >&2
-    printf '  2. bash tests/test-harness.sh  (verify your harness)\n' >&2
+    printf '  2. bash tests/verify.sh  (portable delivery gate)\n' >&2
     printf '  3. agy  (start your first session)\n\n' >&2
 }

@@ -24,8 +24,7 @@ source "$(dirname "${BASH_SOURCE[0]}")/harness.sh"
 # ---------------------------------------------------------------------------
 # Temp environment
 # ---------------------------------------------------------------------------
-TEMP_DIR="$(mktemp -d "${PWD}/tmp_azg_phase9-test-XXXXXX")"
-trap 'rm -rf "${TEMP_DIR}"' EXIT
+TEMP_DIR="$(azg_mktemp_d "tmp_azg_phase9-test-XXXXXX")"
 
 # ---------------------------------------------------------------------------
 # Helper: run _prune_vendor_skills in isolation
@@ -132,9 +131,8 @@ fi
 
 section "7. azg setup --force prunes deleted-upstream vendor skills"
 
-TEMP_REPO="$(mktemp -d "${PWD}/tmp_azg_phase9-repo-XXXXXX")"
-TEMP_HOME="$(mktemp -d "${PWD}/tmp_azg_phase9-home-XXXXXX")"
-trap 'rm -rf "${TEMP_DIR}" "${TEMP_REPO}" "${TEMP_HOME}"' EXIT
+TEMP_REPO="$(azg_mktemp_d "tmp_azg_phase9-repo-XXXXXX")"
+TEMP_HOME="$(azg_mktemp_d "tmp_azg_phase9-home-XXXXXX")"
 
 # Copy repo
 tar -cf - --exclude=.git --exclude='tmp_azg*' -C "${REPO_ROOT}" . | tar -xf - -C "${TEMP_REPO}"

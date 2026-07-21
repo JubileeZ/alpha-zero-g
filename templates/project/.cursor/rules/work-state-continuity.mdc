@@ -1,0 +1,12 @@
+---
+description: Work Packet and continuity layers
+alwaysApply: true
+---
+
+# Work-state continuity
+
+Read `task.md` (Work Packet), `ROADMAP.md`, and `docs/agents/current-state.md` before implementing.
+
+Before a Checkpoint (git commit of in-progress work), update Work Packet SFDBN fields in `task.md`.
+
+Portable delivery gate: `bash tests/verify.sh`.

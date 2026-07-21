@@ -1,0 +1,22 @@
+{
+  "version": 1,
+  "hooks": {
+    "beforeShellExecution": [
+      {
+        "command": ".cursor/hooks/commit-verify.sh",
+        "matcher": "git\\s+commit",
+        "failClosed": true
+      }
+    ],
+    "stop": [
+      {
+        "command": ".cursor/hooks/stop-checkpoint.sh"
+      }
+    ],
+    "preCompact": [
+      {
+        "command": ".cursor/hooks/pre-compact.sh"
+      }
+    ]
+  }
+}

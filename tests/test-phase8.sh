@@ -5,10 +5,9 @@ set -uo pipefail
 
 source "$(dirname "${BASH_SOURCE[0]}")/harness.sh"
 
-TEMP_HOME="$(mktemp -d "${PWD}/tmp_azg_phase8-home-XXXXXX")"
-TEMP_REPO="$(mktemp -d "${PWD}/tmp_azg_phase8-repo-XXXXXX")"
-UPSTREAM_REPO="$(mktemp -d "${PWD}/tmp_azg_phase8-upstream-XXXXXX")"
-trap 'rm -rf "${TEMP_HOME}" "${TEMP_REPO}" "${UPSTREAM_REPO}"' EXIT
+TEMP_HOME="$(azg_mktemp_d "tmp_azg_phase8-home-XXXXXX")"
+TEMP_REPO="$(azg_mktemp_d "tmp_azg_phase8-repo-XXXXXX")"
+UPSTREAM_REPO="$(azg_mktemp_d "tmp_azg_phase8-upstream-XXXXXX")"
 
 section "1. azg update — runs git pull on AZG_ROOT"
 

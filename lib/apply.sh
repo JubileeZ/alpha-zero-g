@@ -72,7 +72,38 @@ cmd_apply() {
         printf "Retrofitting '%s' with azg harness...\n" "$target_dir"
     fi
 
-    # 1. Additive copy of hooks
+    # Refresh or create an AZG-owned file from template.
+    # Custom files not present in the template tree are left untouched.
+    azg_owned_refresh() {
+        local src="$1"
+        local dst="$2"
+        local label="$3"
+        local existed=0
+        if [ ! -f "$src" ]; then
+            return 0
+        fi
+        [ -f "$dst" ] && existed=1
+        if [ "$dry_run" = "yes" ]; then
+            if [ "$existed" -eq 1 ]; then
+                printf "[REFRESH] %s\n" "$label"
+            else
+                printf "[CREATE] %s\n" "$label"
+            fi
+            return 0
+        fi
+        ensure_dir "$(dirname "$dst")"
+        copy_template "$src" "$dst"
+        if [[ "$dst" == *.sh ]]; then
+            chmod +x "$dst"
+        fi
+        if [ "$existed" -eq 1 ]; then
+            info "Refreshed: $label"
+        else
+            info "Created: $label"
+        fi
+    }
+
+    # 1. Refresh AZG-owned hooks from template (custom hooks outside template kept)
     if [ "$dry_run" != "yes" ]; then
         ensure_dir "$target_dir/.agents/hooks"
     fi
@@ -80,21 +111,7 @@ cmd_apply() {
         if [ -f "$hook_file" ]; then
             local base
             base="$(basename "$hook_file")"
-            if [ -f "$target_dir/.agents/hooks/$base" ]; then
-                if [ "$dry_run" = "yes" ]; then
-                    printf "[SKIP] .agents/hooks/%s (already exists)\n" "$base"
-                else
-                    warn "Skipping existing hook: $base"
-                fi
-            else
-                if [ "$dry_run" = "yes" ]; then
-                    printf "[COPY] .agents/hooks/%s\n" "$base"
-                else
-                    copy_template "$hook_file" "$target_dir/.agents/hooks/$base"
-                    chmod +x "$target_dir/.agents/hooks/$base"
-                    info "Copied hook: $base"
-                fi
-            fi
+            azg_owned_refresh "$hook_file" "$target_dir/.agents/hooks/$base" ".agents/hooks/$base"
         fi
     done
 
@@ -123,7 +140,7 @@ cmd_apply() {
         fi
     done
 
-    # 3. Merge hooks.json
+    # 3. Merge hooks.json — preserve user gates; template keys (incl. safety-gate) win
     if [ ! -f "$target_dir/.agents/hooks.json" ]; then
         if [ "$dry_run" = "yes" ]; then
             printf "[CREATE] .agents/hooks.json\n"
@@ -135,8 +152,8 @@ cmd_apply() {
         if [ "$dry_run" = "yes" ]; then
             printf "[MERGE] .agents/hooks.json\n"
         else
-            jq -s '(.[1] | map_values(.enabled = false)) * .[0]' "$target_dir/.agents/hooks.json" "$tmpl_proj/.agents/hooks.json" | atomic_write "$target_dir/.agents/hooks.json"
-            info "Merged hooks.json"
+            jq -s '.[0] * .[1]' "$target_dir/.agents/hooks.json" "$tmpl_proj/.agents/hooks.json" | atomic_write "$target_dir/.agents/hooks.json"
+            info "Merged hooks.json (template gates refreshed)"
         fi
     fi
 
@@ -151,6 +168,7 @@ cmd_apply() {
     local build_cmds_table
     build_cmds_table='| Command | What it does |
 |---------|-------------|
+| `bash tests/verify.sh` | Portable delivery gate (harness + project validation) |
 | (add your lint command here) | Lint |
 | (add your test command here) | Test |'
 
@@ -220,26 +238,24 @@ cmd_apply() {
     fi
     rm -f "$rendered_tmpl"
 
-    # 5. Handle .cursor/rules/
+    # 5. Refresh AZG-owned Cursor rules + hooks
     if [ "$dry_run" != "yes" ]; then
         ensure_dir "$target_dir/.cursor/rules"
+        ensure_dir "$target_dir/.cursor/hooks"
     fi
-    for rule in "$tmpl_proj/.cursor/rules"/*; do
+    for rule in "$tmpl_proj/.cursor/rules"/*.mdc; do
         if [ -f "$rule" ]; then
             local base
             base="$(basename "$rule")"
-            if [ -f "$target_dir/.cursor/rules/$base" ]; then
-                if [ "$dry_run" = "yes" ]; then
-                    printf "[SKIP] .cursor/rules/%s (already exists)\n" "$base"
-                fi
-            else
-                if [ "$dry_run" = "yes" ]; then
-                    printf "[COPY] .cursor/rules/%s\n" "$base"
-                else
-                    copy_template "$rule" "$target_dir/.cursor/rules/$base"
-                    info "Copied Cursor rule: $base"
-                fi
-            fi
+            azg_owned_refresh "$rule" "$target_dir/.cursor/rules/$base" ".cursor/rules/$base"
+        fi
+    done
+    azg_owned_refresh "$tmpl_proj/.cursor/hooks.json" "$target_dir/.cursor/hooks.json" ".cursor/hooks.json"
+    for chook in "$tmpl_proj/.cursor/hooks"/*.sh; do
+        if [ -f "$chook" ]; then
+            local base
+            base="$(basename "$chook")"
+            azg_owned_refresh "$chook" "$target_dir/.cursor/hooks/$base" ".cursor/hooks/$base"
         fi
     done
 
@@ -327,19 +343,8 @@ cmd_apply() {
         fi
     fi
 
-    # 9. Copy spawn-budget.json and session-handoff.md if they do not exist
-    if [ ! -f "$target_dir/.agents/spawn-budget.json" ]; then
-        if [ "$dry_run" = "yes" ]; then
-            printf "[CREATE] .agents/spawn-budget.json\n"
-        else
-            copy_template "$tmpl_proj/.agents/spawn-budget.json" "$target_dir/.agents/spawn-budget.json"
-            info "Created .agents/spawn-budget.json"
-        fi
-    else
-        if [ "$dry_run" = "yes" ]; then
-            printf "[SKIP] .agents/spawn-budget.json (already exists)\n"
-        fi
-    fi
+    # 9. Refresh AZG-owned spawn-budget; create session-handoff only if missing (user content)
+    azg_owned_refresh "$tmpl_proj/.agents/spawn-budget.json" "$target_dir/.agents/spawn-budget.json" ".agents/spawn-budget.json"
 
     if [ ! -f "$target_dir/.agents/session-handoff.md" ]; then
         if [ "$dry_run" = "yes" ]; then
@@ -351,6 +356,21 @@ cmd_apply() {
     else
         if [ "$dry_run" = "yes" ]; then
             printf "[SKIP] .agents/session-handoff.md (already exists)\n"
+        fi
+    fi
+
+    # 9b. Create task.md Work Packet if missing
+    if [ ! -f "$target_dir/task.md" ]; then
+        if [ "$dry_run" = "yes" ]; then
+            printf "[CREATE] task.md\n"
+        else
+            render_template "$tmpl_proj/task.md.tmpl" "$target_dir/task.md" \
+                "TASK_NAME" "Initial retrofit task"
+            info "Created task.md (Work Packet)"
+        fi
+    else
+        if [ "$dry_run" = "yes" ]; then
+            printf "[SKIP] task.md (already exists)\n"
         fi
     fi
 
@@ -369,21 +389,10 @@ cmd_apply() {
         fi
     fi
 
-    # 11. Copy tests/test-harness.sh if it does not exist
-    if [ ! -f "$target_dir/tests/test-harness.sh" ]; then
-        if [ "$dry_run" = "yes" ]; then
-            printf "[CREATE] tests/test-harness.sh\n"
-        else
-            ensure_dir "$target_dir/tests"
-            copy_template "$tmpl_proj/tests/test-harness.sh" "$target_dir/tests/test-harness.sh"
-            chmod +x "$target_dir/tests/test-harness.sh"
-            info "Created tests/test-harness.sh"
-        fi
-    else
-        if [ "$dry_run" = "yes" ]; then
-            printf "[SKIP] tests/test-harness.sh (already exists)\n"
-        fi
-    fi
+    # 11. Refresh AZG-owned portable gate scripts
+    for test_script in "tests/test-harness.sh" "tests/verify.sh"; do
+        azg_owned_refresh "$tmpl_proj/$test_script" "$target_dir/$test_script" "$test_script"
+    done
 
     if [ "$dry_run" != "yes" ]; then
         ok "Retrofit complete."

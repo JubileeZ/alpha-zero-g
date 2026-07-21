@@ -5,9 +5,8 @@ set -uo pipefail
 
 source "$(dirname "${BASH_SOURCE[0]}")/harness.sh"
 
-TEMP_HOME="$(mktemp -d "${PWD}/tmp_azg_integration-home-XXXXXX")"
-TEMP_WORKSPACE="$(mktemp -d "${PWD}/tmp_azg_integration-workspace-XXXXXX")"
-trap 'rm -rf "${TEMP_HOME}" "${TEMP_WORKSPACE}"' EXIT
+TEMP_HOME="$(azg_mktemp_d "tmp_azg_integration-home-XXXXXX")"
+TEMP_WORKSPACE="$(azg_mktemp_d "tmp_azg_integration-workspace-XXXXXX")"
 
 export HOME="${TEMP_HOME}"
 export AZG_ROOT="${REPO_ROOT}"
@@ -131,11 +130,12 @@ else
   fail "Hooks missing or failed to generate during new"
 fi
 
-if [ -f "my-new-app/.cursor/rules/read-agents-md.md" ] && \
-   [ -f "my-new-app/.cursor/rules/work-state-continuity.md" ]; then
-  pass "Cursor rules generated correctly during new"
+if [ -f "my-new-app/.cursor/rules/read-agents-md.mdc" ] && \
+   [ -f "my-new-app/.cursor/rules/work-state-continuity.mdc" ] && \
+   [ -f "my-new-app/.cursor/hooks.json" ]; then
+  pass "Cursor rules and hooks generated correctly during new"
 else
-  fail "Cursor rules missing or failed to generate during new"
+  fail "Cursor rules/hooks missing or failed to generate during new"
 fi
 
 if [ -f "my-new-app/tests/test-harness.sh" ] && [ -x "my-new-app/tests/test-harness.sh" ]; then
@@ -212,7 +212,7 @@ assert_exit "azg apply --dry-run exits 0" 0 echo "$?"
 
 # Assert dry-run output contains creation actions and diff
 if echo "${_dryrun_out}" | grep -q "\[CREATE\] docs/agents/issue-tracker.md" && \
-   echo "${_dryrun_out}" | grep -q "\[COPY\] .agents/hooks/commit-gate.sh" && \
+   echo "${_dryrun_out}" | grep -q "\[CREATE\] .agents/hooks/commit-gate.sh" && \
    echo "${_dryrun_out}" | grep -q "<!-- AZG:MANAGED:START -->"; then
   pass "dry-run displays actions and unified diff"
 else

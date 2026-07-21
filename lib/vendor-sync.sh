@@ -72,7 +72,7 @@ _clone_upstream() {
   local ret_commit_sha_var="${4}"
 
   local tmp_clone
-  tmp_clone="$(mktemp -d "${PWD}/tmp_azg-vendor-clone-XXXXXX")"
+  tmp_clone="$(mktemp -d "${TMPDIR:-${TEMP:-/tmp}}/tmp_azg-vendor-clone-XXXXXX")"
 
   info "Cloning upstream (shallow, sparse)…"
   if [ -d "${upstream}" ]; then

@@ -35,10 +35,8 @@ set -uo pipefail
 
 source "$(dirname "${BASH_SOURCE[0]}")/harness.sh"
 
-TEMP_WORKSPACE="$(mktemp -d "${PWD}/tmp_azg_phase1-workspace-XXXXXX")"
-TEMP_HOME="$(mktemp -d "${PWD}/tmp_azg_phase1-home-XXXXXX")"
-# Use python to clean up directory to avoid triggering the safety gate hook with rm -rf
-trap 'python3 -c "import shutil, sys; [shutil.rmtree(x, ignore_errors=True) for x in sys.argv[1:]]" "${TEMP_WORKSPACE}" "${TEMP_HOME}"' EXIT
+TEMP_WORKSPACE="$(azg_mktemp_d "tmp_azg_phase1-workspace-XXXXXX")"
+TEMP_HOME="$(azg_mktemp_d "tmp_azg_phase1-home-XXXXXX")"
 
 export HOME="${TEMP_HOME}"
 export AZG_ROOT="${REPO_ROOT}"

@@ -109,7 +109,7 @@ require_jq() {
       hint="Install with: brew install jq"
       ;;
     *)
-      hint="Install jq from https://jqlang.github.io/jq/download/"
+      hint="Install jq from https://jqlang.github.io/jq/download/ (Windows: winget install jqlang.jq or choco install jq)"
       ;;
   esac
   die "'jq' is required but not found. ${hint}"

@@ -1,103 +1,67 @@
-# Alpha-Zero-G — v4 Revamp Roadmap
+# Alpha-Zero-G — Roadmap
 
-**Status:** v3 CLI complete on disk · **v4 revamp in progress**
+**Status:** v4 scaffolding complete · Phase 7 done · **Active: Phase 8 — Evidence Trustworthy**
 
-> **Agents with no context:** read [`docs/AGENT-ONBOARDING.md`](docs/AGENT-ONBOARDING.md) then [`docs/REVAMP-SPEC.md`](docs/REVAMP-SPEC.md).  
-> **What exists today:** [`docs/agents/current-state.md`](docs/agents/current-state.md)
-
----
-
-## Vision (v4)
-
-Ship a **clone-and-go outer harness** for solo/small teams: harness-only templates, filesystem work-state, GitHub-default adapter, nine global skills, ponytail global rule, four hooks, multi-IDE layered config — without burning tokens on MCP schemas or encyclopedic `AGENTS.md`.
+> Zero-context: [`docs/AGENT-ONBOARDING.md`](docs/AGENT-ONBOARDING.md) · Spec: [`docs/REVAMP-SPEC.md`](docs/REVAMP-SPEC.md) · Reality: [`docs/agents/current-state.md`](docs/agents/current-state.md) · Glossary: [`CONTEXT.md`](CONTEXT.md)
 
 ---
 
-## Personas
+## Vision
 
-| Persona | Goal | Surface |
-|---------|------|---------|
-| Solo / small-team developer | Reliable agents across devices & IDEs | `azg setup` + `azg new` / `azg apply` |
-| AI agent | Implement revamp from spec | This repo + onboarding docs |
-| Alpha-Zero-G maintainer | Vendor skills, pin `VENDOR.lock` | `azg update --vendor` |
+Reliable Delivery: higher Task Success per Delivery Cost than No-Harness Baseline, with Minimal Setup, across devices and Cursor/Antigravity. Repo-native gates own guarantees; IDE hooks are thin adapters. Fable optional until evidence.
+
+ADRs: [`0004-repo-native-reliability-boundary`](docs/adr/0004-repo-native-reliability-boundary.md) · [`0005-evidence-gated-fable-adoption`](docs/adr/0005-evidence-gated-fable-adoption.md)
 
 ---
 
-## Phase 0 — Documentation & alignment (complete)
+## Phase 0–6 — v4 Revamp (complete)
 
-- [x] Canonical v4 spec — `docs/REVAMP-SPEC.md`
-- [x] Agent onboarding path — `docs/AGENT-ONBOARDING.md`
-- [x] Gap analysis — `docs/agents/current-state.md`
-- [x] Archive superseded v3 plan — `docs/archive/V3-PLAN.md`
-- [x] Subagent comprehension test passes (two independent agents, same build plan)
-- [x] `python3 tests/verify_docs.py` passes
-- [x] Update root `README.md` for v4 messaging
+Harness-only templates, hooks, apply/setup profiles, tests, VERSION 4.0.x. Details: archived checklists in git history / REVAMP-SPEC.
 
 ---
 
-## Phase 1 — Project template (harness-only) (complete)
+## Phase 7 — Portable Core (complete)
 
-- [x] `azg new` scaffolds **harness only** — remove stack/lint wizard questions
-- [x] Add templates: `task.md.tmpl`, `session-handoff.md.tmpl`, `CONTEXT.md.tmpl`, `ROADMAP.md.tmpl` (empty phases)
-- [x] Pre-seed in `templates/project/docs/agents/`: `issue-tracker.md`, `triage-labels.md`, `domain.md` (GitHub default)
-- [x] Thin project `AGENTS.md.tmpl` managed block per REVAMP-SPEC §5
-- [x] Add `tests/test-harness.sh` template + wire into project template
-- [x] `.vscode/settings.json` in project template (terminal cwd)
-- [x] Phase test: `bash tests/test-phase<N>.sh` (new or extended)
+`tests/verify.sh` gate · Work Packet + Checkpoint freshness · setup `jq` preflight · Cursor `.mdc` + hooks adapters · `azg apply` creates task/Cursor + refreshes AZG-owned hooks/rules/verify. Tests: `bash tests/test-phase10.sh` (+ `test-phase7.sh`).
 
 ---
 
-## Phase 2 — Hooks
+## Phase 8 — Evidence Trustworthy
 
-- [x] `commit-gate.sh` — block `git commit` until harness test passes
-- [x] `checkpoint.sh` — Stop hook; stale `current-state.md` / handoff → continue loop
-- [x] `spawn-budget.sh` + `.agents/spawn-budget.json` (`max_spawns: 3`, `max_depth: 2`)
-- [x] Cursor: `preCompact` observability hook (log only, no block)
-- [x] Update `hooks.json` template for Antigravity + Cursor hook paths
-- [x] shellcheck + integration tests for all hooks
-
----
-
-## Phase 3 — `azg apply` / merge
-
-- [x] `azg apply --dry-run` shows managed-block diff
-- [x] `azg apply --tracker github|gitlab|local|none` selects adapter template
-- [x] Idempotent re-apply upgrades AZG managed sections only
-- [x] Remove scaffold Q4 dependency on manual `setup-matt-pocock-skills` for GitHub default
+- [ ] Aggregate runner: shellcheck + `test-azg` + phase tests + Python verifiers
+- [ ] CI matrix: Ubuntu, macOS, Windows Git Bash
+- [ ] Host-contract smoke: real Cursor + Antigravity hook fire (deny must prevent action)
+- [ ] Resolve spawn-budget event semantics on Antigravity (block vs observe)
+- [ ] Mutation checks: template verify fails when each required hook/config removed
 
 ---
 
-## Phase 4 — Global setup (core profile)
+## Phase 9 — Core Pilot
 
-- [x] `azg setup --profile core` (default) — 12 skills only
-- [x] `azg setup --profile full` — entire vendored catalog
-- [x] Smart skill sync: copy only when `VENDOR.lock` commit differs from last setup stamp
-- [x] MCP template: `gh` default docs; commented read-only GitHub MCP stub
-- [x] Document update ritual in README
-
----
-
-## Phase 5 — Tests & verification
-
-- [x] Extend `test-azg.sh` for harness-only `azg new`
-- [x] Test commit-gate and spawn-budget hooks in isolated HOME
-- [x] `verify_docs.py` includes new doc paths
-- [x] Cross-platform note in AGENTS.md for Windows Git Bash
+- [ ] Evaluation Suite fixtures: 3 fixed tasks (bugfix, scoped change, regression-prone feature)
+- [ ] Paired No-Harness Baseline runner + scorecard (Task Success, Delivery Cost, wall time, interventions)
+- [ ] Blind Judge wiring (fixed independent model; human calibration notes)
+- [ ] Long-Horizon Task script: fresh context + clean-device clone + Cursor↔Antigravity handoff
+- [ ] Pilot run (exploratory only) + preregister confirmation thresholds/sample size
+- [ ] Held-out confirmation before any reliability claim
 
 ---
 
-## Phase 6 — Cleanup
+## Phase 10 — Fable (optional treatment)
 
-- [x] README reflects v4 onboarding (two-step ritual)
-- [x] Bump `VERSION` to 4.0.0 when phases 1–5 complete
-- [x] ADR for v4 harness-only pivot if needed
+Blocked until Phase 9 held-out confirmation green.
 
----
-
-## Explicitly deferred (v4.1+)
-
-See REVAMP-SPEC §11: stack wizard, extra tracker adapters, full GitHub MCP default, optional skills pack, blocking PreCompact.
+- [ ] Bundle Fable skills as opt-in project skills (`azg fable sync`)
+- [ ] Compare core vs core+Fable on same Evaluation Suite
+- [ ] Promote to default only if Task Success / Delivery Cost improves without portability regression
+- [ ] Issues #52–#55 reopened/retargeted only after this gate
 
 ---
 
-> **Pre-commit gate:** `shellcheck azg lib/*.sh tests/*.sh` and `bash tests/test-azg.sh` (plus affected phase tests) must pass before proposing commits.
+## Explicitly deferred
+
+Stack wizard · full GitHub MCP default · blocking PreCompact · statistical Fable mandate · SWE-bench as primary signal
+
+---
+
+> **Pre-commit gate:** `shellcheck azg lib/*.sh tests/*.sh` and `bash tests/test-azg.sh` (plus affected phase tests) must pass before proposing commits. Project clients: `bash tests/verify.sh`.

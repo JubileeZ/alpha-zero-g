@@ -71,8 +71,7 @@ PRODUCTIVITY_SKILLS=(
 # Build a mock vendor tree with realistic SKILL.md frontmatter for testing
 # apply_overlay in isolation.
 # ---------------------------------------------------------------------------
-TEMP_DIR="$(mktemp -d "${PWD}/tmp_azg_phase3-test-XXXXXX")"
-trap 'rm -rf "${TEMP_DIR}" "${TEMP_HOME:-}" "${TEMP_REPO:-}"' EXIT
+TEMP_DIR="$(azg_mktemp_d "tmp_azg_phase3-test-XXXXXX")"
 
 # We create a mock vendor with realistic frontmatter (tools: + allowed-tools:)
 MOCK_VENDOR="${TEMP_DIR}/vendor/mattpocock-skills"
@@ -421,8 +420,8 @@ section "15. azg setup — calls apply_overlay (end-to-end with mock vendor)"
 
 # We need a TEMP_REPO with mock vendor populated so setup can run apply_overlay.
 # Set up TEMP_REPO and TEMP_HOME for full integration.
-TEMP_REPO="$(mktemp -d "${PWD}/tmp_azg_phase3-repo-XXXXXX")"
-TEMP_HOME="$(mktemp -d "${PWD}/tmp_azg_phase3-home-XXXXXX")"
+TEMP_REPO="$(azg_mktemp_d "tmp_azg_phase3-repo-XXXXXX")"
+TEMP_HOME="$(azg_mktemp_d "tmp_azg_phase3-home-XXXXXX")"
 
 tar -cf - --exclude=.git --exclude='tmp_azg*' --exclude='tmp' -C "${REPO_ROOT}" . | tar -xf - -C "${TEMP_REPO}"
 TEMP_AZG="${TEMP_REPO}/azg"

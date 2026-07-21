@@ -1,27 +1,18 @@
 #!/usr/bin/env bash
-set -e
+# tests/test-phase7.sh — brownfield apply: preserve customs, refresh AZG-owned
+
+set -uo pipefail
 
 source "$(dirname "${BASH_SOURCE[0]}")/harness.sh"
-TEST_DIR=$(mktemp -d)
-trap 'rm -rf "$TEST_DIR"' EXIT
 
-run_test() {
-  local name="$1"
-  local cmd="$2"
-  if eval "$cmd"; then
-    pass "$name"
-  else
-    fail "$name"
-  fi
-}
+TEMP_DIR="$(azg_mktemp_d "tmp_azg_phase7-XXXXXX")"
 
-cd "$TEST_DIR"
+cd "${TEMP_DIR}"
 mkdir test-repo
 cd test-repo
 git init -q
 git commit --allow-empty -m "Init" -q
 
-# Pre-populate hooks.json and skills
 mkdir -p .agents/hooks .agents/skills/dummy-skill
 cat << 'EOF' > .agents/hooks.json
 {
@@ -32,19 +23,36 @@ cat << 'EOF' > .agents/hooks.json
 }
 EOF
 echo "dummy" > .agents/skills/dummy-skill/SKILL.md
-echo "dummy hook" > .agents/hooks/block-destructive-ops.sh
+echo "STALE_OWNED" > .agents/hooks/block-destructive-ops.sh
 chmod +x .agents/hooks/block-destructive-ops.sh
+echo "KEEP_CUSTOM" > .agents/hooks/my-custom.sh
+chmod +x .agents/hooks/my-custom.sh
 
-# Apply
-"$REPO_ROOT/azg" apply .
+assert_exit "azg apply exits 0" 0 "${AZG}" apply .
 
-run_test "Existing hook not overwritten" "[ \"\$(cat .agents/hooks/block-destructive-ops.sh)\" = \"dummy hook\" ]"
-run_test "hooks.json existing key preserved" "[ \"\$(jq -r '.\"existing-gate\".enabled' .agents/hooks.json)\" = \"true\" ]"
-run_test "hooks.json default safety-gate added as false" "[ \"\$(jq -r '.\"safety-gate\".enabled' .agents/hooks.json)\" = \"false\" ]"
+if grep -q 'STALE_OWNED' .agents/hooks/block-destructive-ops.sh; then
+  fail "AZG-owned hook should be refreshed from template"
+else
+  pass "AZG-owned block-destructive-ops.sh refreshed"
+fi
 
-run_test "AGENTS.md created from template" "[ -f \"AGENTS.md\" ]"
+assert_file_contains "Custom hook preserved" ".agents/hooks/my-custom.sh" "KEEP_CUSTOM"
+assert_file_contains "Custom skill preserved" ".agents/skills/dummy-skill/SKILL.md" "dummy"
 
-# Add custom content to AGENTS.md, run apply again to verify managed block update
+if [ "$(jq -r '."existing-gate".enabled' .agents/hooks.json)" = "true" ]; then
+  pass "hooks.json existing key preserved"
+else
+  fail "hooks.json existing key lost"
+fi
+
+if [ "$(jq -r '."safety-gate".enabled' .agents/hooks.json)" = "true" ]; then
+  pass "hooks.json safety-gate enabled from template"
+else
+  fail "hooks.json safety-gate should be enabled"
+fi
+
+assert_file_exists "AGENTS.md created from template" "AGENTS.md"
+
 cat << 'EOF' > AGENTS.md
 # Custom Header
 Custom Content
@@ -54,11 +62,11 @@ Old Managed Content
 Footer
 EOF
 
-"$REPO_ROOT/azg" apply .
+assert_exit "azg apply again exits 0" 0 "${AZG}" apply .
 
-run_test "Custom content preserved" "grep -q 'Custom Content' AGENTS.md"
-run_test "Old Managed Content replaced" "! grep -q 'Old Managed Content' AGENTS.md"
-run_test "New Managed Content inserted" "grep -q '## Session start' AGENTS.md"
-run_test "Footer preserved" "grep -q 'Footer' AGENTS.md"
+assert_file_contains "Custom content preserved" "AGENTS.md" "Custom Content"
+assert_file_not_contains "Old Managed Content replaced" "AGENTS.md" "Old Managed Content"
+assert_file_contains "New Managed Content inserted" "AGENTS.md" "## Session start"
+assert_file_contains "Footer preserved" "AGENTS.md" "Footer"
 
 test_summary

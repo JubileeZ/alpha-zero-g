@@ -7,8 +7,7 @@
 set -e
 
 source "$(dirname "${BASH_SOURCE[0]}")/harness.sh"
-TEST_DIR=$(mktemp -d)
-trap 'rm -rf "$TEST_DIR"' EXIT
+TEST_DIR="$(azg_mktemp_d "tmp_azg_phase6-XXXXXX")"
 
 run_test() {
   local name="$1"

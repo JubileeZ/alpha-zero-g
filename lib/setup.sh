@@ -94,6 +94,7 @@ cmd_setup() {
   # Dry-run mode: just print what would happen and exit 0
   # -------------------------------------------------------------------------
   if [ "${dry_run}" -eq 1 ]; then
+    require_jq
     step "azg setup --dry-run: showing planned actions (no files will be written)"
     info "  create dir : ${AZG_GLOBAL_DIR}"
     info "  create dir : ${AZG_GLOBAL_SKILLS_DIR}"
@@ -134,6 +135,8 @@ cmd_setup() {
   step "azg setup v${AZG_VERSION} — installing global config"
   info "Destination: ${AZG_GLOBAL_DIR}"
   info "Profile: ${profile}"
+
+  require_jq
 
   # 1. Create destination directories
   ensure_dir "${AZG_GLOBAL_DIR}"

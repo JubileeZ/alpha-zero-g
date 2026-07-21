@@ -9,10 +9,8 @@ set -uo pipefail
 
 source "$(dirname "${BASH_SOURCE[0]}")/harness.sh"
 
-TEMP_WORKSPACE="$(mktemp -d "${PWD}/tmp_azg_phase2-workspace-XXXXXX")"
-TEMP_HOME="$(mktemp -d "${PWD}/tmp_azg_phase2-home-XXXXXX")"
-# Use python to clean up directory to avoid triggering the safety gate hook with rm -rf
-trap 'python3 -c "import shutil, sys; [shutil.rmtree(x, ignore_errors=True) for x in sys.argv[1:]]" "${TEMP_WORKSPACE}" "${TEMP_HOME}"' EXIT
+TEMP_WORKSPACE="$(azg_mktemp_d "tmp_azg_phase2-workspace-XXXXXX")"
+TEMP_HOME="$(azg_mktemp_d "tmp_azg_phase2-home-XXXXXX")"
 
 export HOME="${TEMP_HOME}"
 export AZG_ROOT="${REPO_ROOT}"
@@ -49,8 +47,10 @@ assert_file_exists "checkpoint.sh exists" "${APP_DIR}/.agents/hooks/checkpoint.s
 assert_file_exists "spawn-budget.sh exists" "${APP_DIR}/.agents/hooks/spawn-budget.sh"
 assert_file_exists "pre-compact.sh exists" "${APP_DIR}/.agents/hooks/pre-compact.sh"
 
-assert_file_exists "read-agents-md.md rule exists" "${APP_DIR}/.cursor/rules/read-agents-md.md"
-assert_file_exists "work-state-continuity.md rule exists" "${APP_DIR}/.cursor/rules/work-state-continuity.md"
+assert_file_exists "read-agents-md.mdc rule exists" "${APP_DIR}/.cursor/rules/read-agents-md.mdc"
+assert_file_exists "work-state-continuity.mdc rule exists" "${APP_DIR}/.cursor/rules/work-state-continuity.mdc"
+assert_file_exists "Cursor hooks.json exists" "${APP_DIR}/.cursor/hooks.json"
+assert_file_exists "Cursor commit-verify hook exists" "${APP_DIR}/.cursor/hooks/commit-verify.sh"
 
 # Executable checks
 for h in block-destructive-ops.sh commit-gate.sh checkpoint.sh spawn-budget.sh pre-compact.sh; do
