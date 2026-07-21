@@ -11,7 +11,7 @@
 | Area | Path | Notes |
 |------|------|-------|
 | CLI | `azg`, `lib/` | setup, new, apply, update, uninstall |
-| Evaluation Suite | `evals/` | 3 fixtures · `run-pair.sh` core|baseline · scorecard fields |
+| Evaluation Suite | `evals/` | 3 fixtures · paired runner · Blind Judge packet/score |
 | Eval tests | `tests/test-evals.sh` | Manifest + assertion sanity (workspace fail / reference pass) |
 | Aggregate runner | `tests/run-all.sh` | shellcheck + Python verifiers + test-azg + host-contract + mutation + evals + phase suites |
 | CI | `.github/workflows/ci.yml` | Ubuntu / macOS / Windows Git Bash · `AZG_STRICT=1` |
@@ -34,7 +34,7 @@
 
 | Item | Phase | Notes |
 |------|-------|-------|
-| Evaluation Suite + paired pilot | 9 | Fixtures+runner exist; Blind Judge / live pilot / held-out not done |
+| Evaluation Suite + paired pilot | 9 | Fixtures+runner+Blind Judge wiring exist; live pilot / held-out not done |
 | Fable as measured treatment | 10 | Issues #52–55 paused |
 
 ---

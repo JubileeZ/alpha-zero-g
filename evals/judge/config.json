@@ -1,0 +1,13 @@
+{
+  "judge_id": "azg-blind-judge-v1",
+  "model": "FIXED_INDEPENDENT_MODEL",
+  "model_notes": "Replace FIXED_INDEPENDENT_MODEL with one model ID used for all pilot runs. Do not change mid-pilot.",
+  "rubric_threshold": 3,
+  "rubric_scale_min": 1,
+  "rubric_scale_max": 5,
+  "blindness_rules": [
+    "Judge packet must omit treatment, scorecard.delivery_cost, and harness dirs (.agents, .cursor)",
+    "Same model and prompt template for core and baseline deliveries",
+    "Human calibration samples scored with identical rubric before pilot claims"
+  ]
+}

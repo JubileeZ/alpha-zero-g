@@ -45,3 +45,16 @@ bash tests/test-evals.sh
 ```
 
 Asserts suite manifest, three fixtures, assertions fail on broken workspace and pass on reference.
+
+## Blind Judge
+
+Treatment-blind packet + rubric (see `evals/judge/`).
+
+```bash
+# After a run-pair workdir exists (and agent finished):
+bash evals/prepare-judge-packet.sh "$WORKDIR"
+bash evals/judge-score.sh "$WORKDIR"    # stub unless AZG_JUDGE_CMD is set
+cat "$WORKDIR/judge-result.json"
+```
+
+Human calibration: `evals/judge/CALIBRATION.md`. Fixed model id in `evals/judge/config.json`.

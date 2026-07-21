@@ -116,4 +116,88 @@ else
   fi
 fi
 
+section "4. Blind Judge packet + stub score"
+
+assert_file_exists "judge RUBRIC" "${ROOT}/evals/judge/RUBRIC.md"
+assert_file_exists "judge PROMPT" "${ROOT}/evals/judge/PROMPT.md"
+assert_file_exists "judge CALIBRATION" "${ROOT}/evals/judge/CALIBRATION.md"
+assert_file_exists "judge config" "${ROOT}/evals/judge/config.json"
+assert_file_executable "prepare-judge-packet.sh" "${ROOT}/evals/prepare-judge-packet.sh"
+assert_file_executable "judge-score.sh" "${ROOT}/evals/judge-score.sh"
+
+if ! command -v jq >/dev/null 2>&1; then
+  skip "blind judge tests need jq"
+else
+  out=$(bash "${ROOT}/evals/run-pair.sh" bug-fix baseline)
+  workdir=$(echo "${out}" | sed -n 's/^WORKDIR=//p' | head -n1)
+  # Seed scorecard with treatment — must not leak into packet
+  jq '.treatment="core"' "${workdir}/scorecard.json" > "${workdir}/scorecard.json.tmp"
+  mv "${workdir}/scorecard.json.tmp" "${workdir}/scorecard.json"
+  mkdir -p "${workdir}/.agents"
+  echo 'leak' > "${workdir}/.agents/should-not-copy"
+
+  packet_line=$(bash "${ROOT}/evals/prepare-judge-packet.sh" "${workdir}")
+  packet="${packet_line#PACKET=}"
+  if [ -d "${packet}" ] && [ ! -e "${packet}/scorecard.json" ] && [ ! -d "${packet}/.agents" ]; then
+    pass "judge packet omits scorecard and .agents"
+  else
+    fail "judge packet leaked harness/scorecard"
+  fi
+  if [ -f "${packet}/TASK.md" ] && [ -d "${packet}/delivery/tools" ]; then
+    pass "judge packet has TASK + delivery/tools"
+  else
+    fail "judge packet incomplete"
+  fi
+
+  # Broken delivery → stub judge_pass false
+  unset AZG_JUDGE_CMD
+  jout=$(bash "${ROOT}/evals/judge-score.sh" "${workdir}")
+  if [ -f "${workdir}/judge-result.json" ]; then
+    pass "judge-result.json written"
+  else
+    fail "missing judge-result.json" "${jout}"
+  fi
+  if [ "$(jq -r '.treatment_blind' "${workdir}/judge-result.json")" = "true" ]; then
+    pass "judge-result marks treatment_blind"
+  else
+    fail "treatment_blind missing"
+  fi
+  if [ "$(jq -r '.assertions_pass' "${workdir}/judge-result.json")" = "false" ] \
+     && [ "$(jq -r '.judge_pass' "${workdir}/judge-result.json")" = "false" ]; then
+    pass "stub judge fails on broken workspace"
+  else
+    fail "stub should fail broken workspace" "$(cat "${workdir}/judge-result.json")"
+  fi
+  # Result must not contain treatment string from scorecard
+  if jq -e '.treatment' "${workdir}/judge-result.json" >/dev/null 2>&1; then
+    fail "judge-result must not have treatment field"
+  else
+    pass "judge-result has no treatment field"
+  fi
+
+  # Reference delivery → assertions + stub pass
+  cp -R "${ROOT}/evals/fixtures/bug-fix/reference/tools/." "${workdir}/tools/"
+  chmod +x "${workdir}/tools"/*.sh
+  bash "${ROOT}/evals/judge-score.sh" "${workdir}" >/dev/null
+  if [ "$(jq -r '.assertions_pass' "${workdir}/judge-result.json")" = "true" ] \
+     && [ "$(jq -r '.judge_pass' "${workdir}/judge-result.json")" = "true" ]; then
+    pass "stub judge passes on reference delivery"
+  else
+    fail "stub should pass reference" "$(cat "${workdir}/judge-result.json")"
+  fi
+
+  # External judge cmd wiring
+  export AZG_JUDGE_CMD='jq -n "{correctness:5,scope_discipline:5,clarity:5,safety:5,overall:5.0,rationale:\"external\"}"'
+  bash "${ROOT}/evals/judge-score.sh" "${workdir}" >/dev/null
+  overall_ext=$(jq -r '.scores.overall' "${workdir}/judge-result.json")
+  if [ "$(jq -r '.mode' "${workdir}/judge-result.json")" = "external" ] \
+     && awk -v o="${overall_ext}" 'BEGIN { exit !(o+0 == 5) }'; then
+    pass "AZG_JUDGE_CMD external mode works"
+  else
+    fail "external judge mode failed" "$(cat "${workdir}/judge-result.json")"
+  fi
+  unset AZG_JUDGE_CMD
+  rm -rf "${workdir}"
+fi
+
 test_summary
