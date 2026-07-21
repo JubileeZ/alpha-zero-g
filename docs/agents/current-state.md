@@ -11,7 +11,9 @@
 | Area | Path | Notes |
 |------|------|-------|
 | CLI | `azg`, `lib/` | setup, new, apply, update, uninstall |
-| Aggregate runner | `tests/run-all.sh` | shellcheck + Python verifiers + test-azg + host-contract + mutation + phase suites |
+| Evaluation Suite | `evals/` | 3 fixtures · `run-pair.sh` core|baseline · scorecard fields |
+| Eval tests | `tests/test-evals.sh` | Manifest + assertion sanity (workspace fail / reference pass) |
+| Aggregate runner | `tests/run-all.sh` | shellcheck + Python verifiers + test-azg + host-contract + mutation + evals + phase suites |
 | CI | `.github/workflows/ci.yml` | Ubuntu / macOS / Windows Git Bash · `AZG_STRICT=1` |
 | Host-contract smoke | `tests/host-contract-smoke.sh` + `docs/agents/host-contract-smoke.md` | Deny→no side effect simulator + manual Cursor/agy steps |
 | Mutation verify | `tests/test-mutation-verify.sh` | Each required path removed → verify fails |

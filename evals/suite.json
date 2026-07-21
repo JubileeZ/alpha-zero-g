@@ -1,0 +1,33 @@
+{
+  "version": 1,
+  "suite": "alpha-zero-g-core-pilot",
+  "scorecard_fields": [
+    "task_success",
+    "delivery_cost",
+    "wall_time_sec",
+    "interventions",
+    "treatment",
+    "fixture_id",
+    "notes"
+  ],
+  "fixtures": [
+    {
+      "id": "bug-fix",
+      "kind": "bug_fix",
+      "title": "Fix clamp inclusive upper bound",
+      "path": "fixtures/bug-fix"
+    },
+    {
+      "id": "scoped-change",
+      "kind": "scoped_change",
+      "title": "Add --json flag without breaking text mode",
+      "path": "fixtures/scoped-change"
+    },
+    {
+      "id": "regression-feature",
+      "kind": "regression_prone_feature",
+      "title": "Add percent discount without breaking totals",
+      "path": "fixtures/regression-feature"
+    }
+  ]
+}
