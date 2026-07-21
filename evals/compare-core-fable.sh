@@ -29,9 +29,11 @@ claim="$(jq -r '.reliability_claim_allowed // false' "${ROOT}/evals/pilot/prereg
 
 FIXTURES=()
 if [ -n "${ONLY}" ]; then
+  ONLY="${ONLY%$'\r'}"
   FIXTURES=("${ONLY}")
 else
-  while IFS= read -r _id; do
+  while IFS= read -r _id || [ -n "${_id}" ]; do
+    _id="${_id%$'\r'}"
     [ -n "${_id}" ] && FIXTURES+=("${_id}")
   done < <(jq -r '.fixtures[].id' "${SUITE}")
 fi

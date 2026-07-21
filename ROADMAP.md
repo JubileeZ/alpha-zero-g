@@ -45,7 +45,8 @@ Blocked from **default promotion** until Phase 9 held-out claim (`reliability_cl
 
 - [x] Bundle Fable skills as opt-in project skills (`azg fable sync`)
 - [x] Compare core vs core+Fable on same Evaluation Suite (`evals/compare-core-fable.sh` + `core+fable` treatment)
-- [ ] Promote to default only if Task Success / Delivery Cost improves without portability regression
+- [x] Reference smoke: both arms assertion-green (`evals/run-compare-smoke.sh` · not a claim)
+- [ ] Promote to default only if Task Success / Delivery Cost improves without portability regression (needs live agent+Fable + held-out claim)
 - [ ] Issues #52–#55 reopened/retargeted only after this gate
 
 ---

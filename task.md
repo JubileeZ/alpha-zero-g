@@ -1,19 +1,20 @@
 # Active Task: Phase 10 Fable
 
 - **Status:** In Progress
-- **Objective:** Live core vs core+Fable score deltas (experimental); no default promotion until held-out claim
-- **Acceptance:** Filled compare-matrix deltas from operator runs; promote gate still blocked while claim false
-- **Issue/Ticket:** Phase 10 ROADMAP · #52–55 still paused for default promotion
+- **Objective:** Live agent core vs core+fable (skills used); then promote only after held-out claim
+- **Acceptance:** Agent-run deltas favoring core+fable without portability regression; `reliability_claim_allowed` still required for default
+- **Issue/Ticket:** Phase 10 ROADMAP · #52–55 still paused
 
 ## Work Packet (SFDBN)
 
-- **Status:** CI LF/+x fixed; `core+fable` treatment + `compare-core-fable.sh` shipped
-- **Files:** `evals/run-pair.sh`, `evals/compare-core-fable.sh`, `tests/test-evals.sh`
-- **Decisions:** Comparison is experimental scaffolding; reliability claim still false (ADR 0005)
-- **Blocked:** Live confirmation+held-out for claim; real Fable upstream (AZG_FABLE_UPSTREAM TBD)
-- **Next:** Run compare matrix with agents; promote only if deltas win without portability regression
+- **Status:** Reference smoke green (both arms assertion-ok all 3 fixtures); `promote_default=false`
+- **Files:** `evals/run-compare-smoke.sh`, `evals/pilot/compare-core-fable-smoke.json`
+- **Decisions:** Smoke ≠ Fable benefit; cost deltas noise (~±1s wall); no promotion
+- **Blocked:** Live confirmation+held-out claim; agent runs using Fable skills
+- **Next:** Agent-driven paired runs (or keep experimental until claim)
 
 ## Todo
 - [x] azg fable sync opt-in
 - [x] core vs core+Fable comparison harness
-- [ ] Operator-filled score deltas / promote decision
+- [x] Operator reference smoke / matrix fill
+- [ ] Live agent+Fable deltas → promote decision

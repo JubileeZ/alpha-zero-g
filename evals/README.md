@@ -12,6 +12,16 @@ Fixed fixtures for paired **core** vs **No-Harness Baseline** runs, plus optiona
 
 Each fixture: agent-facing `TASK.md`, broken `workspace/`, hidden `assertions/check.sh`, known-good `reference/` to validate assertions.
 
+## Core vs core+fable (Phase 10)
+
+```bash
+bash evals/compare-core-fable.sh          # prepare arms
+bash evals/run-compare-smoke.sh           # reference-fix smoke (not a claim)
+# Artifact: evals/pilot/compare-core-fable-smoke.json
+```
+
+Smoke applies fixture **reference** solutions to both arms — portability check only. Live agent runs that actually use Fable skills are required before default promotion (ADR 0005).
+
 ## Prepare a paired run
 
 ```bash

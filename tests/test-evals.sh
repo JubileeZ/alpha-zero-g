@@ -139,6 +139,18 @@ else
     fail "compare-core-fable incomplete" "out: ${cout}"
   fi
 
+  assert_file_executable "run-compare-smoke.sh" "${ROOT}/evals/run-compare-smoke.sh"
+  SMOKE_JSON="${ROOT}/evals/pilot/compare-core-fable-smoke.json"
+  if [ -f "${SMOKE_JSON}" ]; then
+    if jq -e '.not_a_claim == true and .promote_default == false and (.pairs | length) == 6' "${SMOKE_JSON}" >/dev/null; then
+      pass "compare smoke artifact is non-claim with 6 scored arms"
+    else
+      fail "compare smoke artifact missing required non-claim shape"
+    fi
+  else
+    skip "compare smoke artifact not present (run evals/run-compare-smoke.sh)"
+  fi
+
   # record-scorecard
   stub="$(azg_mktemp_d "tmp_azg_score-XXXXXX")/scorecard.json"
   mkdir -p "$(dirname "${stub}")"
