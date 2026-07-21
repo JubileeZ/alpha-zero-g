@@ -6,6 +6,7 @@
 #   setup              Install global skills + MCP config to ~/.gemini/antigravity-cli/
 #   new [DIR]          Scaffold a new Antigravity project
 #   apply [DIR]        Retrofit an existing project with the azg harness
+#   fable sync [DIR]   Opt-in Fable skills into a project (experimental until claim)
 #   update             Pull latest Alpha-Zero-G repo
 #   update --vendor    Pull latest Alpha-Zero-G + re-vendor mattpocock/skills
 #   uninstall          Remove everything azg setup installed globally
@@ -48,6 +49,8 @@ ${CLR_BOLD}COMMANDS${CLR_RESET}
   setup                Install global skills + MCP config to ~/.gemini/antigravity-cli/
   new [DIR]            Scaffold a new Antigravity project interactively
   apply [DIR]          Retrofit an existing repo with the azg harness
+  fable sync [DIR]     Install opt-in Fable skills into a project (--experimental if claim not allowed)
+  fable status [DIR]   Show whether Fable is installed in a project
   update               Pull the latest Alpha-Zero-G repo
   update --vendor      Also re-vendor mattpocock/skills from upstream
   uninstall            Remove all files azg setup installed globally
@@ -58,6 +61,7 @@ ${CLR_BOLD}EXAMPLES${CLR_RESET}
   azg setup
   azg new my-project
   azg apply .
+  azg fable sync . --experimental
   azg update --vendor
   azg uninstall
 
@@ -96,6 +100,11 @@ case "${COMMAND}" in
   apply)
     source "${LIB_DIR}/apply.sh"
     cmd_apply "$@"
+    ;;
+
+  fable)
+    source "${LIB_DIR}/fable.sh"
+    cmd_fable "$@"
     ;;
 
   update)

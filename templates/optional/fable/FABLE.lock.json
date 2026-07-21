@@ -1,0 +1,8 @@
+{
+  "name": "fable-optional",
+  "version": 1,
+  "source": "templates/optional/fable",
+  "skills": ["fable-loop"],
+  "default_in_core_profile": false,
+  "notes": "Stub bundle until AZG_FABLE_UPSTREAM is configured"
+}

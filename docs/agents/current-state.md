@@ -2,7 +2,7 @@
 
 **Read this first** after `docs/AGENT-ONBOARDING.md`. `ROADMAP.md` is plan; this file is **what exists on disk today**.
 
-**Active phase:** Phase 10 — Fable (blocked; Phase 9 tooling complete)
+**Active phase:** Phase 10 — Fable (opt-in sync; claim blocked)
 
 ---
 

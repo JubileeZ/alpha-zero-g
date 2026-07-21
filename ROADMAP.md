@@ -1,6 +1,6 @@
 # Alpha-Zero-G — Roadmap
 
-**Status:** v4 scaffolding complete · Phases 7–9 done · **Active: Phase 10 — Fable (blocked until held-out claim)**
+**Status:** v4 scaffolding complete · Phases 7–9 tooling done · **Active: Phase 10 — Fable (opt-in sync; claim still blocked)**
 
 > Zero-context: [`docs/AGENT-ONBOARDING.md`](docs/AGENT-ONBOARDING.md) · Spec: [`docs/REVAMP-SPEC.md`](docs/REVAMP-SPEC.md) · Reality: [`docs/agents/current-state.md`](docs/agents/current-state.md) · Glossary: [`CONTEXT.md`](CONTEXT.md)
 
@@ -41,9 +41,9 @@ Evaluation Suite + paired runner/scorecard · Blind Judge · Long-Horizon · exp
 
 ## Phase 10 — Fable (optional treatment)
 
-Blocked until Phase 9 held-out confirmation green.
+Blocked from **default promotion** until Phase 9 held-out claim (`reliability_claim_allowed`).
 
-- [ ] Bundle Fable skills as opt-in project skills (`azg fable sync`)
+- [x] Bundle Fable skills as opt-in project skills (`azg fable sync`)
 - [ ] Compare core vs core+Fable on same Evaluation Suite
 - [ ] Promote to default only if Task Success / Delivery Cost improves without portability regression
 - [ ] Issues #52–#55 reopened/retargeted only after this gate
