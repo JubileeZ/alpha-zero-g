@@ -47,6 +47,7 @@
 | `bash tests/run-all.sh --list` | Suite inventory |
 | `bash evals/run-pair.sh <id> core\|baseline\|core+fable` | Prepare paired eval workdir |
 | `bash evals/compare-core-fable.sh [id]` | Prepare core vs core+fable matrix |
+| Live agent compare handoff | `evals/pilot/LIVE-AGENT-COMPARE.md` |
 | `bash tests/test-evals.sh` | Evaluation Suite structural tests |
 | `bash tests/host-contract-smoke.sh` | Deny→no side-effect contract |
 | `bash tests/test-mutation-verify.sh` | verify.sh mutation checks |
