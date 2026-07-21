@@ -47,7 +47,7 @@ step()    { printf "${CLR_CYAN}[azg]${CLR_RESET} ${CLR_BOLD}%s${CLR_RESET}\n" "$
 # ---------------------------------------------------------------------------
 # OS detection
 # ---------------------------------------------------------------------------
-# Sets: AZG_OS ("linux" | "macos" | "unknown")
+# Sets: AZG_OS ("linux" | "macos" | "windows" | "unknown")
 #       AZG_ARCH ("x86_64" | "arm64" | "unknown")
 detect_os() {
   local uname_s
@@ -55,6 +55,7 @@ detect_os() {
   case "${uname_s}" in
     Linux*)  AZG_OS="linux"   ;;
     Darwin*) AZG_OS="macos"   ;;
+    MINGW*|MSYS*|CYGWIN*) AZG_OS="windows" ;;
     *)       AZG_OS="unknown" ;;
   esac
 
@@ -108,8 +109,11 @@ require_jq() {
     macos)
       hint="Install with: brew install jq"
       ;;
+    windows)
+      hint="Install with: winget install jqlang.jq  (or: choco install jq)"
+      ;;
     *)
-      hint="Install jq from https://jqlang.github.io/jq/download/ (Windows: winget install jqlang.jq or choco install jq)"
+      hint="Install jq from https://jqlang.github.io/jq/download/"
       ;;
   esac
   die "'jq' is required but not found. ${hint}"

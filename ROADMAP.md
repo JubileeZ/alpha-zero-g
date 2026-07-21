@@ -28,8 +28,8 @@ Harness-only templates, hooks, apply/setup profiles, tests, VERSION 4.0.x. Detai
 
 ## Phase 8 — Evidence Trustworthy
 
-- [ ] Aggregate runner: shellcheck + `test-azg` + phase tests + Python verifiers
-- [ ] CI matrix: Ubuntu, macOS, Windows Git Bash
+- [x] Aggregate runner: shellcheck + `test-azg` + phase tests + Python verifiers
+- [x] CI matrix: Ubuntu, macOS, Windows Git Bash
 - [ ] Host-contract smoke: real Cursor + Antigravity hook fire (deny must prevent action)
 - [ ] Resolve spawn-budget event semantics on Antigravity (block vs observe)
 - [ ] Mutation checks: template verify fails when each required hook/config removed
@@ -64,4 +64,4 @@ Stack wizard · full GitHub MCP default · blocking PreCompact · statistical Fa
 
 ---
 
-> **Pre-commit gate:** `shellcheck azg lib/*.sh tests/*.sh` and `bash tests/test-azg.sh` (plus affected phase tests) must pass before proposing commits. Project clients: `bash tests/verify.sh`.
+> **Pre-commit gate:** `bash tests/run-all.sh` (or `shellcheck` + `test-azg` + affected phase tests) must pass before proposing commits. Project clients: `bash tests/verify.sh`.

@@ -11,7 +11,9 @@
 | Area | Path | Notes |
 |------|------|-------|
 | CLI | `azg`, `lib/` | setup, new, apply, update, uninstall |
-| Portable gate | `templates/project/tests/verify.sh` | Harness integrity + optional project validation |
+| Aggregate runner | `tests/run-all.sh` | shellcheck + Python verifiers + test-azg + all phase suites |
+| CI | `.github/workflows/ci.yml` | Ubuntu / macOS / Windows Git Bash · `AZG_STRICT=1` |
+| Portable gate | `templates/project/tests/verify.sh` | Harness integrity + optional project validation; denies `tmp_azg*` leaks |
 | Work Packet | `templates/project/task.md.tmpl` | Objective, acceptance, SFDBN |
 | Setup preflight | `lib/setup.sh` | `require_jq` before install |
 | Cursor rules | `templates/project/.cursor/rules/*.mdc` | alwaysApply |
@@ -30,7 +32,7 @@
 
 | Item | Phase | Notes |
 |------|-------|-------|
-| Aggregate CI matrix | 8 | No workflow; install `jq` on Windows for apply tests |
+| Aggregate CI matrix | 8 | `.github/workflows/ci.yml` present; confirm green on Actions |
 | Real host hook smoke | 8 | Synthetic JSON only |
 | Paired core vs no-harness pilot | 9 | No outcome evidence |
 | Fable as measured treatment | 10 | Issues #52–55 paused |
@@ -41,6 +43,8 @@
 
 | Command | What it does |
 |---------|-------------|
+| `bash tests/run-all.sh` | Full aggregate gate |
+| `bash tests/run-all.sh --list` | Suite inventory |
 | `bash tests/test-phase10.sh` | Phase 7 portable-core tests |
 | `bash tests/test-azg.sh` | Integration (needs `jq` for apply paths) |
 | `bash tests/test-phase<N>.sh` | Phase tests |

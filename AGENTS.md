@@ -39,6 +39,7 @@ VERSION                      # File indicating the current Alpha-Zero-G release 
 | Command | What it does |
 |---------|-------------|
 | `shellcheck azg lib/*.sh tests/*.sh` | Lint Bash scripts |
+| `bash tests/run-all.sh` | Aggregate gate (shellcheck + verifiers + all suites) |
 | `bash tests/test-azg.sh` | Run general integration tests |
 | `bash tests/test-phase<0-9>.sh` | Run phase-specific integration/TDD tests |
 | `python3 tests/verify_docs.py` | Verify markdown documentation links |

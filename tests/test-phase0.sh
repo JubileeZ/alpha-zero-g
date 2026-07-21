@@ -61,7 +61,7 @@ _root_val=$(echo "${_common_test}" | grep '^AZG_ROOT=' | cut -d= -f2)
 _ver_val=$(echo "${_common_test}"  | grep '^AZG_VERSION=' | cut -d= -f2)
 _dir_val=$(echo "${_common_test}"  | grep '^AZG_GLOBAL_DIR=' | cut -d= -f2)
 
-if [ "${_os_val}" = "linux" ] || [ "${_os_val}" = "macos" ]; then
+if [ "${_os_val}" = "linux" ] || [ "${_os_val}" = "macos" ] || [ "${_os_val}" = "windows" ]; then
   pass "AZG_OS detected correctly (${_os_val})"
 else
   fail "AZG_OS not detected" "got: '${_os_val}'"
@@ -236,6 +236,18 @@ if [ "${_shebang_common}" = "#!/usr/bin/env bash" ]; then
   pass "common.sh uses '#!/usr/bin/env bash' shebang"
 else
   fail "common.sh shebang is wrong" "got: '${_shebang_common}'"
+fi
+
+section "9. Aggregate runner (Phase 8)"
+
+assert_file_exists "tests/run-all.sh exists" "${REPO_ROOT}/tests/run-all.sh"
+assert_file_executable "tests/run-all.sh executable" "${REPO_ROOT}/tests/run-all.sh"
+assert_exit "run-all --list exits 0" 0 bash "${REPO_ROOT}/tests/run-all.sh" --list
+_list_out="$(bash "${REPO_ROOT}/tests/run-all.sh" --list 2>&1)" || true
+if echo "${_list_out}" | grep -q "test-azg.sh" && echo "${_list_out}" | grep -q "test-phase10.sh" && echo "${_list_out}" | grep -q "shellcheck"; then
+  pass "run-all --list covers shellcheck, test-azg, phase10"
+else
+  fail "run-all --list missing expected suites" "got: ${_list_out}"
 fi
 
 # ---------------------------------------------------------------------------

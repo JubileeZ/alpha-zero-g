@@ -1,0 +1,40 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  aggregate:
+    name: run-all (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install deps (Ubuntu)
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y jq shellcheck
+
+      - name: Install deps (macOS)
+        if: runner.os == 'macOS'
+        run: brew install jq shellcheck
+
+      - name: Install deps (Windows)
+        if: runner.os == 'Windows'
+        shell: powershell
+        run: |
+          choco install jq shellcheck -y
+          refreshenv
+
+      - name: Aggregate gate
+        env:
+          AZG_STRICT: "1"
+        run: bash tests/run-all.sh
