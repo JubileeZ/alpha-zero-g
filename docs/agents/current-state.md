@@ -34,7 +34,7 @@
 
 | Item | Phase | Notes |
 |------|-------|-------|
-| Evaluation Suite + paired pilot | 9 | No outcome evidence vs no-harness |
+| Evaluation Suite + paired pilot | 9 | Fixtures+runner exist; Blind Judge / live pilot / held-out not done |
 | Fable as measured treatment | 10 | Issues #52–55 paused |
 
 ---
@@ -45,6 +45,8 @@
 |---------|-------------|
 | `bash tests/run-all.sh` | Full aggregate gate |
 | `bash tests/run-all.sh --list` | Suite inventory |
+| `bash evals/run-pair.sh <id> core|baseline` | Prepare paired eval workdir |
+| `bash tests/test-evals.sh` | Evaluation Suite structural tests |
 | `bash tests/host-contract-smoke.sh` | Deny→no side-effect contract |
 | `bash tests/test-mutation-verify.sh` | verify.sh mutation checks |
 | `bash tests/test-phase10.sh` | Phase 7 portable-core tests |
