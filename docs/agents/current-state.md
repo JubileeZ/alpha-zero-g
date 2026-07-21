@@ -34,7 +34,7 @@
 
 | Item | Phase | Notes |
 |------|-------|-------|
-| Evaluation Suite + paired pilot | 9 | Fixtures+runner+Blind Judge+Long-Horizon script exist; exploratory pilot / held-out not done |
+| Evaluation Suite + paired pilot | 9 | Fixtures+runner+Blind Judge+Long-Horizon script exist; prereg+exploratory done; held-out confirmation not done |
 | Fable as measured treatment | 10 | Issues #52–55 paused |
 
 ---

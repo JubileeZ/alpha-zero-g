@@ -69,3 +69,16 @@ bash evals/run-long-horizon.sh bug-fix core --sync-clone "$SESSION1"
 ```
 
 See `evals/long-horizon/README.md` and `checklist.md`.
+
+## Pilot (exploratory / confirmation / held-out)
+
+Preregistered thresholds: `evals/pilot/PREREG.md` + `prereg.json` (**locked**).
+
+```bash
+# Document exploratory pipeline smoke (not a reliability claim):
+bash evals/run-exploratory-smoke.sh
+
+# After real paired agent runs:
+bash evals/record-pilot-pair.sh exploratory --fixture bug-fix \
+  --core-scorecard ... --baseline-scorecard ...
+```

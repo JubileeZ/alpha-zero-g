@@ -1,0 +1,58 @@
+{
+  "version": 1,
+  "locked_at": "2026-07-21",
+  "status": "preregistered",
+  "reliability_claim_allowed": false,
+  "exploratory": {
+    "purpose": "Learn tooling friction; no go/no-go on core vs baseline",
+    "min_paired_runs_note": "At least 1 documented exploratory pair (any fixture) before confirmation scheduling"
+  },
+  "confirmation": {
+    "description": "Preregistered before any confirmation analysis. Do not change after first confirmation pair starts.",
+    "sample_size": {
+      "paired_runs_per_fixture": 3,
+      "fixtures_required": ["bug-fix", "scoped-change", "regression-feature"],
+      "total_paired_runs": 9,
+      "treatments_per_pair": ["core", "baseline"],
+      "rationale": "Small fixed N for solo/small-team cost; enough for directional signal, not publication-grade power."
+    },
+    "primary_endpoint": {
+      "metric": "task_success_rate_core_minus_baseline",
+      "definition": "Share of pairs where core assertions_pass and judge_pass, minus same for baseline",
+      "success_threshold": 0.0,
+      "interpretation": "Confirmation green only if core − baseline ≥ 0 on primary (core not worse)."
+    },
+    "secondary_endpoints": [
+      {
+        "metric": "median_delivery_cost_ratio",
+        "definition": "median(core.delivery_cost) / median(baseline.delivery_cost)",
+        "success_threshold_max": 1.25,
+        "interpretation": "Core must not cost more than 25% above baseline median."
+      },
+      {
+        "metric": "median_interventions_core_minus_baseline",
+        "success_threshold_max": 0,
+        "interpretation": "Core median interventions ≤ baseline."
+      }
+    ],
+    "long_horizon": {
+      "min_successful_runs": 1,
+      "among_fixtures": ["bug-fix"],
+      "required": true,
+      "interpretation": "At least one Long-Horizon completion on bug-fix with checklist ticked."
+    },
+    "blind_judge": {
+      "model_id_file": "evals/judge/config.json",
+      "calibration_required_before_confirmation": true,
+      "max_mean_abs_human_model_gap": 1.0
+    }
+  },
+  "held_out": {
+    "description": "Separate sample after confirmation green; same thresholds; new paired runs only.",
+    "sample_size": {
+      "paired_runs_per_fixture": 2,
+      "total_paired_runs": 6
+    },
+    "reuse_confirmation_pairs": false
+  }
+}

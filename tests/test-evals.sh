@@ -267,4 +267,56 @@ else
   rm -rf "${s2}" 2>/dev/null || true
 fi
 
+section "6. Pilot prereg + exploratory log"
+
+assert_file_exists "prereg.json" "${ROOT}/evals/pilot/prereg.json"
+assert_file_exists "PREREG.md" "${ROOT}/evals/pilot/PREREG.md"
+assert_file_executable "record-pilot-pair.sh" "${ROOT}/evals/record-pilot-pair.sh"
+assert_file_executable "run-exploratory-smoke.sh" "${ROOT}/evals/run-exploratory-smoke.sh"
+
+if ! command -v jq >/dev/null 2>&1; then
+  skip "pilot prereg tests need jq"
+else
+  if [ "$(jq -r '.confirmation.sample_size.total_paired_runs' "${ROOT}/evals/pilot/prereg.json")" = "9" ]; then
+    pass "prereg confirmation N=9 pairs"
+  else
+    fail "prereg sample_size wrong"
+  fi
+  if [ "$(jq -r '.confirmation.primary_endpoint.success_threshold' "${ROOT}/evals/pilot/prereg.json")" = "0" ] \
+     || [ "$(jq -r '.confirmation.primary_endpoint.success_threshold' "${ROOT}/evals/pilot/prereg.json")" = "0.0" ]; then
+    pass "prereg primary threshold ≥0 delta"
+  else
+    fail "primary threshold missing"
+  fi
+  if [ "$(jq -r '.reliability_claim_allowed' "${ROOT}/evals/pilot/prereg.json")" = "false" ]; then
+    pass "prereg forbids reliability claim until held-out"
+  else
+    fail "reliability_claim_allowed should be false"
+  fi
+
+  # Use record-pilot-pair on temp scorecards (avoid full core apply in CI loop)
+  td="$(azg_mktemp_d "tmp_azg_pilotrec-XXXXXX")"
+  jq -n '{task_success:0,delivery_cost:0,wall_time_sec:0,interventions:0,treatment:"core",model:"",ide:""}' > "${td}/core.json"
+  jq -n '{task_success:0,delivery_cost:0,wall_time_sec:0,interventions:0,treatment:"baseline",model:"",ide:""}' > "${td}/base.json"
+  before=$(wc -l < "${ROOT}/evals/pilot/exploratory-log.jsonl" | tr -d ' ')
+  bash "${ROOT}/evals/record-pilot-pair.sh" exploratory \
+    --fixture bug-fix \
+    --core-scorecard "${td}/core.json" \
+    --baseline-scorecard "${td}/base.json" \
+    --notes "test-evals exploratory append"
+  after=$(wc -l < "${ROOT}/evals/pilot/exploratory-log.jsonl" | tr -d ' ')
+  if [ "${after}" -gt "${before}" ]; then
+    pass "exploratory smoke appends log line"
+  else
+    fail "exploratory log not appended"
+  fi
+  last=$(tail -n1 "${ROOT}/evals/pilot/exploratory-log.jsonl")
+  if echo "${last}" | jq -e '.phase=="exploratory" and .reliability_claim==false and .fixture_id=="bug-fix"' >/dev/null; then
+    pass "exploratory log line is non-claim bug-fix pair"
+  else
+    fail "bad exploratory log line" "${last}"
+  fi
+  # Still ensure run-exploratory-smoke.sh is executable / --help path exists (already asserted)
+fi
+
 test_summary
