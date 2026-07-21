@@ -10,8 +10,8 @@
 
 | Area | Path | Notes |
 |------|------|-------|
-| CLI | `azg`, `lib/` | setup, new, apply, update, uninstall |
-| Evaluation Suite | `evals/` | 3 fixtures · paired runner · Blind Judge packet/score |
+| Evaluation Suite | `evals/` | 3 fixtures · core/baseline/`core+fable` · Blind Judge · compare-core-fable |
+| CLI | `azg`, `lib/` | setup, new, apply, fable sync, update, uninstall |
 | Eval tests | `tests/test-evals.sh` | Manifest + assertion sanity (workspace fail / reference pass) |
 | Aggregate runner | `tests/run-all.sh` | shellcheck + Python verifiers + test-azg + host-contract + mutation + evals + phase suites |
 | CI | `.github/workflows/ci.yml` | Ubuntu / macOS / Windows Git Bash · `AZG_STRICT=1` |
@@ -35,7 +35,7 @@
 | Item | Phase | Notes |
 |------|-------|-------|
 | Evaluation Suite + paired pilot | 9 | Fixtures+runner+Blind Judge+Long-Horizon script exist; Phase 9 tooling complete; live held-out pairs + --apply-claim still required for claims |
-| Fable as measured treatment | 10 | Issues #52–55 paused |
+| Fable as measured treatment | 10 | `azg fable sync` + `core+fable` compare matrix; default promotion blocked until claim |
 
 ---
 
@@ -45,7 +45,8 @@
 |---------|-------------|
 | `bash tests/run-all.sh` | Full aggregate gate |
 | `bash tests/run-all.sh --list` | Suite inventory |
-| `bash evals/run-pair.sh <id> core|baseline` | Prepare paired eval workdir |
+| `bash evals/run-pair.sh <id> core\|baseline\|core+fable` | Prepare paired eval workdir |
+| `bash evals/compare-core-fable.sh [id]` | Prepare core vs core+fable matrix |
 | `bash tests/test-evals.sh` | Evaluation Suite structural tests |
 | `bash tests/host-contract-smoke.sh` | Deny→no side-effect contract |
 | `bash tests/test-mutation-verify.sh` | verify.sh mutation checks |

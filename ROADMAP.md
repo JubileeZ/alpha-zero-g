@@ -44,7 +44,7 @@ Evaluation Suite + paired runner/scorecard · Blind Judge · Long-Horizon · exp
 Blocked from **default promotion** until Phase 9 held-out claim (`reliability_claim_allowed`).
 
 - [x] Bundle Fable skills as opt-in project skills (`azg fable sync`)
-- [ ] Compare core vs core+Fable on same Evaluation Suite
+- [x] Compare core vs core+Fable on same Evaluation Suite (`evals/compare-core-fable.sh` + `core+fable` treatment)
 - [ ] Promote to default only if Task Success / Delivery Cost improves without portability regression
 - [ ] Issues #52–#55 reopened/retargeted only after this gate
 

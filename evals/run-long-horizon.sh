@@ -2,7 +2,7 @@
 # evals/run-long-horizon.sh — scaffold a Long-Horizon Task run
 #
 # Usage:
-#   bash evals/run-long-horizon.sh <fixture-id> [core|baseline]
+#   bash evals/run-long-horizon.sh <fixture-id> [core|baseline|core+fable]
 #
 # Creates:
 #   SESSION1  — prepared fixture workdir (git repo)
@@ -10,7 +10,7 @@
 #   long-horizon-log.json + checklist copy
 #
 # After Session1 Checkpoint commit, re-run with:
-#   bash evals/run-long-horizon.sh <fixture-id> [core|baseline] --sync-clone <SESSION1>
+#   bash evals/run-long-horizon.sh <fixture-id> [core|baseline|core+fable] --sync-clone <SESSION1>
 
 set -euo pipefail
 
@@ -26,13 +26,17 @@ if [ "${3:-}" = "--sync-clone" ]; then
 fi
 
 if [ -z "${FIXTURE_ID}" ]; then
-  echo "usage: run-long-horizon.sh <fixture-id> [core|baseline] [--sync-clone SESSION1]" >&2
+  echo "usage: run-long-horizon.sh <fixture-id> [core|baseline|core+fable] [--sync-clone SESSION1]" >&2
   exit 2
 fi
 
+if [ "${TREATMENT}" = "core-fable" ]; then
+  TREATMENT="core+fable"
+fi
+
 case "${TREATMENT}" in
-  core|baseline) ;;
-  *) echo "treatment must be core or baseline" >&2; exit 2 ;;
+  core|baseline|core+fable) ;;
+  *) echo "treatment must be core, baseline, or core+fable" >&2; exit 2 ;;
 esac
 
 if ! command -v jq >/dev/null 2>&1; then

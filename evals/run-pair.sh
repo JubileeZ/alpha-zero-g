@@ -1,8 +1,11 @@
 #!/usr/bin/env bash
-# evals/run-pair.sh — prepare a fixture workdir for core or baseline treatment
+# evals/run-pair.sh — prepare a fixture workdir for a treatment arm
 #
-# Usage: bash evals/run-pair.sh <fixture-id> <core|baseline>
-# Copies workspace + TASK + assertions into a temp dir. For core, runs azg apply.
+# Usage: bash evals/run-pair.sh <fixture-id> <core|baseline|core+fable>
+# Copies workspace + TASK + assertions into a temp dir.
+#   core        — azg apply
+#   baseline    — no harness
+#   core+fable  — azg apply + azg fable sync --experimental (opt-in; non-claim until held-out)
 # Writes scorecard.json stub. Prints WORKDIR=...
 
 set -euo pipefail
@@ -12,13 +15,18 @@ FIXTURE_ID="${1:-}"
 TREATMENT="${2:-}"
 
 if [ -z "${FIXTURE_ID}" ] || [ -z "${TREATMENT}" ]; then
-  echo "usage: bash evals/run-pair.sh <fixture-id> <core|baseline>" >&2
+  echo "usage: bash evals/run-pair.sh <fixture-id> <core|baseline|core+fable>" >&2
   exit 2
 fi
 
+# Alias for shells that dislike +
+if [ "${TREATMENT}" = "core-fable" ]; then
+  TREATMENT="core+fable"
+fi
+
 case "${TREATMENT}" in
-  core|baseline) ;;
-  *) echo "treatment must be core or baseline" >&2; exit 2 ;;
+  core|baseline|core+fable) ;;
+  *) echo "treatment must be core, baseline, or core+fable" >&2; exit 2 ;;
 esac
 
 SUITE="${ROOT}/evals/suite.json"
@@ -34,7 +42,9 @@ if [ -z "${path}" ] || [ "${path}" = "null" ]; then
 fi
 
 SRC="${ROOT}/evals/${path}"
-WORKDIR="${TMPDIR:-${TEMP:-/tmp}}/azg-eval-${FIXTURE_ID}-${TREATMENT}-$$"
+# Avoid '+' in paths on some Windows/TMP stacks
+_safe_t="${TREATMENT//+/-}"
+WORKDIR="${TMPDIR:-${TEMP:-/tmp}}/azg-eval-${FIXTURE_ID}-${_safe_t}-$$"
 # Normalize Windows TEMP
 WORKDIR="${WORKDIR//\\//}"
 rm -rf "${WORKDIR}"
@@ -56,7 +66,7 @@ jq \
   '.fixture_id=$id | .treatment=$t | .started_at=$started' \
   "${ROOT}/evals/scorecard.json.tmpl" > "${WORKDIR}/scorecard.json"
 
-if [ "${TREATMENT}" = "core" ]; then
+if [ "${TREATMENT}" = "core" ] || [ "${TREATMENT}" = "core+fable" ]; then
   # Minimal git repo so azg apply accepts target
   (
     cd "${WORKDIR}"
@@ -65,6 +75,15 @@ if [ "${TREATMENT}" = "core" ]; then
     git -c user.email=eval@azg -c user.name=eval commit -m "eval seed" -q
   )
   AZG_ROOT="${ROOT}" "${ROOT}/azg" apply "${WORKDIR}" --tracker none >/dev/null
+fi
+
+if [ "${TREATMENT}" = "core+fable" ]; then
+  # Opt-in Fable skills; still experimental until reliability_claim_allowed
+  AZG_ROOT="${ROOT}" "${ROOT}/azg" fable sync "${WORKDIR}" --experimental >/dev/null
+  if [ ! -f "${WORKDIR}/.agents/skills/fable/.fable-installed" ]; then
+    echo "core+fable: fable sync did not install marker" >&2
+    exit 1
+  fi
 fi
 
 # Point check.sh at workdir layout: assertions/check.sh expects ROOT/tools
