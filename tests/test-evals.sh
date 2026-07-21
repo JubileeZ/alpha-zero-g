@@ -200,4 +200,71 @@ else
   rm -rf "${workdir}"
 fi
 
+section "5. Long-Horizon scaffold + clean clone"
+
+assert_file_exists "long-horizon README" "${ROOT}/evals/long-horizon/README.md"
+assert_file_exists "long-horizon checklist" "${ROOT}/evals/long-horizon/checklist.md"
+assert_file_executable "run-long-horizon.sh" "${ROOT}/evals/run-long-horizon.sh"
+
+if ! command -v jq >/dev/null 2>&1; then
+  skip "long-horizon tests need jq"
+else
+  lh_out=$(bash "${ROOT}/evals/run-long-horizon.sh" bug-fix baseline)
+  s1=$(echo "${lh_out}" | sed -n 's/^SESSION1=//p' | head -n1)
+  s2=$(echo "${lh_out}" | sed -n 's/^SESSION2=//p' | head -n1)
+  if [ -n "${s1}" ] && [ -f "${s1}/TASK.md" ] && [ -f "${s1}/long-horizon-log.json" ]; then
+    pass "long-horizon init creates SESSION1 + log"
+  else
+    fail "long-horizon init incomplete" "${lh_out}"
+  fi
+  if [ -f "${s1}/LONG-HORIZON-CHECKLIST.md" ]; then
+    pass "checklist copied to SESSION1"
+  else
+    fail "missing checklist in SESSION1"
+  fi
+  # Checkpoint commit then sync-clone
+  (
+    cd "${s1}"
+    echo "session1-note" >> TASK.md
+    git add -A
+    git -c user.email=lh@azg -c user.name=lh commit -m "checkpoint: session1" -q
+  )
+  sync_out=$(bash "${ROOT}/evals/run-long-horizon.sh" bug-fix baseline --sync-clone "${s1}")
+  s2b=$(echo "${sync_out}" | sed -n 's/^SESSION2=//p' | head -n1)
+  head=$(echo "${sync_out}" | sed -n 's/^HEAD=//p' | head -n1)
+  if [ -n "${s2b}" ] && [ -d "${s2b}/.git" ] && [ -f "${s2b}/TASK.md" ]; then
+    pass "sync-clone created SESSION2 git worktree"
+  else
+    fail "sync-clone failed" "${sync_out}"
+  fi
+  h1=$(git -C "${s1}" rev-parse HEAD)
+  h2=$(git -C "${s2b}" rev-parse HEAD)
+  if [ "${h1}" = "${h2}" ] && [ "${h1}" = "${head}" ]; then
+    pass "SESSION1 and SESSION2 share Checkpoint HEAD"
+  else
+    fail "HEAD mismatch" "h1=${h1} h2=${h2} head=${head}"
+  fi
+  # Distinct paths (clean device simulation)
+  if [ "${s1}" != "${s2b}" ]; then
+    pass "SESSION2 path differs from SESSION1"
+  else
+    fail "SESSION2 must not be SESSION1"
+  fi
+  if [ "$(jq -r '.phases.clean_clone.status' "${s1}/long-horizon-log.json")" = "ok" ] \
+     && [ "$(jq -r '.phases.checkpoint.status' "${s1}/long-horizon-log.json")" = "ok" ]; then
+    pass "log marks checkpoint + clean_clone ok"
+  else
+    fail "log phases not updated" "$(cat "${s1}/long-horizon-log.json")"
+  fi
+  # SESSION2 must not be the same inode workdir — editing s1 after clone shouldn't be required
+  if grep -q 'session1-note' "${s2b}/TASK.md"; then
+    pass "clone contains Checkpoint content"
+  else
+    fail "clone missing session1 edits"
+  fi
+  rm -rf "${s1}" "${s2b}" "$(jq -r '.base // empty' "${s1}/long-horizon-log.json" 2>/dev/null)" 2>/dev/null || true
+  # s1 may already be deleted — best-effort cleanup via sync paths
+  rm -rf "${s2}" 2>/dev/null || true
+fi
+
 test_summary

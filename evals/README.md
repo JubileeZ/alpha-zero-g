@@ -58,3 +58,14 @@ cat "$WORKDIR/judge-result.json"
 ```
 
 Human calibration: `evals/judge/CALIBRATION.md`. Fixed model id in `evals/judge/config.json`.
+
+## Long-Horizon
+
+```bash
+bash evals/run-long-horizon.sh bug-fix core
+# Session1 in IDE A (new chat) → Checkpoint commit →
+bash evals/run-long-horizon.sh bug-fix core --sync-clone "$SESSION1"
+# Session2 clean clone in IDE B (other IDE, new chat) → assertions/check.sh
+```
+
+See `evals/long-horizon/README.md` and `checklist.md`.
