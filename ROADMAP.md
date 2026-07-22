@@ -26,7 +26,9 @@ Opt-in only. **No default promotion** until Delivery Cost measurable + held-out 
 
 Done: `azg fable sync --experimental` · `core+fable` treatment · compare/smoke · one live `bug-fix` pair (assertions OK, cost n/a).
 
-Parked: promote to default · reopen #52–55 · further live pairs optional (process only).
+Parked: promote to default · further live pairs optional (process only).
+
+Issues **#52–#55**: close as not planned (parked); reopen or new ticket when resuming.
 
 Handoff if resumed: [`evals/pilot/LIVE-AGENT-COMPARE.md`](evals/pilot/LIVE-AGENT-COMPARE.md) · log [`evals/pilot/live-compare-log.md`](evals/pilot/live-compare-log.md)
 
