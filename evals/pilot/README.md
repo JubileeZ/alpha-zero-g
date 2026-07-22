@@ -2,9 +2,9 @@
 
 - Prereg: [`PREREG.md`](PREREG.md) / [`prereg.json`](prereg.json)
 - Held-out: [`HELD-OUT.md`](HELD-OUT.md)
-- Exploratory log: [`exploratory-log.jsonl`](exploratory-log.jsonl)
-- Confirmation / held-out logs: `confirmation-log.jsonl`, `held-out-log.jsonl`
+- Exploratory / confirmation / held-out logs: `*-log.jsonl`
 - Gate: `bash evals/analyze-pilot-gate.sh`
+- Fable live compare (parked promote): [`LIVE-AGENT-COMPARE.md`](LIVE-AGENT-COMPARE.md) · [`live-compare-log.md`](live-compare-log.md)
 
 ```bash
 # After both arms of a pair finished + scorecards + optional judge:

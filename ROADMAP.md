@@ -1,6 +1,6 @@
 # Alpha-Zero-G — Roadmap
 
-**Status:** v4 scaffolding complete · Phases 7–9 tooling done · **Active: Phase 10 — Fable (opt-in sync; claim still blocked)**
+**Status:** v4 complete · Phases 7–9 tooling done · **Phase 10 parked** (Fable opt-in only; no default promote)
 
 > Zero-context: [`docs/AGENT-ONBOARDING.md`](docs/AGENT-ONBOARDING.md) · Spec: [`docs/REVAMP-SPEC.md`](docs/REVAMP-SPEC.md) · Reality: [`docs/agents/current-state.md`](docs/agents/current-state.md) · Glossary: [`CONTEXT.md`](CONTEXT.md)
 
@@ -14,40 +14,21 @@ ADRs: [`0004-repo-native-reliability-boundary`](docs/adr/0004-repo-native-reliab
 
 ---
 
-## Phase 0–6 — v4 Revamp (complete)
+## Phase 0–9 — complete
 
-Harness-only templates, hooks, apply/setup profiles, tests, VERSION 4.0.x. Details: archived checklists in git history / REVAMP-SPEC.
-
----
-
-## Phase 7 — Portable Core (complete)
-
-`tests/verify.sh` gate · Work Packet + Checkpoint freshness · setup `jq` preflight · Cursor `.mdc` + hooks adapters · `azg apply` creates task/Cursor + refreshes AZG-owned hooks/rules/verify. Tests: `bash tests/test-phase10.sh` (+ `test-phase7.sh`).
+v4 harness · Portable Core · Evidence (`run-all` + CI) · Core Pilot suite (fixtures, Blind Judge, Long-Horizon, prereg/held-out gate). Claim only after confirmation+held-out + `--apply-claim`.
 
 ---
 
-## Phase 8 — Evidence Trustworthy (complete)
+## Phase 10 — Fable (parked)
 
-Aggregate `tests/run-all.sh` + CI matrix · host-contract smoke (`tests/host-contract-smoke.sh` + manual doc) · spawn-budget on PreToolUse (ADR 0006) · mutation verify (`tests/test-mutation-verify.sh`).
+Opt-in only. **No default promotion** until Delivery Cost measurable + held-out claim (`reliability_claim_allowed`) + live deltas favor core+fable (ADR 0005).
 
----
+Done: `azg fable sync --experimental` · `core+fable` treatment · compare/smoke · one live `bug-fix` pair (assertions OK, cost n/a).
 
-## Phase 9 — Core Pilot (complete)
+Parked: promote to default · reopen #52–55 · further live pairs optional (process only).
 
-Evaluation Suite + paired runner/scorecard · Blind Judge · Long-Horizon · exploratory prereg (N=9/held-out N=6) · analyze-pilot-gate. Claim only after confirmation+held-out green + --apply-claim.
-
-
----
-
-## Phase 10 — Fable (optional treatment)
-
-Blocked from **default promotion** until Phase 9 held-out claim (`reliability_claim_allowed`).
-
-- [x] Bundle Fable skills as opt-in project skills (`azg fable sync`)
-- [x] Compare core vs core+Fable on same Evaluation Suite (`evals/compare-core-fable.sh` + `core+fable` treatment)
-- [x] Reference smoke: both arms assertion-green (`evals/run-compare-smoke.sh` · not a claim)
-- [ ] Promote to default only if Task Success / Delivery Cost improves without portability regression (needs live agent+Fable + held-out claim)
-- [ ] Issues #52–#55 reopened/retargeted only after this gate
+Handoff if resumed: [`evals/pilot/LIVE-AGENT-COMPARE.md`](evals/pilot/LIVE-AGENT-COMPARE.md) · log [`evals/pilot/live-compare-log.md`](evals/pilot/live-compare-log.md)
 
 ---
 

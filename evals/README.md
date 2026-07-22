@@ -20,7 +20,7 @@ bash evals/run-compare-smoke.sh           # reference-fix smoke (not a claim)
 # Artifact: evals/pilot/compare-core-fable-smoke.json
 ```
 
-Smoke applies fixture **reference** solutions to both arms — portability check only. Live agent runs: **[`evals/pilot/LIVE-AGENT-COMPARE.md`](pilot/LIVE-AGENT-COMPARE.md)** (device handoff).
+Smoke applies fixture **reference** solutions to both arms — portability only. Live agent how-to: [`evals/pilot/LIVE-AGENT-COMPARE.md`](pilot/LIVE-AGENT-COMPARE.md) (**promote parked** until Delivery Cost + claim).
 
 ## Prepare a paired run
 

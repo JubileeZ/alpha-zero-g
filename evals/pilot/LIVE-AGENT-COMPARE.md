@@ -1,7 +1,8 @@
 # Live agent compare — detailed step-by-step
 
-**Open this file first** on any device/IDE after `git pull`.  
-Root `task.md` is the short Work Packet; **this file is the full how-to**.
+> **Parked (2026-07-22):** No Fable default promotion until Delivery Cost is trackable + held-out claim. Optional process practice only. See `ROADMAP.md` Phase 10 · `live-compare-log.md`.
+
+**Open this file** when resuming live pairs. Root Work Packet may be absent when parked — use `docs/agents/current-state.md` + this guide.
 
 ---
 
