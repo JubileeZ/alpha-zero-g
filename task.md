@@ -1,23 +1,20 @@
 # Active Task: Phase 10 Fable — live agent compare
 
-- **Status:** In Progress
-- **Objective:** Live agent core vs core+fable pairs; promote only after held-out claim
-- **Acceptance:** Logged live pairs + deltas; no default Fable until claim + better success/cost
+- **Status:** In Progress · **no default promotion**
+- **Objective:** Continue optional live pairs for process signal only; do not promote without Delivery Cost + held-out claim
+- **Acceptance:** Promote blocked until measurable cost + claim gate
 - **Issue/Ticket:** Phase 10 · #52–55 paused
 
 ## Work Packet (SFDBN)
 
-- **Status:** First live pair done — bug-fix both arms assertion OK
-- **Files:** `evals/pilot/live-compare-log.md`, `evals/pilot/live-pairs/bug-fix-2026-07-22/`
-- **Decisions:** Both success=1; Delivery Cost not measured (0 placeholder); stub Fable; no promote
-- **Blocked:** Real delivery_cost/model ids; held-out claim; remaining fixtures
-- **Next:** Optional fill model+cost for bug-fix; then live pair `scoped-change`
+- **Status:** bug-fix live pair both assertion OK; cost untracked by operator
+- **Files:** `evals/pilot/live-compare-log.md`, `live-pairs/bug-fix-2026-07-22/`
+- **Decisions:** **Do not promote** Fable to default without Delivery Cost tracking; stub Fable; ADR 0005 stands
+- **Blocked:** Cost instrumentation / operator spend UI; held-out claim
+- **Next:** Optional more fixtures for process practice only — or pause Phase 10 promote track
 
 ## Todo
-- [x] azg fable sync opt-in
-- [x] compare harness + reference smoke
-- [x] handoff doc
 - [x] Live pair bug-fix (assertions)
-- [ ] Fill bug-fix delivery_cost + model id
-- [ ] Live pairs scoped-change, regression-feature
-- [ ] Promote decision (only after claim + live deltas)
+- [x] Explicit: no promote without cost data
+- [ ] Optional: scoped-change / regression-feature (process only)
+- [ ] Promote decision — blocked until cost + claim
