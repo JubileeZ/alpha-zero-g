@@ -28,7 +28,7 @@ Done: `azg fable sync --experimental` · `core+fable` treatment · compare/smoke
 
 Parked: promote to default · further live pairs optional (process only).
 
-Issues **#52–#55** closed as not planned (parked); reopen or new ticket when resuming.
+Issues **#52–#55**: closed as parked; reopen or new ticket when resuming.
 
 Handoff if resumed: [`evals/pilot/LIVE-AGENT-COMPARE.md`](evals/pilot/LIVE-AGENT-COMPARE.md) · log [`evals/pilot/live-compare-log.md`](evals/pilot/live-compare-log.md)
 
