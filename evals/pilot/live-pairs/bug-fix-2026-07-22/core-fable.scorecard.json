@@ -1,0 +1,14 @@
+{
+  "fixture_id": "bug-fix",
+  "treatment": "core+fable",
+  "task_success": 1,
+  "delivery_cost": 0,
+  "wall_time_sec": 300,
+  "interventions": 0,
+  "model": "unreported",
+  "ide": "cursor",
+  "operator": "phjenphithak",
+  "started_at": "2026-07-22T06:57:25Z",
+  "finished_at": "2026-07-22T07:30:51Z",
+  "notes": "live agent core+fable bug-fix; assertions OK; delivery_cost placeholder 0 (not measured); wall~approx"
+}
