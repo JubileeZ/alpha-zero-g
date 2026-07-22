@@ -16,9 +16,9 @@
 ## Resume (other device / other IDE)
 
 1. `git pull origin main`
-2. Read `evals/pilot/LIVE-AGENT-COMPARE.md`
-3. Git Bash: `bash evals/run-pair.sh bug-fix core` → open WORKDIR in new window → new agent chat
-4. Score → repeat `core+fable` same model → log row in `evals/pilot/live-compare-log.md`
+2. Open **`evals/pilot/LIVE-AGENT-COMPARE.md`** (full step-by-step)
+3. Follow §2 core → §3 core+fable for `bug-fix`
+4. Log row in `evals/pilot/live-compare-log.md`
 
 ## Todo
 - [x] azg fable sync opt-in
