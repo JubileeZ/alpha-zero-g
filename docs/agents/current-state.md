@@ -52,7 +52,8 @@
 
 1. Mock `HOME` in tests — setup writes under `~/.gemini/`.
 2. `jq` required for setup/apply; Windows Git Bash may need WinGet Links on `PATH`.
-3. Do not promote Fable without Delivery Cost + held-out claim (ADR 0005). Issues #52–55 intended closed (parked); reopen/new ticket to resume.
+3. Do not promote Fable without Delivery Cost + held-out claim (ADR 0005). Issues #52–55 closed (parked); reopen/new ticket to resume.
+7. GitHub issue ops without `gh` login: try portable/`gh`; else `git credential fill` for `host=github.com` → `GH_TOKEN`; else ask the user. Never print the token.
 4. Live solves: open `run-pair` WORKDIR, not harness repo root.
 5. `azg apply` refreshes AZG-owned files; custom hooks/skills not in template stay.
 6. Spawn-budget enforce is PreToolUse (ADR 0006), not SubagentStart.
