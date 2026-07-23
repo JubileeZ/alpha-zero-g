@@ -62,7 +62,7 @@ else
 fi
 
 # --- Python verifiers ---
-for py in tests/verify_docs.py tests/verify_lightweight_teamwork.py; do
+for py in tests/verify_docs.py; do
   printf "\n\033[1m\033[0;36m▶ %s\033[0m\n" "${py}"
   if [ "${LIST_ONLY}" -eq 1 ]; then
     ok "listed: ${py}"

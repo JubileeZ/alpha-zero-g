@@ -68,10 +68,19 @@ assert_exit "verify.sh exits non-zero for incomplete Work Packet" 1 bash tests/v
 
 section "6. setup preflight requires jq"
 
-# Hide real jq: PATH with only core Git bins (no WinGet Links / Packages)
-_hide_path="/usr/bin:/bin"
-_setup_out="$(cd "${TEMP_WORKSPACE}" && env -u PATH PATH="${_hide_path}" "${AZG}" setup 2>&1)" || _setup_rc=$?
+# Hide real jq by constructing PATH without jq
+_no_jq_dir="$(mktemp -d)"
+for p in /bin/* /usr/bin/* /usr/local/bin/* /opt/homebrew/bin/*; do
+  n="$(basename "$p")"
+  if [ "$n" != "jq" ] && [ -x "$p" ] && [ ! -e "${_no_jq_dir}/$n" ]; then
+    ln -s "$p" "${_no_jq_dir}/$n" 2>/dev/null || true
+  fi
+done
+_setup_out="$(cd "${TEMP_WORKSPACE}" && env -u PATH PATH="${_no_jq_dir}" "${AZG}" setup 2>&1)" || _setup_rc=$?
 _setup_rc="${_setup_rc:-0}"
+find "${_no_jq_dir}" -type l -delete 2>/dev/null || true
+rmdir "${_no_jq_dir}" 2>/dev/null || true
+
 if [ "${_setup_rc}" -ne 0 ] && echo "${_setup_out}" | grep -qi 'jq'; then
   pass "azg setup fails fast when jq missing"
 else
