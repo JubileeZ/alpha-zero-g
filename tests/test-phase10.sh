@@ -186,6 +186,39 @@ else
   fail "abandoned packet without checkboxes must not count as finished" "got: ${_cp_nb}"
 fi
 
+# Non-markdown file in .agents/work-packets/ is rejected by commit-gate
+touch .agents/work-packets/sneak.py
+git add .agents/work-packets/sneak.py
+_cp_sneak=$(echo "${commit_json}" | bash .agents/hooks/commit-gate.sh)
+if echo "${_cp_sneak}" | grep -qE '"decision"[[:space:]]*:[[:space:]]*"deny"' && echo "${_cp_sneak}" | grep -qi 'non-markdown'; then
+  pass "commit-gate rejects non-markdown file in work-packets"
+else
+  fail "commit-gate must reject non-markdown file in work-packets" "got: ${_cp_sneak}"
+fi
+rm -f .agents/work-packets/sneak.py
+git rm -f --cached .agents/work-packets/sneak.py 2>/dev/null || true
+
+# commit-scan classifies non-markdown as code
+source .agents/hooks/commit-scan.sh
+azg_commit_classify_paths <<EOF
+.agents/work-packets/sneak.py
+EOF
+if [ "${AZG_COMMIT_HAS_CODE}" = true ] && [ "${AZG_COMMIT_HAS_PACKET}" = false ]; then
+  pass "commit-scan classifies non-markdown in work-packets as code"
+else
+  fail "commit-scan must classify non-markdown in work-packets as code" "has_code=${AZG_COMMIT_HAS_CODE} has_packet=${AZG_COMMIT_HAS_PACKET}"
+fi
+
+# Cursor commit-verify rejects non-markdown file
+touch .agents/work-packets/sneak.py
+_cursor_cv_out=$(echo '{"command":"git commit -m \"test\""}' | bash .cursor/hooks/commit-verify.sh)
+if echo "${_cursor_cv_out}" | grep -qE '"permission"[[:space:]]*:[[:space:]]*"deny"' && echo "${_cursor_cv_out}" | grep -qi 'non-markdown'; then
+  pass "Cursor commit-verify rejects non-markdown file in work-packets"
+else
+  fail "Cursor commit-verify must reject non-markdown file in work-packets" "got: ${_cursor_cv_out}"
+fi
+rm -f .agents/work-packets/sneak.py
+
 section "10. azg apply refreshes AZG-owned hooks"
 
 cd "${TEMP_WORKSPACE}"

@@ -77,6 +77,38 @@ assert_output "Blocks git checkout on hooks.json" \
   '{"decision":"deny","reason":"Modifying safety-gate configuration or hooks is not allowed. Apply edits to these files manually if needed."}' \
   run_custom_hook '{"toolCall":{"name":"run_command","args":{"CommandLine":"git checkout -- .agents/hooks.json"}}}'
 
+assert_output "Allows write_to_file to work packet markdown" \
+  '{"decision":"allow"}' \
+  run_custom_hook '{"toolCall":{"name":"write_to_file","args":{"TargetFile":"/workspace/.agents/work-packets/projection-parity.md","CodeContent":"# Test"}}}'
+
+assert_output "Allows write_to_file to handoff pointer" \
+  '{"decision":"allow"}' \
+  run_custom_hook '{"toolCall":{"name":"write_to_file","args":{"TargetFile":"/workspace/.agents/handoff-pointer","CodeContent":"projection-parity"}}}'
+
+assert_output "Blocks write_to_file to work-packets python script" \
+  '{"decision":"deny","reason":"Modifying safety-gate configuration or non-packet files in .agents is not allowed. Only .agents/work-packets/*.md and .agents/handoff-pointer may be edited by agents."}' \
+  run_custom_hook '{"toolCall":{"name":"write_to_file","args":{"TargetFile":"/workspace/.agents/work-packets/sneak.py","CodeContent":"print(1)"}}}'
+
+assert_output "Blocks write_to_file to work-packets shell script" \
+  '{"decision":"deny","reason":"Modifying safety-gate configuration or non-packet files in .agents is not allowed. Only .agents/work-packets/*.md and .agents/handoff-pointer may be edited by agents."}' \
+  run_custom_hook '{"toolCall":{"name":"write_to_file","args":{"TargetFile":"/workspace/.agents/work-packets/sneak.sh","CodeContent":"#!/bin/sh"}}}'
+
+assert_output "Blocks command executing script from .agents" \
+  '{"decision":"deny","reason":"Executing scripts from .agents/work-packets is not allowed."}' \
+  run_custom_hook '{"toolCall":{"name":"run_command","args":{"CommandLine":"bash .agents/work-packets/sneak.sh"}}}'
+
+assert_output "Blocks command direct executing script from .agents" \
+  '{"decision":"deny","reason":"Executing scripts from .agents/work-packets is not allowed."}' \
+  run_custom_hook '{"toolCall":{"name":"run_command","args":{"CommandLine":"./.agents/work-packets/sneak.sh"}}}'
+
+assert_output "Blocks command touch creating non-md file in .agents" \
+  '{"decision":"deny","reason":"Modifying safety-gate configuration or hooks is not allowed. Apply edits to these files manually if needed."}' \
+  run_custom_hook '{"toolCall":{"name":"run_command","args":{"CommandLine":"touch .agents/work-packets/sneak.py"}}}'
+
+assert_output "Blocks chmod on .agents" \
+  '{"decision":"deny","reason":"Modifying permissions under .agents or .cursor is not allowed."}' \
+  run_custom_hook '{"toolCall":{"name":"run_command","args":{"CommandLine":"chmod +x .agents/work-packets/task.md"}}}'
+
 section "4. Cursor safety adapter (policy was agy-only until wired)"
 
 CURSOR_ADAPTER="${REPO_ROOT}/.cursor/hooks/block-destructive-ops.sh"

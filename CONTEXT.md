@@ -65,8 +65,8 @@ The one-per-machine install (`azg setup`): shared vendor skill packs into each I
 _Avoid_: Manual skill import, Cursor-only ritual, Antigravity-only setup, skills-cursor, wiping ~/.cursor/rules
 
 **Work Packet**:
-Git-synced SFDBN document for one task: objective, acceptance, status, files, decisions, blockers, next. A repo may hold several at once. Identified by Packet ID. Deleted when that task is finished — leftovers confuse later bind.
-_Avoid_: Handoff file, task list, singleton task.md as the only packet, host session id, empty stub left after done
+Git-synced SFDBN document for one task: objective, acceptance, status, files, decisions, blockers, next. Stored strictly as a markdown file (`.agents/work-packets/<packet-id>.md`); executable scripts or code are forbidden. A repo may hold several at once. Identified by Packet ID. Deleted when that task is finished — leftovers confuse later bind.
+_Avoid_: Handoff file, task list, singleton task.md as the only packet, host session id, empty stub left after done, non-markdown file in work-packets
 
 **Packet ID**:
 Repo-native human kebab slug that names a Work Packet. Travels via git to any device or IDE.
@@ -193,8 +193,8 @@ Unicode foreground glyphs and separators for the Antigravity statusline (single 
 _Avoid_: Status bar theme, icon mode, nerd-font preset.
 
 **Safety Hook**:
-An interceptor script run automatically before any agent tool call to validate command patterns and file targets, preventing unauthorized alterations or system damage.
-_Avoid_: Guardrail, safety command, block policy.
+An interceptor script run automatically before any agent tool call to validate command patterns and file targets, preventing unauthorized alterations or system damage. Enforces Zero Self-Modification Policy on hooks and configs while permitting markdown Work Packets.
+_Avoid_: Guardrail, safety command, block policy, denying work-packet markdown writes.
 
 **Prove Stance**:
 Always-on discipline that treats a finished report as claims to re-observe (diff, rerun, open artifact) before presenting done, ending in VERIFIED, CAVEATS, or REFUTED.
