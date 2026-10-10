@@ -86,16 +86,32 @@ assert_output "Allows write_to_file to handoff pointer" \
   run_custom_hook '{"toolCall":{"name":"write_to_file","args":{"TargetFile":"/workspace/.agents/handoff-pointer","CodeContent":"projection-parity"}}}'
 
 assert_output "Blocks write_to_file to work-packets python script" \
-  '{"decision":"deny","reason":"Modifying safety-gate configuration or non-packet files in .agents is not allowed. Only .agents/work-packets/*.md and .agents/handoff-pointer may be edited by agents."}' \
+  '{"decision":"deny","reason":"Modifying safety-gate configuration or non-whitelisted files in .agents is not allowed. Only .agents/work-packets/*.md, .agents/handoff-pointer, and .agents/skills/ may be edited by agents."}' \
   run_custom_hook '{"toolCall":{"name":"write_to_file","args":{"TargetFile":"/workspace/.agents/work-packets/sneak.py","CodeContent":"print(1)"}}}'
 
 assert_output "Blocks write_to_file to work-packets shell script" \
-  '{"decision":"deny","reason":"Modifying safety-gate configuration or non-packet files in .agents is not allowed. Only .agents/work-packets/*.md and .agents/handoff-pointer may be edited by agents."}' \
+  '{"decision":"deny","reason":"Modifying safety-gate configuration or non-whitelisted files in .agents is not allowed. Only .agents/work-packets/*.md, .agents/handoff-pointer, and .agents/skills/ may be edited by agents."}' \
   run_custom_hook '{"toolCall":{"name":"write_to_file","args":{"TargetFile":"/workspace/.agents/work-packets/sneak.sh","CodeContent":"#!/bin/sh"}}}'
 
-assert_output "Blocks command executing script from .agents" \
+assert_output "Allows write_to_file to skill SKILL.md" \
+  '{"decision":"allow"}' \
+  run_custom_hook '{"toolCall":{"name":"write_to_file","args":{"TargetFile":"/workspace/.agents/skills/progress-updates/SKILL.md","CodeContent":"# Skill"}}}'
+
+assert_output "Allows write_to_file to skill script" \
+  '{"decision":"allow"}' \
+  run_custom_hook '{"toolCall":{"name":"write_to_file","args":{"TargetFile":"/workspace/.agents/skills/my-skill/scripts/run.py","CodeContent":"print(1)"}}}'
+
+assert_output "Allows write_to_file to cursor rule" \
+  '{"decision":"allow"}' \
+  run_custom_hook '{"toolCall":{"name":"write_to_file","args":{"TargetFile":"/workspace/.cursor/rules/my-rule.mdc","CodeContent":"rule"}}}'
+
+assert_output "Blocks command executing script from .agents work-packets" \
   '{"decision":"deny","reason":"Executing scripts from .agents/work-packets is not allowed."}' \
   run_custom_hook '{"toolCall":{"name":"run_command","args":{"CommandLine":"bash .agents/work-packets/sneak.sh"}}}'
+
+assert_output "Allows command executing script from .agents skills" \
+  '{"decision":"allow"}' \
+  run_custom_hook '{"toolCall":{"name":"run_command","args":{"CommandLine":"bash .agents/skills/my-skill/scripts/run.sh"}}}'
 
 assert_output "Blocks command direct executing script from .agents" \
   '{"decision":"deny","reason":"Executing scripts from .agents/work-packets is not allowed."}' \
@@ -104,6 +120,14 @@ assert_output "Blocks command direct executing script from .agents" \
 assert_output "Blocks command touch creating non-md file in .agents" \
   '{"decision":"deny","reason":"Modifying safety-gate configuration or hooks is not allowed. Apply edits to these files manually if needed."}' \
   run_custom_hook '{"toolCall":{"name":"run_command","args":{"CommandLine":"touch .agents/work-packets/sneak.py"}}}'
+
+assert_output "Allows command touch creating file in .agents skills" \
+  '{"decision":"allow"}' \
+  run_custom_hook '{"toolCall":{"name":"run_command","args":{"CommandLine":"touch .agents/skills/my-skill/SKILL.md"}}}'
+
+assert_output "Allows command touch creating file in .cursor rules" \
+  '{"decision":"allow"}' \
+  run_custom_hook '{"toolCall":{"name":"run_command","args":{"CommandLine":"touch .cursor/rules/my-rule.mdc"}}}'
 
 assert_output "Blocks chmod on .agents" \
   '{"decision":"deny","reason":"Modifying permissions under .agents or .cursor is not allowed."}' \

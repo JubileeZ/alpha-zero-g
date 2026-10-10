@@ -193,8 +193,8 @@ Unicode foreground glyphs and separators for the Antigravity statusline (single 
 _Avoid_: Status bar theme, icon mode, nerd-font preset.
 
 **Safety Hook**:
-An interceptor script run automatically before any agent tool call to validate command patterns and file targets, preventing unauthorized alterations or system damage. Enforces Zero Self-Modification Policy on hooks and configs while permitting markdown Work Packets.
-_Avoid_: Guardrail, safety command, block policy, denying work-packet markdown writes.
+Interceptor script run before agent tool call to validate command patterns and file targets, preventing unauthorized alterations or system damage. Enforces Zero Self-Modification Policy on hooks and configs while permitting markdown Work Packets, handoff pointer, and project skills (.agents/skills/).
+_Avoid_: Guardrail, safety command, block policy, denying work-packet markdown or skill writes.
 
 **Prove Stance**:
 Always-on discipline that treats a finished report as claims to re-observe (diff, rerun, open artifact) before presenting done, ending in VERIFIED, CAVEATS, or REFUTED.

@@ -22,7 +22,7 @@
 | Evaluation Suite | `evals/traps/scenarios/` + `score_outcome.py` + runners + docker | ADR 0012+0013 machinery; **0019** Behavior Corpus |
 | Aggregate / CI | `tests/run-all.sh`, `.github/workflows/ci.yml` | **ubuntu + macos** only; **no** `test-lite`; `azg_python` |
 | Portable gate | `templates/project/tests/verify.sh` | Harness integrity |
-| ADRs | `docs/adr/` | **0022** Work Packets + Stop retired; **0021** Principles v2; **0019** Behavior Corpus |
+| ADRs | `docs/adr/` | **0024** Skills safety boundary; **0023** Work Packet safety; **0022** Work Packets + Stop retired; **0021** Principles v2; **0019** Behavior Corpus |
 | Glossary | `CONTEXT.md` | |
 | Lean continuity | `AGENTS.md` Session start | Always-on lean set |
 | Project skills | `.agents/skills/progress-updates` + matching `.cursor/rules/*.mdc` | Agent-requestable |
