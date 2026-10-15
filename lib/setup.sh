@@ -173,7 +173,7 @@ _get_requested_skills() {
     return 0
   fi
   # Default curated active set requested by operator when no manifest exists
-  printf '%s\n' "grill-with-docs" "implement" "wayfinder" "writing-for-agents"
+  printf '%s\n' "grill-with-docs" "implement" "retro" "wayfinder" "writing-for-agents"
 }
 
 _find_skill_info() {

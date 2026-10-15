@@ -47,8 +47,9 @@ fi
 # 1b. Active vendor install (default curated set with prerequisites)
 if [ -d "${TEMP_HOME}/.gemini/config/skills/tdd" ] && \
    [ -d "${TEMP_HOME}/.gemini/config/skills/grill-with-docs" ] && \
+   [ -d "${TEMP_HOME}/.gemini/config/skills/retro" ] && \
    [ -d "${TEMP_HOME}/.gemini/config/skills/writing-for-agents" ]; then
-  pass "setup copies active skills (tdd, grill-with-docs, writing-for-agents)"
+  pass "setup copies active skills (tdd, grill-with-docs, retro, writing-for-agents)"
 else
   fail "setup missing some skills"
 fi
