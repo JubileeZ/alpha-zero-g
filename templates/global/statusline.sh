@@ -76,9 +76,17 @@ format_time() {
   local day=$(( total_sec / 86400 ))
 
   if [ "$day" -gt 0 ]; then
-    echo "${day}d ${hr}h"
+    if [ "$hr" -gt 0 ]; then
+      echo "${day}d${hr}h"
+    else
+      echo "${day}d"
+    fi
   elif [ "$hr" -gt 0 ]; then
-    echo "${hr}h ${min}m"
+    if [ "$min" -gt 0 ]; then
+      echo "${hr}h${min}m"
+    else
+      echo "${hr}h"
+    fi
   elif [ "$min" -gt 0 ]; then
     echo "${min}m"
   else
@@ -136,8 +144,6 @@ OUT_DISPLAY=$(format_tokens "$OUTPUT_TOKENS")
 # ---------------------------------------------------------------------------
 # 4. Fetch Quota Usage & State Specs
 # ---------------------------------------------------------------------------
-# Try stdin JSON first; fall back to external binary if available
-# ponytail: single jq call for stdin, command -v guard avoids fork when binary missing
 QUOTA_JSON=$(echo "$input" | jq -r '.quota // empty' 2>/dev/null)
 if [ -z "$QUOTA_JSON" ] || [ "$QUOTA_JSON" = "null" ]; then
   QUOTA_JSON="{}"
@@ -161,6 +167,101 @@ if [ "$QUOTA_JSON" != "{}" ]; then
   else
     jq -n --arg h "$CURRENT_HASH" --arg t "$NOW" '{hash: $h, time: $t}' > "$CACHE_FILE" 2>/dev/null
   fi
+fi
+
+# Active Model Detection
+ACTIVE_FAMILY=""
+M_LOWER=$(echo "${MODEL_NAME}" | tr '[:upper:]' '[:lower:]')
+if echo "$M_LOWER" | grep -q "argon"; then
+  ACTIVE_FAMILY="argon"
+elif echo "$M_LOWER" | grep -qE "claude|sonnet|opus|haiku"; then
+  ACTIVE_FAMILY="3p"
+fi
+
+# Dynamic Quota Families Extraction
+declare -a PARSED_FAMILIES=()
+if [ "$QUOTA_JSON" != "{}" ]; then
+  JQ_PARSER='
+    def parse_items:
+      if .models and (.models | length > 0) then
+        .models[] | {
+          family: (
+            if (.label | ascii_downcase | contains("claude")) then "3p"
+            elif (.label | ascii_downcase | contains("argon")) then "argon"
+            elif (.label | ascii_downcase | contains("gemini")) then "gemini"
+            else (.label | ascii_downcase | split(" ")[0]) end
+          ),
+          window: "primary",
+          fraction: (.remainingPercentage // 1.0),
+          exhausted: (.isExhausted // false),
+          reset_sec: (((.timeUntilResetMs // 0) / 1000) - ($e | tonumber) | if . < 0 then 0 else . end)
+        }
+      elif (. | type == "object") then
+        to_entries[] | select(.key != "promptCredits") | {
+          family: (
+            .key | split("-")[0] | ascii_downcase
+          ),
+          window: (
+            if (.key | endswith("-weekly")) then "weekly"
+            elif (.key | endswith("-5h")) then "5h"
+            else "primary" end
+          ),
+          fraction: (.value.remaining_fraction // 1.0),
+          exhausted: ((.value.remaining_fraction // 1.0) <= 0),
+          reset_sec: (((.value.reset_in_seconds // 0)) - ($e | tonumber) | if . < 0 then 0 else . end)
+        }
+      else empty end;
+
+    [parse_items] | group_by(.family)[] | 
+      ((.[] | select(.window != "weekly")) // .[0]) as $prim |
+      (if (. | map(select(.window == "weekly")) | length > 0) and ($prim.window != "weekly") then (.[] | select(.window == "weekly")) else null end) as $wk |
+      [
+        .[0].family,
+        (($prim.fraction * 100) | floor),
+        ($prim.exhausted),
+        ($prim.reset_sec | floor),
+        (if $wk then (($wk.fraction * 100) | floor) else -1 end),
+        (if $wk then ($wk.reset_sec | floor) else -1 end),
+        (if $wk then ($wk.exhausted) else false end),
+        ($prim.window == "weekly")
+      ] | @tsv
+  '
+  while IFS= read -r line; do
+    [ -n "$line" ] && PARSED_FAMILIES+=("$line")
+  done < <(echo "$QUOTA_JSON" | jq -r --arg e "$ELAPSED_SEC" "$JQ_PARSER" 2>/dev/null || true)
+fi
+
+# Fallback active family if still empty: check non-gemini families first, then gemini
+if [ -z "$ACTIVE_FAMILY" ]; then
+  for item in "${PARSED_FAMILIES[@]+"${PARSED_FAMILIES[@]}"}"; do
+    fam="${item%%$'\t'*}"
+    if [ -n "$fam" ] && [ "$fam" != "gemini" ] && echo "$M_LOWER" | grep -q "$fam"; then
+      ACTIVE_FAMILY="$fam"
+      break
+    fi
+  done
+  if [ -z "$ACTIVE_FAMILY" ] && echo "$M_LOWER" | grep -q "gemini"; then
+    ACTIVE_FAMILY="gemini"
+  fi
+fi
+
+# Order families: Active family first
+ORDERED_FAMILIES=()
+for item in "${PARSED_FAMILIES[@]+"${PARSED_FAMILIES[@]}"}"; do
+  fam="${item%%$'\t'*}"
+  if [ "$fam" = "$ACTIVE_FAMILY" ]; then
+    ORDERED_FAMILIES=("$item" "${ORDERED_FAMILIES[@]+"${ORDERED_FAMILIES[@]}"}")
+  else
+    ORDERED_FAMILIES+=("$item")
+  fi
+done
+
+CREDITS_REM=$(echo "$QUOTA_JSON" | jq -r '.promptCredits.remainingPercentage // empty' 2>/dev/null)
+CREDITS_AV=$(echo "$QUOTA_JSON" | jq -r '.promptCredits.available // empty' 2>/dev/null)
+CREDITS_MON=$(echo "$QUOTA_JSON" | jq -r '.promptCredits.monthly // empty' 2>/dev/null)
+CR_PCT_VAL=""
+if [ -n "$CREDITS_REM" ] && [ "$CREDITS_REM" != "null" ] && [ "$CREDITS_REM" != "" ]; then
+  CR_PCT_VAL=$(echo "$CREDITS_REM" | awk '{print int($1 * 100)}')
 fi
 
 # Extract active elapsed time if present
@@ -209,188 +310,23 @@ case "${STATE}" in
     ;;
 esac
 
-# Context parsing - Responsive layout
-CONTEXT_TXT=""
-CONTEXT_BG=""
-CONTEXT_FG=255
-CONTEXT_CLR=""
-
-# Choose labels / symbols based on width tier
-# Wide (>=100): "Context: 48.3k (45.2k↓/3.1k↑) · 52% ⚠"
-# Medium (65-99): "Ctx: 52% ⚠"
-# Narrow (<65): "52% ⚠"
-if [ "$WIDTH" -ge 100 ]; then
-  CTX_PREFIX="Context: ${TKN_DISPLAY} (${IN_DISPLAY}↓/${OUT_DISPLAY}↑) | "
-elif [ "$WIDTH" -ge 65 ]; then
-  CTX_PREFIX="Ctx: "
-else
-  CTX_PREFIX=""
-fi
-
-CONTEXT_BAR=""
-if [ "$WIDTH" -ge 100 ]; then
-  FULL_BAR="██████████"
-  EMPTY_BAR="░░░░░░░░░░"
-  num_filled=$(( (INT_PCT + 5) / 10 ))
-  [ "$num_filled" -gt 10 ] && num_filled=10
-  num_empty=$(( 10 - num_filled ))
-  CONTEXT_BAR=" [${FULL_BAR:0:num_filled}${EMPTY_BAR:0:num_empty}]"
-fi
-
-case "$FINAL_SEV" in
-  3)
-    CONTEXT_TXT="${CTX_PREFIX}${INT_PCT}%${CONTEXT_BAR} ${WARN_CRITICAL}"
-    CONTEXT_BG=124
-    CONTEXT_CLR="${RED}"
-    ;;
-  2)
-    CONTEXT_TXT="${CTX_PREFIX}${INT_PCT}%${CONTEXT_BAR} ${WARN_DEGRADING}"
-    CONTEXT_BG=166
-    CONTEXT_CLR="${ORANGE}"
-    ;;
-  1)
-    CONTEXT_TXT="${CTX_PREFIX}${INT_PCT}%${CONTEXT_BAR} ${WARN_CAUTION}"
-    CONTEXT_BG=136
-    CONTEXT_CLR="${YELLOW}"
-    ;;
-  *)
-    CONTEXT_TXT="${CTX_PREFIX}${INT_PCT}%${CONTEXT_BAR}"
-    CONTEXT_BG=65
-    CONTEXT_CLR="${GREEN}"
-    ;;
-esac
-
-# Claude and Gemini info parsing
-CL_PCT_VAL=""
-CL_RESET_VAL=""
-CL_EXH_VAL=""
-GEM_PCT_VAL=""
-GEM_RESET_VAL=""
-GEM_EXH_VAL=""
-CREDITS_REM=""
-CREDITS_AV=""
-CREDITS_MON=""
-GMW_PCT_VAL=""
-GMW_EXH_VAL=""
-GMW_RESET_VAL=""
-CLW_PCT_VAL=""
-CLW_EXH_VAL=""
-CLW_RESET_VAL=""
-
-if [ -n "$QUOTA_JSON" ] && [ "$QUOTA_JSON" != "{}" ]; then
-  CLAUDE_INFO=$(echo "$QUOTA_JSON" | jq -r --arg elapsed "$ELAPSED_SEC" '
-    ($elapsed | tonumber) as $e |
-    if .models then
-      .models[]? | select(.label | ascii_downcase | contains("claude")) | 
-      ((.timeUntilResetMs / 1000) - $e) as $rem |
-      if $rem <= 0 then "100 false 0" else "\(.remainingPercentage) \(.isExhausted) \(($rem * 1000) | floor)" end
-    elif ."3p-5h" then
-      ."3p-5h" | 
-      (.reset_in_seconds - $e) as $rem |
-      if $rem <= 0 then "1 false 0" else "\(.remaining_fraction) \(.remaining_fraction <= 0) \(($rem * 1000) | floor)" end
-    else
-      empty
-    end
-  ' 2>/dev/null | head -n 1 || true)
-
-  GEMINI_INFO=$(echo "$QUOTA_JSON" | jq -r --arg elapsed "$ELAPSED_SEC" '
-    ($elapsed | tonumber) as $e |
-    if .models then
-      .models[]? | select(.label | ascii_downcase | contains("gemini")) | 
-      ((.timeUntilResetMs / 1000) - $e) as $rem |
-      if $rem <= 0 then "100 false 0" else "\(.remainingPercentage) \(.isExhausted) \(($rem * 1000) | floor)" end
-    elif ."gemini-5h" then
-      ."gemini-5h" | 
-      (.reset_in_seconds - $e) as $rem |
-      if $rem <= 0 then "1 false 0" else "\(.remaining_fraction) \(.remaining_fraction <= 0) \(($rem * 1000) | floor)" end
-    else
-      empty
-    end
-  ' 2>/dev/null | head -n 1 || true)
-
-  CLAUDE_WEEKLY=$(echo "$QUOTA_JSON" | jq -r --arg elapsed "$ELAPSED_SEC" '
-    ($elapsed | tonumber) as $e |
-    if ."3p-weekly" then
-      ."3p-weekly" | 
-      (.reset_in_seconds - $e) as $rem |
-      if $rem <= 0 then "1 false 0" else "\(.remaining_fraction) \(.remaining_fraction <= 0) \(($rem * 1000) | floor)" end
-    else empty end
-  ' 2>/dev/null | head -n 1 || true)
-
-  GEMINI_WEEKLY=$(echo "$QUOTA_JSON" | jq -r --arg elapsed "$ELAPSED_SEC" '
-    ($elapsed | tonumber) as $e |
-    if ."gemini-weekly" then
-      ."gemini-weekly" | 
-      (.reset_in_seconds - $e) as $rem |
-      if $rem <= 0 then "1 false 0" else "\(.remaining_fraction) \(.remaining_fraction <= 0) \(($rem * 1000) | floor)" end
-    else empty end
-  ' 2>/dev/null | head -n 1 || true)
-
-  if [ -n "${CLAUDE_INFO}" ]; then
-    read -r CL_PCT CL_EXH CL_RESET <<< "${CLAUDE_INFO}"
-    if [ -n "$CL_PCT" ] && [ "$CL_PCT" != "null" ]; then
-      CL_PCT_VAL=$(echo "$CL_PCT" | awk '{print int($1 * 100)}')
-      CL_EXH_VAL="$CL_EXH"
-      if [ -n "$CL_RESET" ] && [ "$CL_RESET" != "null" ] && [ "$CL_RESET" -gt 0 ] 2>/dev/null; then
-        CL_RESET_VAL=$(format_time "$CL_RESET")
-      fi
-      if [ -n "${CLAUDE_WEEKLY}" ]; then
-        read -r CLW_PCT CLW_EXH CLW_RESET <<< "${CLAUDE_WEEKLY}"
-        if [ -n "$CLW_PCT" ] && [ "$CLW_PCT" != "null" ]; then
-          CLW_PCT_VAL=$(echo "$CLW_PCT" | awk '{print int($1 * 100)}')
-          CLW_EXH_VAL="$CLW_EXH"
-          if [ -n "$CLW_RESET" ] && [ "$CLW_RESET" != "null" ] && [ "$CLW_RESET" -gt 0 ] 2>/dev/null; then
-            CLW_RESET_VAL=$(format_time "$CLW_RESET")
-          fi
-        fi
-      fi
-    fi
-  fi
-
-  if [ -n "${GEMINI_INFO}" ]; then
-    read -r GEM_PCT GEM_EXH GEM_RESET <<< "${GEMINI_INFO}"
-    if [ -n "$GEM_PCT" ] && [ "$GEM_PCT" != "null" ]; then
-      GEM_PCT_VAL=$(echo "$GEM_PCT" | awk '{print int($1 * 100)}')
-      GEM_EXH_VAL="$GEM_EXH"
-      if [ -n "$GEM_RESET" ] && [ "$GEM_RESET" != "null" ] && [ "$GEM_RESET" -gt 0 ] 2>/dev/null; then
-        GEM_RESET_VAL=$(format_time "$GEM_RESET")
-      fi
-      if [ -n "${GEMINI_WEEKLY}" ]; then
-        read -r GMW_PCT GMW_EXH GMW_RESET <<< "${GEMINI_WEEKLY}"
-        if [ -n "$GMW_PCT" ] && [ "$GMW_PCT" != "null" ]; then
-          GMW_PCT_VAL=$(echo "$GMW_PCT" | awk '{print int($1 * 100)}')
-          GMW_EXH_VAL="$GMW_EXH"
-          if [ -n "$GMW_RESET" ] && [ "$GMW_RESET" != "null" ] && [ "$GMW_RESET" -gt 0 ] 2>/dev/null; then
-            GMW_RESET_VAL=$(format_time "$GMW_RESET")
-          fi
-        fi
-      fi
-    fi
-  fi
-
-  CREDITS_REM=$(echo "$QUOTA_JSON" | jq -r '.promptCredits.remainingPercentage // empty')
-  CREDITS_AV=$(echo "$QUOTA_JSON" | jq -r '.promptCredits.available // empty')
-  CREDITS_MON=$(echo "$QUOTA_JSON" | jq -r '.promptCredits.monthly // empty')
-fi
-
-CR_PCT_VAL=""
-CR_AV_VAL=""
-CR_MON_VAL=""
-if [ -n "$CREDITS_REM" ] && [ "$CREDITS_REM" != "null" ] && [ "$CREDITS_REM" != "" ]; then
-  CR_PCT_VAL=$(echo "$CREDITS_REM" | awk '{print int($1 * 100)}')
-  CR_AV_VAL="$CREDITS_AV"
-  CR_MON_VAL="$CREDITS_MON"
-fi
-
 # ---------------------------------------------------------------------------
 # 5. Segment Assembly & Truncation Loop
 # ---------------------------------------------------------------------------
 # Flags for dynamic truncation
 SHOW_STATE="true"
-SHOW_CLAUDE="true"
-SHOW_GEMINI="true"
+SHOW_MODEL="true"
+SHOW_CONTEXT="true"
+SHOW_CONTEXT_BAR="true"
+SHOW_QUOTAS="true"
+SHOW_STANDBY_QUOTAS="true"
+SHOW_HEALTHY_STANDBY_TIMERS="true"
+FOLD_NON_CRITICAL_STANDBY_WEEKLY="false"
 SHOW_CREDITS="true"
 SHOW_VCS="true"
+
+ABBREV_CTX="false"
+ABBREV_NAMES="false"
 
 # Declare arrays for segments
 declare -a L_TXT
@@ -402,11 +338,6 @@ declare -a R_TXT
 declare -a R_BG
 declare -a R_FG
 declare -a R_CLR
-
-
-ABBREV_QUOTAS="false"
-ABBREV_CTX="false"
-ABBREV_NAMES="false"
 
 populate_segments() {
   L_TXT=() L_BG=() L_FG=() L_CLR=()
@@ -450,7 +381,6 @@ populate_segments() {
   if [ "$SHOW_STATE" = "true" ] && [ -n "${STATE_TXT}" ]; then
     local st_txt="${STATE_TXT}"
     if [ "$ABBREV_NAMES" = "true" ]; then
-      # Remove elapsed time if abbreviated heavily
       st_txt=$(echo "$st_txt" | sed -r 's/ [0-9]+[a-z]+//g')
     fi
     L_TXT+=("${st_txt}")
@@ -463,7 +393,10 @@ populate_segments() {
   if [ -n "${MODEL_NAME}" ] && [ "$SHOW_MODEL" != "false" ]; then
     local display_model="${MODEL_NAME}"
     if [ "$ABBREV_NAMES" = "true" ]; then
-      display_model="${display_model:0:9}.."
+      display_model=$(echo "$display_model" | sed 's/^Gemini //;s/^Claude //')
+      if [ ${#display_model} -gt 14 ]; then
+        display_model="${display_model:0:12}.."
+      fi
     fi
     L_TXT+=("Model: ${display_model}")
     L_BG+=(236)
@@ -475,120 +408,193 @@ populate_segments() {
   if [ "$SHOW_CONTEXT" != "false" ] && [ -n "${CONTEXT_PCT}" ]; then
     local ctx_prefix=""
     if [ "$ABBREV_CTX" = "false" ] && [ "$WIDTH" -ge 100 ]; then
-      ctx_prefix="Context: ${TKN_DISPLAY} (${IN_DISPLAY}↓/${OUT_DISPLAY}↑) "
-    else
+      ctx_prefix="Ctx: ${TKN_DISPLAY} · "
+    elif [ "$WIDTH" -ge 65 ]; then
       ctx_prefix="Ctx: "
+    else
+      ctx_prefix=""
     fi
     
     local txt="${ctx_prefix}${INT_PCT}%"
     
-    if [ "$ABBREV_CTX" = "false" ] && [ "$WIDTH" -ge 100 ]; then
-      FULL_BAR="██████████"
-      EMPTY_BAR="░░░░░░░░░░"
+    if [ "$SHOW_CONTEXT_BAR" = "true" ] && [ "$ABBREV_CTX" = "false" ] && [ "$WIDTH" -ge 100 ]; then
+      local FULL_BAR="██████████"
+      local EMPTY_BAR="░░░░░░░░░░"
       local num_filled=$(( (INT_PCT + 5) / 10 ))
       [ "$num_filled" -gt 10 ] && num_filled=10
       local num_empty=$(( 10 - num_filled ))
       txt="${txt} [${FULL_BAR:0:num_filled}${EMPTY_BAR:0:num_empty}]"
     fi
     
+    local c_bg=65
+    local c_clr="${GREEN}"
     case "$FINAL_SEV" in
-      3) txt="${txt} ${WARN_CRITICAL}"; CONTEXT_BG=124; CONTEXT_CLR="${RED}" ;;
-      2) txt="${txt} ${WARN_DEGRADING}"; CONTEXT_BG=166; CONTEXT_CLR="${ORANGE}" ;;
-      1) txt="${txt} ${WARN_CAUTION}"; CONTEXT_BG=136; CONTEXT_CLR="${YELLOW}" ;;
-      *) CONTEXT_BG=65; CONTEXT_CLR="${GREEN}" ;;
+      3) txt="${txt} ${WARN_CRITICAL}"; c_bg=124; c_clr="${RED}" ;;
+      2) txt="${txt} ${WARN_DEGRADING}"; c_bg=166; c_clr="${ORANGE}" ;;
+      1) txt="${txt} ${WARN_CAUTION}"; c_bg=136; c_clr="${YELLOW}" ;;
+      *) c_bg=65; c_clr="${GREEN}" ;;
     esac
 
     L_TXT+=("${txt}")
-    L_BG+=("${CONTEXT_BG}")
+    L_BG+=("${c_bg}")
     L_FG+=("${CONTEXT_FG:-255}")
-    L_CLR+=("${CONTEXT_CLR}")
+    L_CLR+=("${c_clr}")
   fi
 
-  # 5. GEMINI
-  if [ "$SHOW_GEMINI" = "true" ] && [ -n "$GEM_PCT_VAL" ]; then
-    local txt=""
-    local bg=""
-    local clr=""
-    local lbl="Gemini"
-    [ "$ABBREV_NAMES" = "true" ] && lbl="Gem"
+  # 5. QUOTAS (Unified Cluster, Active First)
+  if [ "$SHOW_QUOTAS" = "true" ] && [ ${#ORDERED_FAMILIES[@]} -gt 0 ]; then
+    local quota_items=()
+    local quota_raw_items=()
 
-    if [ "$GEM_EXH_VAL" = "true" ]; then
-      txt="${lbl}: Exh"
-      bg=124; clr="${RED}"
-    else
-      txt="${lbl}: ${GEM_PCT_VAL}%"
-      if [ "$GEM_PCT_VAL" -lt 20 ]; then bg=124; clr="${RED}"
-      elif [ "$GEM_PCT_VAL" -lt 50 ]; then bg=136; clr="${YELLOW}"
-      else bg=65; clr="${GREEN}"; fi
-    fi
+    for item in "${ORDERED_FAMILIES[@]}"; do
+      local fam prim_pct prim_exh prim_reset_sec wk_pct wk_reset_sec wk_exh is_wk_only
+      IFS=$'\t' read -r fam prim_pct prim_exh prim_reset_sec wk_pct wk_reset_sec wk_exh is_wk_only <<< "$item"
+      [ "$wk_pct" = "-1" ] && wk_pct=""
+      [ "$wk_reset_sec" = "-1" ] && wk_reset_sec=""
 
-    if [ "$ABBREV_QUOTAS" = "false" ]; then
-      [ -n "$GEM_RESET_VAL" ] && txt="${txt} (${GEM_RESET_VAL})"
-    fi
+      local is_active="false"
+      [ "$fam" = "$ACTIVE_FAMILY" ] && is_active="true"
 
-    if [ -n "${GMW_PCT_VAL:-}" ]; then
-      txt="${txt} / "
-      if [ "${GMW_EXH_VAL:-}" = "true" ]; then
-        txt="${txt}Exh"
+      if [ "$is_active" = "false" ] && [ "$SHOW_STANDBY_QUOTAS" = "false" ]; then
+        continue
+      fi
+
+      local lbl=""
+      if [ "$fam" = "argon" ]; then
+        if [ "$ABBREV_NAMES" = "true" ]; then lbl="Arg"; else lbl="Argon"; fi
+      elif [ "$fam" = "gemini" ]; then
+        if [ "$ABBREV_NAMES" = "true" ]; then lbl="Gem"; else lbl="Gemini"; fi
+      elif [ "$fam" = "3p" ]; then
+        lbl="3P"
       else
-        txt="${txt}${GMW_PCT_VAL}%"
+        lbl="$(echo "${fam:0:1}" | tr '[:lower:]' '[:upper:]')${fam:1}"
+        if [ "$ABBREV_NAMES" = "true" ] && [ ${#lbl} -gt 4 ]; then
+          lbl="${lbl:0:3}"
+        fi
       fi
-      if [ "$ABBREV_QUOTAS" = "false" ]; then
-        [ -n "${GMW_RESET_VAL:-}" ] && txt="${txt} (${GMW_RESET_VAL})"
-      fi
-    fi
 
-    L_TXT+=("${txt}")
-    L_BG+=("${bg}")
-    L_FG+=(255)
-    L_CLR+=("${clr}")
-  fi
+      local pfx=""
+      [ "$is_active" = "true" ] && pfx="▸"
 
-  # 6. 3RD PARTY
-  if [ "$SHOW_CLAUDE" = "true" ] && [ -n "$CL_PCT_VAL" ]; then
-    local txt=""
-    local bg=""
-    local clr=""
-    local lbl="3rd Party"
-    [ "$ABBREV_NAMES" = "true" ] && lbl="3P"
-
-    if [ "$CL_EXH_VAL" = "true" ]; then
-      txt="${lbl}: Exh"
-      bg=124; clr="${RED}"
-    else
-      txt="${lbl}: ${CL_PCT_VAL}%"
-      if [ "$CL_PCT_VAL" -lt 20 ]; then bg=124; clr="${RED}"
-      elif [ "$CL_PCT_VAL" -lt 50 ]; then bg=136; clr="${YELLOW}"
-      else bg=65; clr="${GREEN}"; fi
-    fi
-
-    if [ "$ABBREV_QUOTAS" = "false" ]; then
-      [ -n "$CL_RESET_VAL" ] && txt="${txt} (${CL_RESET_VAL})"
-    fi
-
-    if [ -n "${CLW_PCT_VAL:-}" ]; then
-      txt="${txt} / "
-      if [ "${CLW_EXH_VAL:-}" = "true" ]; then
-        txt="${txt}Exh"
+      local prim_txt=""
+      if [ "$prim_exh" = "true" ]; then
+        prim_txt="Exh"
       else
-        txt="${txt}${CLW_PCT_VAL}%"
+        prim_txt="${prim_pct}%"
       fi
-      if [ "$ABBREV_QUOTAS" = "false" ]; then
-        [ -n "${CLW_RESET_VAL:-}" ] && txt="${txt} (${CLW_RESET_VAL})"
-      fi
-    fi
 
-    L_TXT+=("${txt}")
-    L_BG+=("${bg}")
-    L_FG+=(255)
-    L_CLR+=("${clr}")
+      local show_timer="true"
+      if [ "$is_active" != "true" ] && [ "$SHOW_HEALTHY_STANDBY_TIMERS" = "false" ]; then
+        # Drop only if healthy (not exhausted, and not <20%)
+        if [ "$prim_exh" != "true" ] && [ "$prim_pct" -ge 20 ]; then
+          show_timer="false"
+        fi
+      fi
+
+      if [ "$show_timer" = "true" ] && [ -n "$prim_reset_sec" ] && [ "$prim_reset_sec" -gt 0 ]; then
+        local t_txt
+        t_txt=$(format_time "$((prim_reset_sec * 1000))")
+        [ -n "$t_txt" ] && prim_txt="${prim_txt} (${t_txt})"
+      fi
+
+      local wk_txt=""
+      if [ -n "$wk_pct" ] && [ "$is_wk_only" = "false" ]; then
+        local show_wk="false"
+        local week_pct_left=0
+        [ -n "$wk_reset_sec" ] && [ "$wk_reset_sec" -gt 0 ] && week_pct_left=$(( wk_reset_sec * 100 / 604800 ))
+
+        if [ "$is_active" = "true" ]; then
+          if [ "$FOLD_NON_CRITICAL_STANDBY_WEEKLY" != "true" ] || [ "$wk_pct" -lt "$week_pct_left" ] || [ "$wk_pct" -lt 50 ]; then
+            show_wk="true"
+          fi
+        elif [ -n "$wk_reset_sec" ]; then
+          if [ "$wk_pct" -lt "$week_pct_left" ] || [ "$wk_pct" -lt 50 ]; then
+            show_wk="true"
+          elif [ "$wk_reset_sec" -le 86400 ] && [ "$wk_pct" -ge 20 ]; then
+            if [ "$FOLD_NON_CRITICAL_STANDBY_WEEKLY" != "true" ]; then
+              show_wk="true"
+            fi
+          fi
+        fi
+
+        if [ "$show_wk" = "true" ]; then
+          if [ "$wk_exh" = "true" ]; then
+            wk_txt="/Exh"
+          else
+            wk_txt="/${wk_pct}%"
+          fi
+          if [ "$show_timer" = "true" ] && [ -n "$wk_reset_sec" ] && [ "$wk_reset_sec" -gt 0 ]; then
+            local wt_txt
+            wt_txt=$(format_time "$((wk_reset_sec * 1000))")
+            [ -n "$wt_txt" ] && wk_txt="${wk_txt} (${wt_txt})"
+          fi
+        fi
+      fi
+
+      local clr="${GREEN}"
+      local is_red="false"
+      local is_yellow="false"
+
+      if [ "$prim_exh" = "true" ] || [ "$prim_pct" -lt 20 ]; then
+        is_red="true"
+      elif [ -n "$wk_pct" ] && { [ "$wk_exh" = "true" ] || [ "$wk_pct" -lt 20 ]; }; then
+        is_red="true"
+      elif [ "$prim_pct" -lt 50 ]; then
+        is_yellow="true"
+      elif [ -n "$wk_pct" ] && [ -n "$wk_reset_sec" ]; then
+        local week_pct_left=$(( wk_reset_sec * 100 / 604800 ))
+        if [ "$wk_pct" -lt "$week_pct_left" ] || [ "$wk_pct" -lt 50 ]; then
+          is_yellow="true"
+        fi
+      elif [ "$is_wk_only" = "true" ] && [ -n "$prim_reset_sec" ]; then
+        local week_pct_left=$(( prim_reset_sec * 100 / 604800 ))
+        if [ "$prim_pct" -lt "$week_pct_left" ]; then
+          is_yellow="true"
+        fi
+      fi
+
+      if [ "$is_red" = "true" ]; then
+        clr="${RED}"
+      elif [ "$is_yellow" = "true" ]; then
+        clr="${YELLOW}"
+      fi
+
+      local item_rendered="${pfx}${lbl}: ${prim_txt}${wk_txt}"
+      quota_raw_items+=("${item_rendered}")
+      quota_items+=("${clr}${item_rendered}${RESET}")
+    done
+
+    if [ ${#quota_items[@]} -gt 0 ]; then
+      local joined_quota=""
+      local raw_joined_quota=""
+      for ((qi=0; qi<${#quota_items[@]}; qi++)); do
+        if [ $qi -eq 0 ]; then
+          joined_quota="${quota_items[qi]}"
+          raw_joined_quota="${quota_raw_items[qi]}"
+        else
+          joined_quota="${joined_quota}${GRAY} · ${RESET}${quota_items[qi]}"
+          raw_joined_quota="${raw_joined_quota} · ${quota_raw_items[qi]}"
+        fi
+      done
+
+      if [ -n "$RESET" ]; then
+        L_TXT+=("${joined_quota}")
+      else
+        L_TXT+=("${raw_joined_quota}")
+      fi
+      L_BG+=(236)
+      L_FG+=(250)
+      L_CLR+=("")
+    fi
   fi
 }
 
 calculate_visible_length() {
   local l_len=0
   for txt in "${L_TXT[@]+"${L_TXT[@]}"}"; do
-    l_len=$((l_len + ${#txt}))
+    local plain_txt
+    plain_txt=$(printf '%b' "$txt" | sed 's/\x1b\[[0-9;]*m//g')
+    l_len=$((l_len + ${#plain_txt}))
   done
   local n=${#L_TXT[@]}
   local total_l=0
@@ -597,37 +603,40 @@ calculate_visible_length() {
 }
 
 # Initial population
-SHOW_MODEL="true"
-SHOW_CONTEXT="true"
 populate_segments
 LEN=$(calculate_visible_length)
 
-# Responsive adaptation drops
+# (1) Drop Context ASCII bar [█████░░░░░]
 if [ "$LEN" -gt "$WIDTH" ]; then
-  ABBREV_QUOTAS="true"; populate_segments; LEN=$(calculate_visible_length)
+  SHOW_CONTEXT_BAR="false"; populate_segments; LEN=$(calculate_visible_length)
 fi
 
+# (2) Abbreviate names and context token count (Ctx: 48.3k -> Ctx:)
 if [ "$LEN" -gt "$WIDTH" ]; then
-  ABBREV_CTX="true"; populate_segments; LEN=$(calculate_visible_length)
+  ABBREV_NAMES="true"; ABBREV_CTX="true"; populate_segments; LEN=$(calculate_visible_length)
 fi
 
+# (3) Fold non-critical standby weekly sub-windows
 if [ "$LEN" -gt "$WIDTH" ]; then
-  ABBREV_NAMES="true"; populate_segments; LEN=$(calculate_visible_length)
+  FOLD_NON_CRITICAL_STANDBY_WEEKLY="true"; populate_segments; LEN=$(calculate_visible_length)
 fi
 
-# Hard drops
-if [ "$LEN" -gt "$WIDTH" ] && [ "$SHOW_CLAUDE" = "true" ]; then
-  SHOW_CLAUDE="false"; populate_segments; LEN=$(calculate_visible_length)
+# (4) Drop healthy standby reset timers (preserving exhausted or <20% timers)
+if [ "$LEN" -gt "$WIDTH" ]; then
+  SHOW_HEALTHY_STANDBY_TIMERS="false"; populate_segments; LEN=$(calculate_visible_length)
 fi
 
-if [ "$LEN" -gt "$WIDTH" ] && [ "$SHOW_GEMINI" = "true" ]; then
-  SHOW_GEMINI="false"; populate_segments; LEN=$(calculate_visible_length)
+# (5) Drop standby quotas (preserving Active Quota)
+if [ "$LEN" -gt "$WIDTH" ]; then
+  SHOW_STANDBY_QUOTAS="false"; populate_segments; LEN=$(calculate_visible_length)
 fi
 
+# (6) Drop VCS (project ⎇ branch)
 if [ "$LEN" -gt "$WIDTH" ] && [ "$SHOW_VCS" = "true" ]; then
   SHOW_VCS="false"; populate_segments; LEN=$(calculate_visible_length)
 fi
 
+# (7) Drop Context entirely
 if [ "$LEN" -gt "$WIDTH" ] && [ "$SHOW_CONTEXT" = "true" ]; then
   SHOW_CONTEXT="false"; populate_segments; LEN=$(calculate_visible_length)
 fi
@@ -672,10 +681,18 @@ r_output=""
 for ((i=0; i<N; i++)); do
   clr="${L_CLR[i]}"
   txt="${L_TXT[i]}"
-  if [ $i -eq 0 ]; then
-    left_output+="${clr}${txt}${RESET}"
+  if [ -n "$clr" ]; then
+    if [ $i -eq 0 ]; then
+      left_output+="${clr}${txt}${RESET}"
+    else
+      left_output+="${GRAY} ${SEP_CHAR} ${RESET}${clr}${txt}${RESET}"
+    fi
   else
-    left_output+="${GRAY} ${SEP_CHAR} ${RESET}${clr}${txt}${RESET}"
+    if [ $i -eq 0 ]; then
+      left_output+="${txt}"
+    else
+      left_output+="${GRAY} ${SEP_CHAR} ${RESET}${txt}"
+    fi
   fi
 done
 

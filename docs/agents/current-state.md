@@ -11,6 +11,7 @@
 | Area | Path | Notes |
 |------|------|-------|
 | CLI | `azg`, `lib/` | setup (curated active core incl. `retro` + transitive deps), skill list/enable/disable, new, apply, update (--vendor), selective uninstall; **`azg_python`** |
+| Statusline | `templates/global/statusline.sh` | Adaptive single-line statusline; dynamic multi-quota discovery (`argon`, `gemini`, `3p`), active-first cluster, pace-aware weekly surfacing, timer-preserving truncation (ADR 0001) |
 | Skills Catalog | `templates/global/skills/vendor/` | `mattpocock-skills` only (VENDOR.lock pin `49dd158`; adds `implement-spec`, `pr`, `retro`; removes `resolving-merge-conflicts`; catalog-only by default) |
 | Active Skills Manifest | `${AZG_GLOBAL_DIR}/azg-skills.json` | Declarative active set; 1:1 `~/.gemini/config/skills/` and `~/.cursor/skills/` |
 | Ownership | `azg-ownership.json` under global dir | ADR 0008 |

@@ -80,6 +80,7 @@ fi
 
 # --- Bash suites ---
 run_suite "tests/test-azg.sh" bash tests/test-azg.sh
+run_suite "tests/test-statusline.sh" bash tests/test-statusline.sh
 run_suite "tests/host-contract-smoke.sh" bash tests/host-contract-smoke.sh
 run_suite "tests/test-mutation-verify.sh" bash tests/test-mutation-verify.sh
 run_suite "tests/test-traps.sh" bash tests/test-traps.sh

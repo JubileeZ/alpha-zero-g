@@ -188,6 +188,10 @@ _Avoid_: Account balance, model credits
 A short-term rolling rate-limit window that cooldowns every five hours.
 _Avoid_: Cooldown quota, hourly limit
 
+**Argon Weekly Quota**:
+Dedicated rolling 7-day rate-limit bucket for Gemini 4 Argon reasoning sessions, tracked separately from 5-hour Sprint Quota.
+_Avoid_: Argon budget, Argon tokens, general weekly quota
+
 **Statusline style**:
 Unicode foreground glyphs and separators for the Antigravity statusline (single style; width truncation handles narrow terminals).
 _Avoid_: Status bar theme, icon mode, nerd-font preset.
