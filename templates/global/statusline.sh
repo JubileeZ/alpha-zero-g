@@ -39,6 +39,9 @@ if [ -z "${NO_COLOR:-}" ]; then
   PURPLE="\033[38;5;97m"
   CYAN="\033[38;5;37m"
   GRAY="\033[38;5;244m"
+  MUTED_GRAY="\033[38;5;238m"
+  TIMER_GRAY="\033[38;5;244m"
+  DIM_WHITE="\033[38;5;248m"
 else
   RESET=""
   BOLD=""
@@ -50,18 +53,21 @@ else
   PURPLE=""
   CYAN=""
   GRAY=""
+  MUTED_GRAY=""
+  TIMER_GRAY=""
+  DIM_WHITE=""
 fi
 
 # Unicode glyph mappings
 STATE_IDLE_TXT="● IDLE"
-STATE_THINKING_TXT="◈ THINKING"
+STATE_THINKING_TXT="◐ THINKING"
 STATE_WORKING_TXT="⚙ WORKING"
 STATE_WAITING_TXT="⏸ WAITING"
 VCS_ICON="⎇"
 WARN_CAUTION="⚠"
 WARN_DEGRADING="⚡"
 WARN_CRITICAL="🔥"
-SEP_CHAR="|"
+SEP_CHAR="│"
 
 # Helper to format milliseconds
 format_time() {
@@ -117,12 +123,11 @@ format_tokens() {
 # ---------------------------------------------------------------------------
 # 3. Context Severity Calculations
 # ---------------------------------------------------------------------------
-INPUT_TOKENS=$(echo "$input" | jq -r '.context_window.total_input_tokens // 0')
-OUTPUT_TOKENS=$(echo "$input" | jq -r '.context_window.total_output_tokens // 0')
-USED_TOKENS=$((INPUT_TOKENS + OUTPUT_TOKENS))
+# Format percentage to 1 decimal place (e.g. 12.3, 52.0, 0.0)
+FMT_PCT=$(awk -v p="$CONTEXT_PCT" 'BEGIN { printf "%.1f", (p+0) }' 2>/dev/null || echo "0.0")
 
-# Convert percentage to integer
-INT_PCT="${CONTEXT_PCT%%.*}"
+# Convert percentage to integer for severity thresholds
+INT_PCT="${FMT_PCT%%.*}"
 if ! [[ "$INT_PCT" =~ ^[0-9]+$ ]]; then
   INT_PCT=0
 fi
@@ -136,10 +141,6 @@ elif [ "$INT_PCT" -ge 70 ]; then
 elif [ "$INT_PCT" -ge 50 ]; then
   FINAL_SEV=1
 fi
-
-TKN_DISPLAY=$(format_tokens "$USED_TOKENS")
-IN_DISPLAY=$(format_tokens "$INPUT_TOKENS")
-OUT_DISPLAY=$(format_tokens "$OUTPUT_TOKENS")
 
 # ---------------------------------------------------------------------------
 # 4. Fetch Quota Usage & State Specs
@@ -199,7 +200,10 @@ if [ "$QUOTA_JSON" != "{}" ]; then
       elif (. | type == "object") then
         to_entries[] | select(.key != "promptCredits") | {
           family: (
-            .key | split("-")[0] | ascii_downcase
+            # Strip window suffix, then a leading gemini-[<ver>-] when a sub-model follows
+            # (gemini-argon-weekly / gemini-4-argon-weekly -> argon; gemini-5h -> gemini)
+            .key | ascii_downcase | sub("-(5h|weekly|daily|monthly)$"; "")
+            | if test("^gemini-([0-9.]+-)?[a-z]") then sub("^gemini-([0-9.]+-)?"; "") else . end
           ),
           window: (
             if (.key | endswith("-weekly")) then "weekly"
@@ -213,8 +217,9 @@ if [ "$QUOTA_JSON" != "{}" ]; then
       else empty end;
 
     [parse_items] | group_by(.family)[] | 
-      ((.[] | select(.window != "weekly")) // .[0]) as $prim |
-      (if (. | map(select(.window == "weekly")) | length > 0) and ($prim.window != "weekly") then (.[] | select(.window == "weekly")) else null end) as $wk |
+      # [..][0] (not .[] streams) so a family never emits duplicate rows
+      ([.[] | select(.window != "weekly")][0] // .[0]) as $prim |
+      (if $prim.window != "weekly" then [.[] | select(.window == "weekly")][0] else null end) as $wk |
       [
         .[0].family,
         (($prim.fraction * 100) | floor),
@@ -245,15 +250,27 @@ if [ -z "$ACTIVE_FAMILY" ]; then
   fi
 fi
 
-# Order families: Active family first
-ORDERED_FAMILIES=()
+# Active sub-model without its own bucket (e.g. Argon, no argon-* key) -> fall back to gemini
+_active_found="false"
 for item in "${PARSED_FAMILIES[@]+"${PARSED_FAMILIES[@]}"}"; do
-  fam="${item%%$'\t'*}"
-  if [ "$fam" = "$ACTIVE_FAMILY" ]; then
-    ORDERED_FAMILIES=("$item" "${ORDERED_FAMILIES[@]+"${ORDERED_FAMILIES[@]}"}")
-  else
-    ORDERED_FAMILIES+=("$item")
-  fi
+  [ "${item%%$'\t'*}" = "$ACTIVE_FAMILY" ] && _active_found="true" && break
+done
+if [ "$_active_found" = "false" ] && echo "$M_LOWER" | grep -q "gemini"; then
+  ACTIVE_FAMILY="gemini"
+fi
+
+# Order families: Active first, then argon -> gemini -> 3p, then others (alphabetical from jq)
+ORDERED_FAMILIES=()
+_seen="|"
+for want in "$ACTIVE_FAMILY" argon gemini 3p "*"; do
+  for item in "${PARSED_FAMILIES[@]+"${PARSED_FAMILIES[@]}"}"; do
+    fam="${item%%$'\t'*}"
+    case "$_seen" in *"|${fam}|"*) continue ;; esac
+    if [ "$want" = "*" ] || [ "$fam" = "$want" ]; then
+      ORDERED_FAMILIES+=("$item")
+      _seen="${_seen}${fam}|"
+    fi
+  done
 done
 
 CREDITS_REM=$(echo "$QUOTA_JSON" | jq -r '.promptCredits.remainingPercentage // empty' 2>/dev/null)
@@ -319,6 +336,7 @@ SHOW_MODEL="true"
 SHOW_CONTEXT="true"
 SHOW_CONTEXT_BAR="true"
 SHOW_QUOTAS="true"
+SHOW_QUOTA_BAR="true"
 SHOW_STANDBY_QUOTAS="true"
 SHOW_HEALTHY_STANDBY_TIMERS="true"
 FOLD_NON_CRITICAL_STANDBY_WEEKLY="false"
@@ -330,25 +348,27 @@ ABBREV_NAMES="false"
 
 # Declare arrays for segments
 declare -a L_TXT
+declare -a L_RAW_TXT
 declare -a L_BG
 declare -a L_FG
 declare -a L_CLR
 
 declare -a R_TXT
+declare -a R_RAW_TXT
 declare -a R_BG
 declare -a R_FG
 declare -a R_CLR
 
 populate_segments() {
-  L_TXT=() L_BG=() L_FG=() L_CLR=()
-  R_TXT=() R_BG=() R_FG=() R_CLR=()
+  L_TXT=() L_RAW_TXT=() L_BG=() L_FG=() L_CLR=()
+  R_TXT=() R_RAW_TXT=() R_BG=() R_FG=() R_CLR=()
 
   # 1. PROJECT & GIT (VCS)
   if [ "$SHOW_VCS" = "true" ]; then
     local txt=""
     if [ -n "$PROJECT_NAME" ]; then
-      if [ "$ABBREV_NAMES" = "true" ] && [ ${#PROJECT_NAME} -gt 10 ]; then
-        txt="${PROJECT_NAME:0:7}.."
+      if [ "$ABBREV_NAMES" = "true" ] && [ ${#PROJECT_NAME} -gt 16 ]; then
+        txt="${PROJECT_NAME:0:13}.."
       else
         txt="${PROJECT_NAME}"
       fi
@@ -371,6 +391,7 @@ populate_segments() {
     
     if [ -n "$txt" ]; then
       L_TXT+=("${txt}")
+      L_RAW_TXT+=("${txt}")
       L_BG+=(239)
       L_FG+=(248)
       L_CLR+=("${GRAY}")
@@ -381,9 +402,10 @@ populate_segments() {
   if [ "$SHOW_STATE" = "true" ] && [ -n "${STATE_TXT}" ]; then
     local st_txt="${STATE_TXT}"
     if [ "$ABBREV_NAMES" = "true" ]; then
-      st_txt=$(echo "$st_txt" | sed -r 's/ [0-9]+[a-z]+//g')
+      st_txt=$(echo "$st_txt" | sed -E 's/ [0-9]+[a-z]+//g')
     fi
     L_TXT+=("${st_txt}")
+    L_RAW_TXT+=("${st_txt}")
     L_BG+=("${STATE_BG}")
     L_FG+=("${STATE_FG}")
     L_CLR+=("${STATE_CLR}")
@@ -398,7 +420,8 @@ populate_segments() {
         display_model="${display_model:0:12}.."
       fi
     fi
-    L_TXT+=("Model: ${display_model}")
+    L_TXT+=("✦ ${display_model}")
+    L_RAW_TXT+=("✦ ${display_model}")
     L_BG+=(236)
     L_FG+=(250)
     L_CLR+=("${BOLD}${CYAN}")
@@ -407,25 +430,23 @@ populate_segments() {
   # 4. CONTEXT
   if [ "$SHOW_CONTEXT" != "false" ] && [ -n "${CONTEXT_PCT}" ]; then
     local ctx_prefix=""
-    if [ "$ABBREV_CTX" = "false" ] && [ "$WIDTH" -ge 100 ]; then
-      ctx_prefix="Ctx: ${TKN_DISPLAY} · "
-    elif [ "$WIDTH" -ge 65 ]; then
+    if [ "$WIDTH" -ge 65 ]; then
       ctx_prefix="Ctx: "
-    else
-      ctx_prefix=""
     fi
-    
-    local txt="${ctx_prefix}${INT_PCT}%"
-    
-    if [ "$SHOW_CONTEXT_BAR" = "true" ] && [ "$ABBREV_CTX" = "false" ] && [ "$WIDTH" -ge 100 ]; then
+
+    local ctx_bar=""
+    if [ "$SHOW_CONTEXT_BAR" = "true" ] && [ "$WIDTH" -ge 95 ]; then
+      local num_cells=$(( (INT_PCT + 5) / 10 ))
+      [ "$num_cells" -gt 10 ] && num_cells=10
+      [ "$num_cells" -lt 0 ] && num_cells=0
+      local num_empty=$(( 10 - num_cells ))
       local FULL_BAR="██████████"
       local EMPTY_BAR="░░░░░░░░░░"
-      local num_filled=$(( (INT_PCT + 5) / 10 ))
-      [ "$num_filled" -gt 10 ] && num_filled=10
-      local num_empty=$(( 10 - num_filled ))
-      txt="${txt} [${FULL_BAR:0:num_filled}${EMPTY_BAR:0:num_empty}]"
+      ctx_bar=" ${FULL_BAR:0:num_cells}${EMPTY_BAR:0:num_empty}"
     fi
-    
+
+    local txt="${ctx_prefix}${FMT_PCT}%${ctx_bar}"
+
     local c_bg=65
     local c_clr="${GREEN}"
     case "$FINAL_SEV" in
@@ -436,6 +457,7 @@ populate_segments() {
     esac
 
     L_TXT+=("${txt}")
+    L_RAW_TXT+=("${txt}")
     L_BG+=("${c_bg}")
     L_FG+=("${CONTEXT_FG:-255}")
     L_CLR+=("${c_clr}")
@@ -461,14 +483,14 @@ populate_segments() {
 
       local lbl=""
       if [ "$fam" = "argon" ]; then
-        if [ "$ABBREV_NAMES" = "true" ]; then lbl="Arg"; else lbl="Argon"; fi
+        if [ "$is_active" = "true" ] || [ "$ABBREV_NAMES" != "true" ]; then lbl="Argon"; else lbl="Arg"; fi
       elif [ "$fam" = "gemini" ]; then
-        if [ "$ABBREV_NAMES" = "true" ]; then lbl="Gem"; else lbl="Gemini"; fi
+        if [ "$is_active" = "true" ] || [ "$ABBREV_NAMES" != "true" ]; then lbl="Gemini"; else lbl="Gem"; fi
       elif [ "$fam" = "3p" ]; then
-        lbl="3P"
+        if [ "$is_active" = "true" ] || [ "$ABBREV_NAMES" != "true" ]; then lbl="Other"; else lbl="Oth"; fi
       else
         lbl="$(echo "${fam:0:1}" | tr '[:lower:]' '[:upper:]')${fam:1}"
-        if [ "$ABBREV_NAMES" = "true" ] && [ ${#lbl} -gt 4 ]; then
+        if [ "$is_active" != "true" ] && [ "$ABBREV_NAMES" = "true" ] && [ ${#lbl} -gt 4 ]; then
           lbl="${lbl:0:3}"
         fi
       fi
@@ -476,30 +498,50 @@ populate_segments() {
       local pfx=""
       [ "$is_active" = "true" ] && pfx="▸"
 
-      local prim_txt=""
-      if [ "$prim_exh" = "true" ]; then
-        prim_txt="Exh"
-      else
-        prim_txt="${prim_pct}%"
+      local q_bar=""
+      if [ "$is_active" = "true" ] && [ "$SHOW_QUOTA_BAR" = "true" ]; then
+        local num_pills=0
+        if [ "$prim_exh" != "true" ]; then
+          num_pills=$(( (prim_pct + 10) / 20 ))
+          [ "$num_pills" -gt 5 ] && num_pills=5
+          [ "$num_pills" -lt 0 ] && num_pills=0
+        fi
+        local num_empty=$(( 5 - num_pills ))
+        local FULL_PILLS="▰▰▰▰▰"
+        local EMPTY_PILLS="▱▱▱▱▱"
+        q_bar=" ${FULL_PILLS:0:num_pills}${EMPTY_PILLS:0:num_empty}"
       fi
+
+      local prim_pct_str=""
+      if [ "$prim_exh" = "true" ]; then
+        prim_pct_str="Exh"
+      else
+        prim_pct_str="${prim_pct}%"
+      fi
+
+      local prim_txt="${prim_pct_str}${q_bar}"
 
       local show_timer="true"
       if [ "$is_active" != "true" ] && [ "$SHOW_HEALTHY_STANDBY_TIMERS" = "false" ]; then
-        # Drop only if healthy (not exhausted, and not <20%)
         if [ "$prim_exh" != "true" ] && [ "$prim_pct" -ge 20 ]; then
           show_timer="false"
         fi
       fi
 
+      local t_txt=""
       if [ "$show_timer" = "true" ] && [ -n "$prim_reset_sec" ] && [ "$prim_reset_sec" -gt 0 ]; then
-        local t_txt
         t_txt=$(format_time "$((prim_reset_sec * 1000))")
+        if [ "$is_wk_only" = "true" ] && [ "$prim_reset_sec" -le 86400 ] && [ "$prim_pct" -ge 20 ]; then
+          t_txt="⚡${t_txt}"
+        fi
         [ -n "$t_txt" ] && prim_txt="${prim_txt} (${t_txt})"
       fi
 
       local wk_txt=""
+      local wk_pct_str=""
+      local wt_txt=""
+      local show_wk="false"
       if [ -n "$wk_pct" ] && [ "$is_wk_only" = "false" ]; then
-        local show_wk="false"
         local week_pct_left=0
         [ -n "$wk_reset_sec" ] && [ "$wk_reset_sec" -gt 0 ] && week_pct_left=$(( wk_reset_sec * 100 / 604800 ))
 
@@ -507,27 +549,41 @@ populate_segments() {
           if [ "$FOLD_NON_CRITICAL_STANDBY_WEEKLY" != "true" ] || [ "$wk_pct" -lt "$week_pct_left" ] || [ "$wk_pct" -lt 50 ]; then
             show_wk="true"
           fi
-        elif [ -n "$wk_reset_sec" ]; then
-          if [ "$wk_pct" -lt "$week_pct_left" ] || [ "$wk_pct" -lt 50 ]; then
+        else
+          # Standby models: only surface weekly if exhausted or almost exhausted (<20%)
+          if [ "$wk_exh" = "true" ] || [ "$wk_pct" -lt 20 ]; then
             show_wk="true"
-          elif [ "$wk_reset_sec" -le 86400 ] && [ "$wk_pct" -ge 20 ]; then
-            if [ "$FOLD_NON_CRITICAL_STANDBY_WEEKLY" != "true" ]; then
-              show_wk="true"
-            fi
           fi
         fi
 
         if [ "$show_wk" = "true" ]; then
+          local splurge="false"
+          local risk="false"
+          if [ "$wk_exh" = "true" ] || [ "$wk_pct" -lt 20 ]; then
+            risk="true"
+          elif [ -n "$wk_reset_sec" ] && [ "$wk_reset_sec" -le 86400 ] && [ "$wk_pct" -ge 20 ]; then
+            splurge="true"
+          fi
+
           if [ "$wk_exh" = "true" ]; then
-            wk_txt="/Exh"
+            wk_pct_str="Exh"
           else
-            wk_txt="/${wk_pct}%"
+            wk_pct_str="${wk_pct}%wk"
           fi
+
+          if [ "$risk" = "true" ]; then
+            wk_pct_str="${wk_pct_str} ⚠"
+          fi
+
           if [ "$show_timer" = "true" ] && [ -n "$wk_reset_sec" ] && [ "$wk_reset_sec" -gt 0 ]; then
-            local wt_txt
             wt_txt=$(format_time "$((wk_reset_sec * 1000))")
-            [ -n "$wt_txt" ] && wk_txt="${wk_txt} (${wt_txt})"
+            if [ "$splurge" = "true" ]; then
+              wt_txt="⚡${wt_txt}"
+            fi
           fi
+
+          wk_txt=" ╱ ${wk_pct_str}"
+          [ -n "$wt_txt" ] && wk_txt="${wk_txt} (${wt_txt})"
         fi
       fi
 
@@ -557,11 +613,42 @@ populate_segments() {
         clr="${RED}"
       elif [ "$is_yellow" = "true" ]; then
         clr="${YELLOW}"
+      elif [ "$is_active" != "true" ]; then
+        clr="${DIM_WHITE}"
       fi
 
       local item_rendered="${pfx}${lbl}: ${prim_txt}${wk_txt}"
       quota_raw_items+=("${item_rendered}")
-      quota_items+=("${clr}${item_rendered}${RESET}")
+
+      local item_ansi=""
+      if [ -n "$RESET" ]; then
+        local wk_ansi=""
+        if [ "$show_wk" = "true" ]; then
+          local wk_clr="${GREEN}"
+          if [ "$wk_exh" = "true" ] || [ "$wk_pct" -lt 20 ]; then
+            wk_clr="${RED}"
+          elif [ "$wk_pct" -lt 50 ]; then
+            wk_clr="${YELLOW}"
+          elif [ "$is_active" != "true" ]; then
+            wk_clr="${DIM_WHITE}"
+          fi
+          wk_ansi=" ${MUTED_GRAY}╱${RESET} ${BOLD}${wk_clr}${wk_pct_str}${RESET}"
+          [ -n "$wt_txt" ] && wk_ansi="${wk_ansi} ${TIMER_GRAY}(${wt_txt})${RESET}"
+        fi
+
+        if [ "$is_active" = "true" ]; then
+          item_ansi="${BOLD}${clr}${pfx}${lbl}:${RESET} ${BOLD}${clr}${prim_pct_str}${q_bar}${RESET}"
+          [ -n "$t_txt" ] && item_ansi="${item_ansi} ${TIMER_GRAY}(${t_txt})${RESET}"
+          [ -n "$wk_ansi" ] && item_ansi="${item_ansi}${wk_ansi}"
+        else
+          item_ansi="${clr}${lbl}:${RESET} ${clr}${prim_pct_str}${RESET}"
+          [ -n "$t_txt" ] && item_ansi="${item_ansi} ${TIMER_GRAY}(${t_txt})${RESET}"
+          [ -n "$wk_ansi" ] && item_ansi="${item_ansi}${wk_ansi}"
+        fi
+      else
+        item_ansi="${item_rendered}"
+      fi
+      quota_items+=("${item_ansi}")
     done
 
     if [ ${#quota_items[@]} -gt 0 ]; then
@@ -572,7 +659,11 @@ populate_segments() {
           joined_quota="${quota_items[qi]}"
           raw_joined_quota="${quota_raw_items[qi]}"
         else
-          joined_quota="${joined_quota}${GRAY} · ${RESET}${quota_items[qi]}"
+          if [ -n "$RESET" ]; then
+            joined_quota="${joined_quota}${MUTED_GRAY} · ${RESET}${quota_items[qi]}"
+          else
+            joined_quota="${joined_quota} · ${quota_items[qi]}"
+          fi
           raw_joined_quota="${raw_joined_quota} · ${quota_raw_items[qi]}"
         fi
       done
@@ -582,6 +673,7 @@ populate_segments() {
       else
         L_TXT+=("${raw_joined_quota}")
       fi
+      L_RAW_TXT+=("${raw_joined_quota}")
       L_BG+=(236)
       L_FG+=(250)
       L_CLR+=("")
@@ -591,64 +683,76 @@ populate_segments() {
 
 calculate_visible_length() {
   local l_len=0
-  for txt in "${L_TXT[@]+"${L_TXT[@]}"}"; do
-    local plain_txt
-    plain_txt=$(printf '%b' "$txt" | sed 's/\x1b\[[0-9;]*m//g')
-    l_len=$((l_len + ${#plain_txt}))
+  for txt in "${L_RAW_TXT[@]+"${L_RAW_TXT[@]}"}"; do
+    l_len=$((l_len + ${#txt}))
   done
-  local n=${#L_TXT[@]}
+  local r_len=0
+  for txt in "${R_RAW_TXT[@]+"${R_RAW_TXT[@]}"}"; do
+    r_len=$((r_len + ${#txt}))
+  done
+  local n=${#L_RAW_TXT[@]}
+  local m=${#R_RAW_TXT[@]}
   local total_l=0
   [ $n -gt 0 ] && total_l=$((l_len + 3 * (n - 1)))
-  echo $((total_l))
+  local total_r=0
+  [ $m -gt 0 ] && total_r=$((r_len + 3 * (m - 1)))
+  local gap=0
+  [ $n -gt 0 ] && [ $m -gt 0 ] && gap=4
+  echo $((total_l + gap + total_r))
 }
 
 # Initial population
 populate_segments
 LEN=$(calculate_visible_length)
 
-# (1) Drop Context ASCII bar [█████░░░░░]
+# (1) Drop context progress bar (saving 11 columns)
 if [ "$LEN" -gt "$WIDTH" ]; then
   SHOW_CONTEXT_BAR="false"; populate_segments; LEN=$(calculate_visible_length)
 fi
 
-# (2) Abbreviate names and context token count (Ctx: 48.3k -> Ctx:)
+# (2) Abbreviate standby names (Gemini -> Gem, Other -> Oth)
 if [ "$LEN" -gt "$WIDTH" ]; then
-  ABBREV_NAMES="true"; ABBREV_CTX="true"; populate_segments; LEN=$(calculate_visible_length)
+  ABBREV_NAMES="true"; populate_segments; LEN=$(calculate_visible_length)
 fi
 
-# (3) Fold non-critical standby weekly sub-windows
+# (3) Drop active quota progress bar (▰▰▰▰▱)
+if [ "$LEN" -gt "$WIDTH" ]; then
+  SHOW_QUOTA_BAR="false"; populate_segments; LEN=$(calculate_visible_length)
+fi
+
+# (4) Fold non-critical standby weekly sub-windows
 if [ "$LEN" -gt "$WIDTH" ]; then
   FOLD_NON_CRITICAL_STANDBY_WEEKLY="true"; populate_segments; LEN=$(calculate_visible_length)
 fi
 
-# (4) Drop healthy standby reset timers (preserving exhausted or <20% timers)
+# (5) Drop healthy standby reset timers (preserving exhausted or <20% timers)
 if [ "$LEN" -gt "$WIDTH" ]; then
   SHOW_HEALTHY_STANDBY_TIMERS="false"; populate_segments; LEN=$(calculate_visible_length)
 fi
 
-# (5) Drop standby quotas (preserving Active Quota)
+# (6) Drop standby quotas (preserving Active Quota)
 if [ "$LEN" -gt "$WIDTH" ]; then
   SHOW_STANDBY_QUOTAS="false"; populate_segments; LEN=$(calculate_visible_length)
 fi
 
-# (6) Drop VCS (project ⎇ branch)
+# (7) Drop VCS (project ⎇ branch)
 if [ "$LEN" -gt "$WIDTH" ] && [ "$SHOW_VCS" = "true" ]; then
   SHOW_VCS="false"; populate_segments; LEN=$(calculate_visible_length)
 fi
 
-# (7) Drop Context entirely
+# (8) Drop Context entirely
 if [ "$LEN" -gt "$WIDTH" ] && [ "$SHOW_CONTEXT" = "true" ]; then
   SHOW_CONTEXT="false"; populate_segments; LEN=$(calculate_visible_length)
 fi
 
 
 L_LEN=0
-for txt in "${L_TXT[@]+"${L_TXT[@]}"}"; do
+for txt in "${L_RAW_TXT[@]+"${L_RAW_TXT[@]}"}"; do
   L_LEN=$((L_LEN + ${#txt}))
 done
 
 R_LEN=0
-for txt in "${R_TXT[@]+"${R_TXT[@]}"}"; do
+for txt in "${R_RAW_TXT[@]+"${R_RAW_TXT[@]}"}"; do
   R_LEN=$((R_LEN + ${#txt}))
 done
 
@@ -685,13 +789,13 @@ for ((i=0; i<N; i++)); do
     if [ $i -eq 0 ]; then
       left_output+="${clr}${txt}${RESET}"
     else
-      left_output+="${GRAY} ${SEP_CHAR} ${RESET}${clr}${txt}${RESET}"
+      left_output+="${MUTED_GRAY} ${SEP_CHAR} ${RESET}${clr}${txt}${RESET}"
     fi
   else
     if [ $i -eq 0 ]; then
       left_output+="${txt}"
     else
-      left_output+="${GRAY} ${SEP_CHAR} ${RESET}${txt}"
+      left_output+="${MUTED_GRAY} ${SEP_CHAR} ${RESET}${txt}"
     fi
   fi
 done
@@ -702,7 +806,7 @@ for ((j=0; j<M; j++)); do
   if [ $j -eq 0 ]; then
     r_output+="${clr}${txt}${RESET}"
   else
-    r_output+="${GRAY} ${SEP_CHAR} ${RESET}${clr}${txt}${RESET}"
+    r_output+="${MUTED_GRAY} ${SEP_CHAR} ${RESET}${clr}${txt}${RESET}"
   fi
 done
 

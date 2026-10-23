@@ -42,13 +42,13 @@ JSON_ARGON_ACTIVE='{
 out=$(run_statusline "${JSON_ARGON_ACTIVE}" 140)
 
 # Check active marker and ordering
-if echo "${out}" | grep -qE "▸(Argon|Arg): 78% \(3d12h\)"; then
-  pass "Argon identified as active and displays 78% (3d12h)"
+if echo "${out}" | grep -qE "▸(Argon|Arg): 78% ▰▰▰▰▱ \(3d12h\)"; then
+  pass "Argon identified as active and displays 78% ▰▰▰▰▱ (3d12h)"
 else
   fail "Argon active quota missing or wrong format" "${out}"
 fi
 
-if echo "${out}" | grep -qE "▸(Argon|Arg):.*·.*(Gem|3P)"; then
+if echo "${out}" | grep -qE "▸(Argon|Arg):.*·.*(Gem|Other|Oth)"; then
   pass "Active model quota placed first in quota cluster"
 else
   fail "Active model quota not placed first" "${out}"
@@ -61,28 +61,30 @@ else
   fail "Gemini standby quota missing or wrong format" "${out}"
 fi
 
-if echo "${out}" | grep -qE "3P: 80% \(1h15m\)"; then
-  pass "3P standby displays 80% (1h15m)"
+if echo "${out}" | grep -qE "(Other|Oth): 80% \(1h15m\)"; then
+  pass "Other standby displays 80% (1h15m)"
 else
-  fail "3P standby quota missing or wrong format" "${out}"
+  fail "Other standby quota missing or wrong format" "${out}"
 fi
 
-# Check context trim: total tokens and percentage present, but in/out token split dropped
-if echo "${out}" | grep -qE "Ctx: 48\.3k · 52%"; then
-  pass "Context shows compact total tokens and percentage"
+# Check context: decimal percentage and 10-cell progress bar present, raw token numbers omitted
+if echo "${out}" | grep -qE "Ctx: 52\.0% █████░░░░░ ⚠"; then
+  pass "Context shows 1-decimal percentage and 10-cell progress bar"
 else
-  fail "Context missing compact total tokens or percentage" "${out}"
+  fail "Context missing 1-decimal percentage or 10-cell progress bar" "${out}"
 fi
 
-if echo "${out}" | grep -qF "(45.2k↓/3.1k↑)"; then
-  fail "Context still contains redundant in/out token breakdown" "${out}"
+if echo "${out}" | grep -qE "(48\.3k|45\.2k)"; then
+  fail "Context still contains raw token values" "${out}"
 else
-  pass "Redundant in/out token breakdown omitted"
+  pass "Raw token values omitted from context"
 fi
 
 section "2. Dual-window weekly surfacing: use-it-or-lose-it and run-out risk"
 
-JSON_USE_IT_OR_LOSE_IT='{
+# Standby with healthy weekly (<24h reset, 65% remaining):
+# Per user rule, standby models show ONLY 5-hour window unless exhausted or <20%
+JSON_STANDBY_HEALTHY='{
   "agent_state": "idle",
   "model": { "display_name": "Gemini 4 Argon (High)" },
   "context_window": { "used_percentage": 20 },
@@ -102,16 +104,16 @@ JSON_USE_IT_OR_LOSE_IT='{
   }
 }'
 
-out_urgent=$(run_statusline "${JSON_USE_IT_OR_LOSE_IT}" 140)
+out_healthy=$(run_statusline "${JSON_STANDBY_HEALTHY}" 140)
 
-# Weekly reset is in 9 hours with 65% remaining -> should surface weekly timer
-if echo "${out_urgent}" | grep -qE "3P: 80% \(1h15m\)/65% \(9h\)"; then
-  pass "Use-it-or-lose-it weekly reset (<24h with >20% unused) surfaced for 3P"
+if echo "${out_healthy}" | grep -qE "(Other|Oth): 80% \(1h15m\)( *·| *$)" && ! echo "${out_healthy}" | grep -qE "(Other|Oth):.*wk"; then
+  pass "Standby healthy weekly hidden; only 5h sprint shown"
 else
-  fail "Use-it-or-lose-it weekly reset not surfaced" "${out_urgent}"
+  fail "Standby healthy weekly unexpectedly surfaced" "${out_healthy}"
 fi
 
-JSON_HEALTHY_WEEKLY='{
+# Standby with run-out risk (<20% remaining): surfaces weekly window with warning
+JSON_STANDBY_RISK='{
   "agent_state": "idle",
   "model": { "display_name": "Gemini 4 Argon (High)" },
   "context_window": { "used_percentage": 20 },
@@ -125,19 +127,43 @@ JSON_HEALTHY_WEEKLY='{
       "reset_in_seconds": 4500
     },
     "3p-weekly": {
-      "remaining_fraction": 0.95,
-      "reset_in_seconds": 432000
+      "remaining_fraction": 0.15,
+      "reset_in_seconds": 32400
     }
   }
 }'
 
-out_healthy=$(run_statusline "${JSON_HEALTHY_WEEKLY}" 140)
+out_risk=$(run_statusline "${JSON_STANDBY_RISK}" 140)
 
-# Weekly is 5 days away and 95% remaining (healthy) -> should NOT surface redundant weekly
-if echo "${out_healthy}" | grep -qF "/95%"; then
-  fail "Redundant healthy weekly quota unexpectedly surfaced" "${out_healthy}"
+if echo "${out_risk}" | grep -qE "(Other|Oth): 80% \(1h15m\) ╱ 15%wk ⚠ \(9h\)"; then
+  pass "Standby almost exhausted (<20%) weekly surfaced with warning"
 else
-  pass "Redundant healthy weekly quota hidden when safe and far from reset"
+  fail "Standby run-out risk weekly not surfaced" "${out_risk}"
+fi
+
+# Active model with splurge (<24h reset, >=20% remaining): surfaces ⚡ indicator
+JSON_ACTIVE_SPLURGE='{
+  "agent_state": "idle",
+  "model": { "display_name": "Gemini 3.8 Flash (High)" },
+  "context_window": { "used_percentage": 20 },
+  "quota": {
+    "gemini-5h": {
+      "remaining_fraction": 0.90,
+      "reset_in_seconds": 17400
+    },
+    "gemini-weekly": {
+      "remaining_fraction": 0.65,
+      "reset_in_seconds": 32400
+    }
+  }
+}'
+
+out_splurge=$(run_statusline "${JSON_ACTIVE_SPLURGE}" 140)
+
+if echo "${out_splurge}" | grep -qE "▸(Gemini|Gem): 90% ▰▰▰▰▰ \(4h50m\) ╱ 65%wk \(⚡9h\)"; then
+  pass "Active model splurge window (<24h, >=20%) surfaced with ⚡"
+else
+  fail "Active model splurge window not surfaced" "${out_splurge}"
 fi
 
 section "3. Active model switch: Gemini Flash active"
@@ -168,8 +194,8 @@ JSON_GEMINI_ACTIVE='{
 
 out_gemini=$(run_statusline "${JSON_GEMINI_ACTIVE}" 140)
 
-if echo "${out_gemini}" | grep -qE "▸(Gemini|Gem): 90% \(4h50m\)"; then
-  pass "Gemini identified as active and placed first"
+if echo "${out_gemini}" | grep -qE "▸(Gemini|Gem): 90% ▰▰▰▰▰ \(4h50m\) ╱ 82%wk \(3d\)"; then
+  pass "Gemini identified as active and placed first with dual-window"
 else
   fail "Gemini not identified as active" "${out_gemini}"
 fi
@@ -182,13 +208,19 @@ fi
 
 section "4. Responsive width truncation"
 
-# At width 90, context ASCII bar should drop before quotas drop
+# At width 90, context progress bar drops while decimal percentage and active quota are preserved
 out_90=$(run_statusline "${JSON_ARGON_ACTIVE}" 90)
 
 if echo "${out_90}" | grep -qF "████"; then
-  fail "Context ASCII bar should drop at width 90" "${out_90}"
+  fail "Context progress bar should drop at width 90" "${out_90}"
 else
-  pass "Context ASCII bar dropped at compact width"
+  pass "Context progress bar dropped at compact width"
+fi
+
+if echo "${out_90}" | grep -qE "Ctx: 52\.0%"; then
+  pass "Context decimal percentage preserved at compact width"
+else
+  fail "Context decimal percentage missing at compact width" "${out_90}"
 fi
 
 if echo "${out_90}" | grep -qE "▸(Argon|Arg)"; then
@@ -217,7 +249,7 @@ JSON_FUTURE_MODEL='{
 
 out_future=$(run_statusline "${JSON_FUTURE_MODEL}" 140)
 
-if echo "${out_future}" | grep -qE "▸Xenon: 60% \(2d\)"; then
+if echo "${out_future}" | grep -qE "▸Xenon: 60% ▰▰▰▱▱ \(2d\)"; then
   pass "Future model Xenon automatically discovered and set active"
 else
   fail "Future model Xenon not discovered" "${out_future}"
@@ -249,16 +281,81 @@ JSON_LEGACY='{
 
 out_legacy=$(run_statusline "${JSON_LEGACY}" 140)
 
-if echo "${out_legacy}" | grep -qE "▸3P: 72% \(2h\)"; then
-  pass "Legacy models array sets 3P active with 72% (2h)"
+if echo "${out_legacy}" | grep -qE "▸(Other|Oth): 72% ▰▰▰▰▱ \(2h\)"; then
+  pass "Legacy models array sets Other active with 72% (2h)"
 else
-  fail "Legacy models array failed for active 3P" "${out_legacy}"
+  fail "Legacy models array failed for active Other" "${out_legacy}"
 fi
 
 if echo "${out_legacy}" | grep -qE "(Gemini|Gem): 88% \(4h\)"; then
   pass "Legacy models array sets Gemini standby with 88% (4h)"
 else
   fail "Legacy models array failed for standby Gemini" "${out_legacy}"
+fi
+
+section "7. Gemini-prefixed Argon bucket keys (no collision, no duplicates)"
+
+for argon_key in "gemini-argon-weekly" "gemini-4-argon-weekly"; do
+  JSON_PREFIXED='{
+    "agent_state": "idle",
+    "model": { "display_name": "Gemini 4 Argon (High)" },
+    "context_window": { "used_percentage": 20 },
+    "quota": {
+      "gemini-5h": { "remaining_fraction": 0.90, "reset_in_seconds": 17400 },
+      "gemini-weekly": { "remaining_fraction": 0.82, "reset_in_seconds": 259200 },
+      "'"${argon_key}"'": { "remaining_fraction": 0.78, "reset_in_seconds": 302400 },
+      "3p-5h": { "remaining_fraction": 0.80, "reset_in_seconds": 4500 }
+    }
+  }'
+  out_pref=$(run_statusline "${JSON_PREFIXED}" 140)
+
+  if echo "${out_pref}" | grep -qE "▸Argon: 78% ▰▰▰▰▱ \(3d12h\) · Gemini: 90% \(4h50m\)[^·]* · Other: 80% \(1h15m\)"; then
+    pass "${argon_key}: order Active Argon → Gemini → Other"
+  else
+    fail "${argon_key}: Argon missing or wrong order" "${out_pref}"
+  fi
+
+  gem_count=$(echo "${out_pref}" | grep -o "Gemini:" | wc -l | tr -d ' ')
+  if [ "${gem_count}" = "1" ]; then
+    pass "${argon_key}: Gemini rendered exactly once"
+  else
+    fail "${argon_key}: Gemini rendered ${gem_count} times" "${out_pref}"
+  fi
+done
+
+section "8. Standby order and sub-model fallback"
+
+JSON_ORDER='{
+  "agent_state": "idle",
+  "model": { "display_name": "Claude Opus 5.5 (Medium)" },
+  "context_window": { "used_percentage": 20 },
+  "quota": {
+    "gemini-5h": { "remaining_fraction": 0.90, "reset_in_seconds": 17400 },
+    "argon-weekly": { "remaining_fraction": 0.78, "reset_in_seconds": 302400 },
+    "3p-5h": { "remaining_fraction": 0.80, "reset_in_seconds": 4500 }
+  }
+}'
+out_order=$(run_statusline "${JSON_ORDER}" 140)
+if echo "${out_order}" | grep -qE "▸Other: 80% ▰▰▰▰▱ \(1h15m\) · Argon: 78% \(3d12h\) · Gemini: 90% \(4h50m\)"; then
+  pass "Other active: standby Argon before Gemini"
+else
+  fail "Other active: wrong standby order" "${out_order}"
+fi
+
+JSON_NO_ARGON='{
+  "agent_state": "idle",
+  "model": { "display_name": "Gemini 4 Argon (High)" },
+  "context_window": { "used_percentage": 20 },
+  "quota": {
+    "3p-5h": { "remaining_fraction": 0.80, "reset_in_seconds": 4500 },
+    "gemini-5h": { "remaining_fraction": 0.90, "reset_in_seconds": 17400 }
+  }
+}'
+out_noarg=$(run_statusline "${JSON_NO_ARGON}" 140)
+if echo "${out_noarg}" | grep -qE "▸Gemini: 90% ▰▰▰▰▰ \(4h50m\).* · Other: 80%"; then
+  pass "Argon active w/o own bucket falls back to Gemini first"
+else
+  fail "Argon active w/o bucket: Gemini not promoted" "${out_noarg}"
 fi
 
 test_summary
