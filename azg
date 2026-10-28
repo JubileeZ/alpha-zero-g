@@ -51,6 +51,7 @@ ${CLR_BOLD}COMMANDS${CLR_RESET}
   update               Pull the latest Alpha-Zero-G repo
   update --vendor      Also re-vendor upstream skills (mattpocock, ponytail, caveman)
   skill [list|enable|disable]  Manage active skills and dependencies
+  packet [list|close|prune]    Inspect, close, or prune .agents/work-packets/
   uninstall            Remove all files azg setup installed globally
   version              Print version and exit
   help                 Print this help message
@@ -114,6 +115,11 @@ case "${COMMAND}" in
   uninstall)
     source "${LIB_DIR}/uninstall.sh"
     cmd_uninstall "$@"
+    ;;
+
+  packet|work-packet)
+    source "${LIB_DIR}/packet.sh"
+    cmd_packet "$@"
     ;;
 
   *)

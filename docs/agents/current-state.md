@@ -10,7 +10,7 @@
 
 | Area | Path | Notes |
 |------|------|-------|
-| CLI | `azg`, `lib/` | setup (curated active core incl. `retro` + transitive deps), skill list/enable/disable, new, apply, update (--vendor), selective uninstall; **`azg_python`** |
+| CLI | `azg`, `lib/` | setup (curated active core incl. `retro` + transitive deps), skill list/enable/disable, packet [list/close/prune], new, apply, update (--vendor), selective uninstall; **`azg_python`** |
 | Statusline | `templates/global/statusline.sh` | Adaptive single-line statusline; 5-cell pill active quota gauge (`▰▰▰▰▱`), clean text context, muted `│` separators, ✦ model symbol, dynamic multi-quota discovery (`argon`, `gemini`, `Other`), active-first cluster, pace-aware & splurge weekly surfacing (ADR 0001) |
 | Skills Catalog | `templates/global/skills/vendor/` | `mattpocock-skills` only (VENDOR.lock pin `49dd158`; adds `implement-spec`, `pr`, `retro`; removes `resolving-merge-conflicts`; catalog-only by default) |
 | Active Skills Manifest | `${AZG_GLOBAL_DIR}/azg-skills.json` | Declarative active set; 1:1 `~/.gemini/config/skills/` and `~/.cursor/skills/` |
@@ -23,7 +23,7 @@
 | Evaluation Suite | `evals/traps/scenarios/` + `score_outcome.py` + runners + docker | ADR 0012+0013 machinery; **0019** Behavior Corpus |
 | Aggregate / CI | `tests/run-all.sh`, `.github/workflows/ci.yml` | **ubuntu + macos** only; **no** `test-lite`; `azg_python` |
 | Portable gate | `templates/project/tests/verify.sh` | Harness integrity |
-| ADRs | `docs/adr/` | **0024** Skills safety boundary; **0023** Work Packet safety; **0022** Work Packets + Stop retired; **0021** Principles v2; **0019** Behavior Corpus |
+| ADRs | `docs/adr/` | **0025** Work Packet lifecycle & prune; **0024** Skills safety boundary; **0023** Work Packet safety; **0022** Work Packets + Stop retired; **0021** Principles v2; **0019** Behavior Corpus |
 | Glossary | `CONTEXT.md` | |
 | Lean continuity | `AGENTS.md` Session start | Always-on lean set |
 | Project skills | `.agents/skills/progress-updates` + matching `.cursor/rules/*.mdc` | Agent-requestable |

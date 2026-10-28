@@ -186,6 +186,114 @@ else
   fail "abandoned packet without checkboxes must not count as finished" "got: ${_cp_nb}"
 fi
 
+# Metadata-aware completion: packet with Status: Complete counts as finished even with unchecked boxes
+source .agents/hooks/commit-scan.sh
+cat > .agents/work-packets/completed-meta.md << 'EOF'
+# Active Task: meta-done
+- **Status:** Complete
+- **Objective:** test
+- **Acceptance:** test
+## Work Packet (SFDBN)
+- **Status:** Complete
+- **Files:** none
+- **Decisions:** none
+- **Blocked:** none
+- **Next:** done
+## Todo
+- [ ] Leftover unchecked box
+EOF
+if azg_packet_is_finished .agents/work-packets/completed-meta.md; then
+  pass "azg_packet_is_finished recognizes Status: Complete despite unchecked boxes"
+else
+  fail "azg_packet_is_finished should recognize Status: Complete"
+fi
+
+_cp_meta_deny=$(echo "${commit_json}" | bash .agents/hooks/commit-gate.sh)
+if echo "${_cp_meta_deny}" | grep -qE '"decision"[[:space:]]*:[[:space:]]*"deny"' && echo "${_cp_meta_deny}" | grep -qi 'Finished Work Packet still present'; then
+  pass "commit-gate denies when Status: Complete packet lingers on disk"
+else
+  fail "commit-gate must deny when Status: Complete packet lingers" "got: ${_cp_meta_deny}"
+fi
+rm -f .agents/work-packets/completed-meta.md
+
+# verify.sh fails when a finished packet lingers on disk
+cat > .agents/work-packets/lingering-done.md << 'EOF'
+# Active Task: lingering
+- **Status:** Complete
+- **Objective:** test
+- **Acceptance:** test
+## Work Packet (SFDBN)
+- **Status:** Complete
+- **Files:** none
+- **Decisions:** none
+- **Blocked:** none
+- **Next:** done
+## Todo
+- [x] Done task
+EOF
+assert_exit "verify.sh fails when finished packet lingers" 1 bash tests/verify.sh
+rm -f .agents/work-packets/lingering-done.md
+
+# Multiple active (In Progress) packets are rejected by verify.sh and commit-gate
+cat > .agents/work-packets/active-1.md << 'EOF'
+# Active Task: active-1
+- **Status:** In Progress
+- **Objective:** test
+- **Acceptance:** test
+## Work Packet (SFDBN)
+- **Status:** In Progress
+- **Files:** none
+- **Decisions:** none
+- **Blocked:** none
+- **Next:** working
+## Todo
+- [ ] Task
+EOF
+
+cat > .agents/work-packets/active-2.md << 'EOF'
+# Active Task: active-2
+- **Status:** In Progress
+- **Objective:** test
+- **Acceptance:** test
+## Work Packet (SFDBN)
+- **Status:** In Progress
+- **Files:** none
+- **Decisions:** none
+- **Blocked:** none
+- **Next:** working
+## Todo
+- [ ] Task
+EOF
+
+assert_exit "verify.sh fails when multiple In Progress packets exist" 1 bash tests/verify.sh
+
+_cp_multi=$(echo "${commit_json}" | bash .agents/hooks/commit-gate.sh)
+if echo "${_cp_multi}" | grep -qE '"decision"[[:space:]]*:[[:space:]]*"deny"' && echo "${_cp_multi}" | grep -qi 'Multiple active Work Packets'; then
+  pass "commit-gate denies when multiple In Progress packets exist"
+else
+  fail "commit-gate must deny multiple In Progress packets" "got: ${_cp_multi}"
+fi
+
+# But when secondary packet is marked Status: Parked and only one is In Progress, verify passes
+rm -f .agents/work-packets/active-1.md
+cat > .agents/work-packets/active-2.md << 'EOF'
+# Active Task: active-2
+- **Status:** Parked
+- **Objective:** test
+- **Acceptance:** test
+## Work Packet (SFDBN)
+- **Status:** Parked
+- **Files:** none
+- **Decisions:** none
+- **Blocked:** none
+- **Next:** paused
+## Todo
+- [ ] Task
+EOF
+assert_exit "verify.sh passes when secondary packet is Parked" 0 bash tests/verify.sh
+
+rm -f .agents/work-packets/active-2.md
+
 # Non-markdown file in .agents/work-packets/ is rejected by commit-gate
 touch .agents/work-packets/sneak.py
 git add .agents/work-packets/sneak.py
@@ -297,5 +405,51 @@ section "12. harness scrub clears repo-root tmp_azg*"
 mkdir -p "${REPO_ROOT}/tmp_azg_scrub_probe"
 azg_scrub_root_leaks
 assert_dir_not_exists "repo-root tmp_azg* scrubbed" "${REPO_ROOT}/tmp_azg_scrub_probe"
+
+section "13. azg packet CLI (list, close, prune)"
+
+cd "${APP_DIR}"
+cat > .agents/work-packets/pkt-done.md << 'EOF'
+# Active Task: done-task
+- **Status:** Complete
+- **Objective:** test
+- **Acceptance:** test
+## Work Packet (SFDBN)
+- **Status:** Complete
+- **Files:** none
+- **Decisions:** none
+- **Blocked:** none
+- **Next:** done
+## Todo
+- [x] Finished item
+EOF
+
+cat > .agents/work-packets/pkt-parked.md << 'EOF'
+# Active Task: parked-task
+- **Status:** Parked
+- **Objective:** test
+- **Acceptance:** test
+## Work Packet (SFDBN)
+- **Status:** Parked
+- **Files:** none
+- **Decisions:** none
+- **Blocked:** none
+- **Next:** parked
+## Todo
+- [ ] Parked item
+EOF
+
+list_out=$("${AZG}" packet list)
+if echo "${list_out}" | grep -q "pkt-done" && echo "${list_out}" | grep -q "Finished"; then
+  pass "azg packet list displays finished packet"
+else
+  fail "azg packet list must display finished packet" "got: ${list_out}"
+fi
+
+assert_exit "azg packet close removes packet" 0 "${AZG}" packet close pkt-parked
+assert_file_not_exists "pkt-parked removed by close" ".agents/work-packets/pkt-parked.md"
+
+assert_exit "azg packet prune succeeds" 0 "${AZG}" packet prune
+assert_file_not_exists "pkt-done removed by prune" ".agents/work-packets/pkt-done.md"
 
 test_summary
